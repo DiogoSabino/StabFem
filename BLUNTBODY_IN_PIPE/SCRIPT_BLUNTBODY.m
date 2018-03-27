@@ -45,7 +45,7 @@ plotFF(bf,'ux');  % to plot the bf
         
 %% COMPUTING THE STEADY BRANCH (going backwards)
     Re_RangeS = [200:-10:100];EVS = [];
-        guessS = 1.09i+0.;
+        guessS = 0.319;
         bf=SF_BaseFlow(bf,'Re',200);
         [ev,em] = SF_Stability(bf,'m',1,'shift',guessS,'nev',1,'type','D');
         for Re = Re_RangeS
