@@ -12,7 +12,6 @@ if(ismac)
     %ff = '/usr/local/ff++/openmpi-2.1/3.55/bin/FreeFem++-nw'; % on DF's macbookpro 
 end
    
-
 if(ispc)
     ff = 'launchff++'; % for windows systems
 end
