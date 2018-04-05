@@ -45,7 +45,7 @@ plotFF(em,'ux1');
 plotFF(em,'sensitivity');
 pause(0.01);
 
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','D','plotspectrum','yes');
+[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',10,'type','D','plotspectrum','yes');
 
 
 
