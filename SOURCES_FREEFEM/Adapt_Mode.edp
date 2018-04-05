@@ -190,10 +190,11 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	}
 
 
-		
+	IFMACRO(freefemplot,"yes")		
 	plot(thold,wait=1);
 	plot(thnew,wait=1);
-	
+	ENDIFMACRO
+
 	savemesh(thnew,ffdatadir+"mesh.msh");
 	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
 
@@ -208,9 +209,6 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
     femp2xfemp2xfemp1N [uNx,uNy,uNp];
   
     [uNx,uNy,uNp] = [vB,uB,pB]; // interpolation of base flow
-//	plot(uBN,fill=1,wait=1);
-//	plot(vBN,fill=1,wait=1);
-//	plot(pBN,fill=1,wait=1);
 
 	Re = Reans;
 	real nu = 1/Re;

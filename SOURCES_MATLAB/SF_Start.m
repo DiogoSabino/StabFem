@@ -5,7 +5,8 @@ verbosity = 1; % to control the ammount of output
 
 if(isunix)
     %ff =  '/usr/local/bin/FreeFem++';   % on most systems, including the server AZTECA (UPS)
-    ff = '/PRODCOM/FREEFEM/Ubuntu12.04/3.29/bin/FreeFem++-nw'; % on IMFT network
+    ff = '/PRODCOM/Ubuntu16.04/freefem/3.55/gcc-5.4-mpich_3.2/bin/FreeFem++'; % on IMFT
+    %Network
 end
 
 if(ismac)

@@ -17,6 +17,21 @@
 /// The following case is for the 2D cylinder and include the additional macros
 /// required to compute lift and drag forces : Trainee(ux,uy,p,symmetry) and Portance(ux,uy,p,symmetry)
 
+IFMACRO(!freefemsolver)
+macro freefemsolver "MUMPS_seq" //EOM
+cout << " USING MUMPS_seq" << endl;
+ENDIFMACRO 
+// To select the solver ; available are "default", "UMFPACK64", "MUMPS_seq", and "PETSC"
+
+IFMACRO(!ffglutplots)
+macro freefemplots "no" //EOM
+ENDIFMACRO 
+// Set to "yes" to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
+// set to "no" to disable all plots (recommended in Matlab/StabFem mode)
+
+
+
+
 
 IFMACRO(!problemtype)
 macro problemtype "2D"//EOM

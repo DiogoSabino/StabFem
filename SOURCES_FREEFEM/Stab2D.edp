@@ -35,9 +35,12 @@
 
 
 
-load "MUMPS_seq"        ////////  load sparsesolver    
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
+
+IFMACRO(freefemsolver,"MUMPS")
+load "MUMPS_seq"
+ENDIFMACRO
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////----->             parameters         <-----///////////////////

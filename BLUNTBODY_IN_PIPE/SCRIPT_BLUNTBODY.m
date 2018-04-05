@@ -7,10 +7,10 @@ Rbody = 1; Lbody = 5;Rpipe = 1.5; xmin = -10; xmax = 30;
 
     disp('computing base flow and adapting mesh');
     bf = SF_Init('meshInit_BluntBodyInTube.edp',[Rbody Rpipe Lbody xmin xmax]); 
-    Re_start = [10 , 100 , 200]; % values of Re for progressive increasing up to end
+    Re_start = [10 , 30, 100 , 200]; % values of Re for progressive increasing up to end
     for Rei = Re_start
         bf=SF_BaseFlow(bf,'Re',Rei); 
-        bf=SF_Adapt(bf);
+        bf=SF_Adapt(bf,'Hmax',0.5);
     end
  
  shift =    0.15+1.098i; % shift for steady mode

@@ -36,7 +36,7 @@ else
     command = ['echo  '' ', stringparam, ' '' | ',ff,' ',meshfile];
 end
 
-error = 'ERROR : Freefem not working (path may be wrong, change variable ff in script)';
+error = 'ERROR : mesh generation failed. To debug, first try running the freefem script outside matlab/StabFem';
 mysystem(command,error);
 
    

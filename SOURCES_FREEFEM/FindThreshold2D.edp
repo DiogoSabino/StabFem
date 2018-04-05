@@ -346,8 +346,9 @@ cout << " Preconditioning matrix... done" << endl;
 	omega -= domega;
 
 	cout << "dRe ; domega : " << -dRe << " " << -domega << endl;
+	IFMACRO(freefemplots,1)
 	plot(du1b,value=1,wait=1);
-
+	ENDIFMACRO
 	i++;
 	};
 	
@@ -393,8 +394,8 @@ XXMh [ubbx,ubby,ubbp] = [u1b,u2b,pb]; // ugly fix
 
 
 
+
     {
-    	cout << um2s(1,1) << " " << um1s(1,1) << endl;
     ofstream file(ffdatadir+"Eigenmode_threshold.txt");
     [um1s,um2s,pms] = [u1mr+1i*u1mi,u2mr+1i*u2mi,pmr+1i*pmi]; 
   	file << um1s[] ;	
@@ -410,7 +411,7 @@ XXMh [ubbx,ubby,ubbp] = [u1b,u2b,pb]; // ugly fix
 XXMh<complex> [umm1x,umm1y,umm1p] = [um1s,um2s,pms]; // ugly fix
 
  	 cout << "Writing eigenmode in file Eigenmode_threshold.ff2m" << endl;
-     SFWriteMode(ffdatadir+"Eigenmode_threshold.ff2m",um1s,um2s,pms,1i*omega,1i*omega,"EigenModeD",i)
+     SFWriteMode(ffdatadir+"Eigenmode_threshold.ff2m",umm1,1i*omega,1i*omega,"EigenModeD",i)
  		 
  		
 
