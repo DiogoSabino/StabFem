@@ -21,9 +21,11 @@
 
 
 
-load "MUMPS_seq"
+
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
+
+
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -107,6 +109,7 @@ macro Drag(nu,u1,u2,p)
 {
 ifstream cbin(ffdatadir+"BaseFlow.txt");
 cbin >> ubx[] >> Re;
+cout << "reading base flow for Re = " << Re << endl;
 cout << "Drag of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 }
 

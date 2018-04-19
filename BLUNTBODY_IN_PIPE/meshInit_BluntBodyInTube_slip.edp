@@ -12,10 +12,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-
-include "Macros_StabFem.edp" 
-
-
+include "Macros_StabFem.edp";
 //string ffdatadir = "./WORK/";
 
 // load "iovtk"                       /// load library to write in vtk format
@@ -64,9 +61,9 @@ border axis11(t=-2*Rbody,-Rbody){ x=t;y=0;label=6;}
 border axis21(t=Lbody,Lbody+Rbody){ x=t;y=0;label=6;}
 border axis2(t=Lbody+Rbody,xoutlet){ x=t;y=0;label=6;}
 border outlet(t=0,Rpipe){ x=xoutlet;y=t;label=3;}
-border latsup1(t=xoutlet,Lbody){x=t;y=Rpipe;label=2;}
-border latsup2(t=Lbody,-Rbody){x=t;y=Rpipe;label=2;}
-border latsup3(t=-Rbody,xinlet){x=t;y=Rpipe;label=2;}
+border latsup1(t=xoutlet,Lbody){x=t;y=Rpipe;label=5;}
+border latsup2(t=Lbody,-Rbody){x=t;y=Rpipe;label=5;}
+border latsup3(t=-Rbody,xinlet){x=t;y=Rpipe;label=5;}
 
 
 
@@ -79,7 +76,6 @@ border latsup3(t=-Rbody,xinlet){x=t;y=Rpipe;label=2;}
 // Build a mesh 
 
 IFMACRO(freefemplots,1)
-cout << "toto" << endl;
 plot(inlet(Rbody*n)
 	+axis1((-Rbody-xinlet)*n)+axis11(ns*Rbody)
 	+axis21(ns*Rbody)+axis2((xoutlet-Lbody)*n)
@@ -97,7 +93,6 @@ mesh th=buildmesh(inlet(Rbody*n)
 	+latsup1((xoutlet-Lbody)*n)+latsup2(ns*(Rbody+Lbody))+latsup3((-Rbody-xinlet)*n)
 	+square1(ns*Rbody*pi/2)+square2(ns*Lbody)+square3(ns*Rbody))
 	;
-
 
 IFMACRO(freefemplots,1)
 plot(th,wait=0);
@@ -131,8 +126,7 @@ savemesh(th,ffdatadir+"mesh.msh");
             file2 << " real SFGeomLbody = " << Lbody  << " ; " << endl ;
             file2 << " real SFGeomRbody = " << Rbody  << " ; " << endl ;
             file2 << " real SFGeomRpipe = " << Rpipe  << " ; " << endl ;
-            file2 << " string SFGeomtypeinlet = \"Poiseuille\" ; " << endl ; 
-
+            file2 << " string SFGeomtypeinlet = \"Constant\" ; " << endl ; 
 }
 
 

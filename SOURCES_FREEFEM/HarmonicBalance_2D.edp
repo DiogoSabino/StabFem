@@ -23,11 +23,8 @@
 //      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
 //
 
-
-
-load "MUMPS_seq"
-	include "SF_Geom.edp";
-		include "Macros_StabFem.edp";
+include "SF_Geom.edp";
+include "Macros_StabFem.edp";
 
 
 /////////////////////////////////////////////////////////////////////////////////

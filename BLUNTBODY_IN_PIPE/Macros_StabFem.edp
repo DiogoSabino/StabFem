@@ -1,4 +1,4 @@
-   /// 
+/// 
 /// file Macros_StabFem.edp
 ///
 /// This file contains the case-dependent Macros for boundary conditions and postprocessing output.
@@ -25,31 +25,58 @@ IFMACRO(!ncomponentsBF)
 macro ncomponentsBF 2//EOM  // THIS PARAMETERS SHOULD BE 2 if BASE FLOW is (U,V,P) and 3 if it is (U,V,W,P) (case with rotation)
 ENDIFMACRO
 
+IFMACRO(!freefemsolverMUMPS)
+macro freefemsolverMUMPS 0 //EOM
+ENDIFMACRO 
+
+IFMACRO(freefemsolverMUMPS,1)
+include "MUMPS_seq"
+cout << " USING MUMPS_seq" << endl;
+ENDIFMACRO
+
+IFMACRO(!freefemsolverUMFPACK64)
+macro freefemsolverUMFPACK64 0 //EOM
+ENDIFMACRO 
+
+IFMACRO(freefemsolverUMFPACK64,1)
+include "UMFPACK64"
+cout << " USING UMFPACK64" << endl;
+ENDIFMACRO
+
+// To select the solver ; available are "default", "UMFPACK64", "MUMPS_seq", and "PETSC"
+
+IFMACRO(!freefemplots)
+macro freefemplots  0  //EOM
+ENDIFMACRO 
+// Set to "1" to generate plots through the native FreeFem plotter ffglut (recommended in terminal /debug mode)
+// set to "0" to disable all plots (recommended in Matlab/StabFem mode)
 
 
 
 string ffdatadir = "./WORK/";
 
-int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bcslipwall =5;
 
 
 /// THIS IS FOR THE POROUS DISK CASE; SET TO ZERO IN CASE NOT NEEDED
 macro IsInObject(x,y) 0 //EOM
 
-macro Uinlet(y) 2*(1-y^2/SFGeomRpipe^2) // Inlet = POISEUILLE 
+
+macro Uinlet(y) (2*(1-y^2/SFGeomRpipe^2)*(SFGeomtypeinlet=="Poiseuille")+1*(SFGeomtypeinlet=="Constant")) //
+
 
 macro BoundaryconditionsBaseFlow(du,up,v)
-	           on(bcinlet,du#x=Uinlet(y)-up#x,du#r=0.0)
+	           on(1,du#x=Uinlet(y)-up#x,du#r=0.0)
              + on(2,21,22,23,du#x=0.0,du#r=0.0)
              IFMACRO(ncomponentsBF,3) +on(2,21,22,23,du#phi=OMEGAx-up#phi) ENDIFMACRO /* for rotating body */
-             + int1d(th,bcaxis)(du#r*v#r*1e30) 
+             + int1d(th,5,6)(du#r*v#r*1e30) 
              + int1d(th,7)(du#r*v#r*1e30)       
 //EOM
 
 
 macro BoundaryconditionsStability(u,v,m)
 	           on(bcinlet,u#x=0,u#r=0.0,u#phi=0.0)
-	       /*  + on(bclat,u#y=0.0)  */
+	          + on(5,u#r=0.0) 
              + on(2,21,22,23,u#x=0.0,u#r=0.0,u#phi=0.0) 
              IFMACRO(ncomponentsBF,3)+ on(2,21,22,23,u#phi=0.0) ENDIFMACRO
              + int1d(th,bcaxis)(u#x*v#x*1e30*(abs(m)>0)

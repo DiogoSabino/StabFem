@@ -13,10 +13,13 @@
 //load "BinaryIO"                //////// library to read/write binary files 
 // load "BinaryIO_64"
 //load "UMFPACK64"        ////////  load sparsesolver    
-load "MUMPS_seq"
 
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
+
+IFMACRO(solver,"MUMPS")
+load "MUMPS_seq"
+ENDIFMACRO
 
 real Re;                  ////////  Reynolds number for stability analysis
 real zero = 0;

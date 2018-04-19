@@ -1,14 +1,20 @@
 %  Instability of the wake of a cylinder with STABFEM  
 %
-%  this script demonstrates the main functionalities of StabFem 
-%  1/ Generation of an adapted mesh and base flow
-%  2/ Eigenvalue computation
-%  3/ New mesh adaptation to eigenmode
+%  this scripts performs the following calculations :
+%  1/ Generation of an adapted mesh
+%  2/ Base-flow properties for Re = [2-40]
+%  3/ Stability curves St(Re) and sigma(Re) for Re = [40-100]
+%  4/ Determination of the instability threshold and Weakly-Nonlinear
+%  analysis
+%  5/ Harmonic-Balance for Re = REc-100
+%  6/ Self-consistent model for Re=100
 
-clear all; close all;
-%set the global variables needed by the drivers
+% CHAPTER 0 : set the global variables needed by the drivers
+
 run('../SOURCES_MATLAB/SF_Start.m');
+figureformat='png'; AspectRatio = 0.56; % for figures
 
+%##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
 
 if(exist('bf')==1)
 disp(' ADAPTMESH PROCEDURE WAS PREVIOUSLY DONE, START WITH EXISTING MESH : '); 
@@ -30,17 +36,10 @@ disp(' ');
 disp('mesh adaptation to SENSITIVITY : ')
 [ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
 [bf,em]=SF_Adapt(bf,em,'Hmax',10);
-plotFF(bf,'mesh');
-pause(0.01);
 
-bf=SF_BaseFlow(bf,'Re',1);
-bf=SF_BaseFlow(bf,'Re',10);
-bf=SF_BaseFlow(bf,'Re',60);
-bf=SF_Adapt(bf);
+end
 
-bf
-plotFF(bf,'ux');
-pause(0.01);
+%%% CHAPTER 1b : DRAW FIGURES
 
 % plot the mesh (full size)
 plotFF(bf,'mesh');
@@ -63,26 +62,25 @@ plotFF(bf,'ux');
 title('Base flow at Re=60 (axial velocity)');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
-saveas(gca,'Cylinder_BaseFlowRe60',figureformat);
-=======
-disp(' ');
-
-disp('Eigenvalue computation : compute 10 modes and plot the spectrum')
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',10,'type','D');
-ev
->>>>>>> b6235e31f830f118f879f1a8426367a8375b7254
-
-disp('Eigenvalue computation : compute 1 mode, including structural sensitivity')
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
+saveas(gca,'Cylinder_bfRe60',figureformat);
 
 
-disp('mesh adaptation to SENSITIVITY and new computation of eigenvalues on improved mesh : ')
-bf = SF_Adapt(bf,em);
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-ev
+em.xlim = [-2 8]; em.ylim=[0,5];
 plotFF(em,'ux1');
+title('Eigenmode at Re=60 (ADAPT TO SENSITIVITY)');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenModeRe60_AdaptS',figureformat);  % 
+
+em.xlim = [-2 8]; em.ylim=[0,5];
+plotFF(em,'ux1Adj');
+title('Adjoint Eigenmode at Re=60 (axial velocity component)');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_EigenModeAdjRe60',figureformat);
+
+em.xlim = [-2 4]; em.ylim=[0,3];
 plotFF(em,'sensitivity');
-<<<<<<< HEAD
 title('Structural sensitivity at Re=60');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
@@ -119,15 +117,11 @@ xlabel('Re');ylabel('Lx');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Lx_bf',figureformat);
-=======
-pause(0.01);
->>>>>>> b6235e31f830f118f879f1a8426367a8375b7254
-
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',10,'type','D','plotspectrum','yes');
 
 
+pause(0.1);
 
-<<<<<<< HEAD
+
 %%% CHAPTER 3 : COMPUTING STABILITY BRANCH
 
 if(exist('lambda_LIN')==1)
@@ -135,7 +129,7 @@ if(exist('lambda_LIN')==1)
 else
     disp('COMPUTING STABILITY BRANCH')
 
-% LOOP OVER RE FOR BASEFLOW + EIGENMODE
+% LOOP OVER RE FOR bf + EIGENMODE
 Re_LIN = [40 : 2: 100];
 bf=SF_BaseFlow(bf,'Re',40);
 [ev,em] = SF_Stability(bf,'shift',-.03+.72i,'nev',1,'type','D');
@@ -198,6 +192,50 @@ bf=SF_BaseFlow(bf,'Re',50);
 [bf,em]=SF_FindThreshold(bf,em);
 Rec = bf.Re;  Cxc = bf.Cx; 
 Lxc=bf.Lx;    Omegac=imag(em.lambda);
+%[ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
+end
+
+
+wnl = SF_WNL(bf);
+
+epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
+Re_WNL = 1./(1/Rec-epsilon2_WNL);
+A_WNL = sqrt(real(wnl.Lambda)/real(wnl.nu0+wnl.nu2))*real(sqrt(epsilon2_WNL));
+Cy_WNL = 2*abs(em.Cy)/em.AEnergy*A_WNL; 
+omega_WNL =Omegac+epsilon2_WNL*imag(wnl.Lambda)-imag(wnl.nu0+wnl.nu2)*A_WNL.^2;
+%omega_WNLno2 =Omegac+epsilonRANGE.*(imag(wnl.Lambda)-real(wnl.Lambda)*imag(wnl.nu0)/real(wnl.nu0));
+Cx_WNL = wnl.Cx0+wnl.Cxeps*epsilon2_WNL+wnl.Cx20*A_WNL.^2;
+
+figure(20);hold on;
+plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--');hold on;
+
+figure(21);hold on;
+plot(Re_WNL,omega_WNL/(2*pi),'g--');hold on;
+
+figure(22);hold on;
+plot(Re_WNL,Cx_WNL,'g--');hold on;
+
+figure(24); hold on;
+plot(Re_WNL,Cy_WNL,'g--');
+
+figure(25);hold on;
+plot(Re_WNL,A_WNL,'g--');
+
+
+
+
+%%% CHAPTER 5 : HARMONIC BALANCE
+
+if(exist('Lx_HB')==1)
+    disp('Harmonic balance on the range [Rec , 100] already computed');
+else
+    disp('Computing Harmonic balance on the range [Rec , 100]');
+Re_HB = [Rec 47.5 48 49 50 55 60 65 70 75 80 85 90 95 100];
+Cx_HB = [Cxc]; Lx_HB = [Lxc]; omega_HB = [Omegac]; Aenergy_HB = [0]; Cy_HB = [0];
+
+bf=SF_BaseFlow(bf,'Re',47.5);
+[ev,em] = SF_Stability(bf,'shift',Omegac*i);
+[meanflow,mode] = SF_HarmonicBalance(bf,em,'sigma',0.,'Re',47.5,'Aguess',0.8);;
 %[ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
 end
 
@@ -331,22 +369,27 @@ for sigma = sigma_SC(2:end)
     Cy_SC = [Cy_SC mode.Cy];
     AEnergy_SC = [Energy_SC mode.AEnergy];
 end
-=======
-%%% DETERMINATION OF THE INSTABILITY THRESHOLD
->>>>>>> b6235e31f830f118f879f1a8426367a8375b7254
 
-bf=SF_BaseFlow(bf,'Re',50);
-[ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','D');
-[bf,em]=SF_FindThreshold(bf,em);
-Rec = bf.Re  
-Cxc = bf.Cx; 
-Lxc=bf.Lx;    Omegac=imag(em.lambda);
+end
 
-% Rec should be 47.6
-
-%%% SelfConsistent / Harmonic Balance
+figure(31);hold on;
+plot(sigma_SC,real(Cy_SC),'b-+');
+xlabel('sigma');ylabel('Cy');
+title('SC model results for Re=100');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_SC100_CySigma',figureformat);
 
 
+figure(32);hold on;
+plot(AEnergy_SC,sigma_SC,'b-+');
+ylabel('$\sigma$','Interpreter','latex');xlabel('A');
+title('SC model results for Re=100');
+box on; pos = get(gcf,'Position'); pos(4)=pos(3)*AspectRatio;set(gcf,'Position',pos); % resize aspect ratio
+set(gca,'FontSize', 18);
+saveas(gca,'Cylinder_SC100_EnergySigma',figureformat);
 
+
+save('Results_Cylinder.mat');
 
 

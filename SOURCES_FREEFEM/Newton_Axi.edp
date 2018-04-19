@@ -146,13 +146,12 @@ problem NewtonIter([dux,dur,dup],[vx,vr,vp]) =
         {
 	    upx[]=ux[];        ////// Uold=U
 	    
-	    
-	    
         NewtonIter ;           //// update of current solution u1=u1-w
         
-        
+	IFMACRO(freefemplots,1)
         plot(dux,fill=1,wait=0,value=1,cmm="dux");
-        
+        ENDIFMACRO
+
         ux[] = ux[]+dux[];
 		real enerl2=dux[].l2;
 		ener=sqrt(int2d(th)(dux^2+dur^2)/th.area);
@@ -180,7 +179,9 @@ problem NewtonIter([dux,dur,dup],[vx,vr,vp]) =
           exec("cp "+ffdatadir+"BaseFlow.txt "+ffdatadir+"BaseFlow_guess.txt"); 
           SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",iter); // file in .ff2ml format for StabFem driver
           // plot 
-		  plot(ux,fill=1,wait=0,value=1,cmm="final U1");
+		IFMACRO(freefemplots,1)
+		plot(ux,fill=1,wait=0,value=1,cmm="final U1");
+		ENDIFMACRO
 			//plot(uy,fill=1,wait=0,value=1,cmm="final U2");
 			//plot(p,fill=1,wait=0,value=1,cmm="final Pressure");
     
