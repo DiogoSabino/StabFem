@@ -20,7 +20,7 @@ real zero = 0;
 complex SHIFT;
 string symmetry="a",iadjoint="a",formulation="a";
 int nev,ncv; // number of eigenvalues to compute ; Krylov Basis //What is this ncv?
-real eps=1e-15; 	
+real eps=1; 	
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 ///////////    Parameters    ////////////////////////////////////////////////////	
@@ -227,24 +227,21 @@ Aaf = afbfluid(0,XXMh);
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix A for VIV cylinder
 
-//matrix<complex> A; 
-matrix<complex> OP;// mat OP = A - shift B
-OP = 	[
-	[OPff,		 0,			Avf,			Aaf],
-	[0,		 -SHIFT,		1,			0],
-	[0,		 0,			-SHIFT,			1],
-	[Afv',		-STIFFNESS,		-DAMPING,		-MASS-SHIFT*eps]
+matrix<complex> OP; // mat OP = A - shift B
+
+/*OP = 	[
+	[OPff,		 0,		Avf,		Aaf],
+	[0,		 -SHIFT,	1,		0],
+	[0,		 0,		-SHIFT,		1],
+	[Afv',		-STIFFNESS,	-DAMPING,	-MASS-SHIFT*eps]
 	];
-
-set(OP,solver=GMRES);
-
-/*
-OPP = 	[
+*/
+OP = 	[
 	[OPff,		 0,		0,		0],
-	[0,		 0,		1,		0],
-	[0,		 0,		0,		1],
-	[0,		 -1,		-1,		-1]
-	];*/
+	[0,		 -SHIFT,	1,		0],
+	[0,		 0,		-SHIFT,		1],
+	[0,		-0,		-0,	-SHIFT*eps]
+	];
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -253,7 +250,7 @@ OPP = 	[
 
 //complex shiftOP;
 //shiftOP = shift;
-//OP = A+ (-SHIFT)*B; // Dont need because shift is already incorporated in A and B
+//OP = A+ (-shiftOP)*B; // Dont need because shift is already incorporated in A and B
 XXMh<complex> [modex,modey,modep];	// partie "fluide" du vecteur propre
 complex modeY,modeV,modeA ; 		// parties "solide" du vecteur propre
 complex[int] EVCalculated(nev);		// vector to store eigenvalues
@@ -264,7 +261,7 @@ if(nev>1)
 {
 	////// BUILD OP-MATRIX=A-lambda*B ////////////////////////////////////
 	//if(iadjoint=="D"){
-	//set(OP,solver=sparsesolver);
+	set(OP,solver=sparsesolver);
 	//}else if(iadjoint=="A")
 	//{ OP=LNSEadjoint(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(shift); }
 	//else if(iadjoint=="S") { cout << " WARNING : in this program option S will work only for nev=1" << endl; };
@@ -348,7 +345,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	real err = 1e6;
 	real errmax=1e-6;
 	//varf brhs([ux,uy,up],[vx,vy,q]) = int2d(th)( (ux0*vx+uy0*vy) );
-	//set(OP,solver=sparsesolver);//factorize matrix; set:to specify solver in this framework	
+	set(OP,solver=sparsesolver);//factorize matrix; set:to specify solver in this framework	
 	complex b0A=0; complex b0V = 0; complex b0Y=0; //Les 3 autres variables
 	int i; //Also used for testing, later
 	

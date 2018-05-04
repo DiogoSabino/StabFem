@@ -3,135 +3,171 @@
 ///
 ///		SCRIPT TO COMPUTE THE LINEAR FORCED PROBLEM OF AN OSCILLATING 2D BODY
 /// 
-///		ALL THIS COMES FROM A VERSION USED DURING N. FALL's internship (2014)
-///		recollected by D. Fabre in 2017 with mininum adaptation (to be cleaned up someday...)
+///	Contributors: Ndong Fall, David Fabre, Diogo Sabino
+///	Last modification: Diogo Sabino 18 April 2018
 ///
+///	Programe fait dans repere relatif
+include "SF_Geom.edp"; //Values for nondimensionalization
+include "Macros_StabFem.edp";
 
+cout << "_________________________________________________" << endl;		
+cout << "| Objet en mouvement harmonique impose (selon U)|"<< endl;
 
+////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+//	Mesh loading
+	mesh th=readmesh(ffdatadir+"mesh.msh");
 
-                mesh th=readmesh("mesh.msh");
+//	FEM space and variables definitions
+	fespace Xh(th,P2);             ////// f.e. space for vel.
+	fespace Mh(th,P1);            ////// f.e. space for pressure
+	fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+
+	Mh pa ,pra;
+	Xh uxa,uya;
+
+	XXMh[UX,UY,PP];
 		
-//		include "data.txt"
-
-		fespace femp2(th,P2);
-		fespace femp1(th,P1);
-		fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
-		femp1 pa ,pra;
-		femp2 uxa,uya;
-
-	        femp2xfemp2xfemp1 [UX,UY,PP];
-		int Nt = UX[].n;
-		real Re;
-		string nomfile;
-		int m;
-		real OMEGA;	
+	int Nt = UX[].n;
+	real Re;
+	string nomfile;
+	int m;
+	real OMEGA, OMEGAstep, OMEGAlast ;	
 		
-//		cout << "Objet en mouvement harmonique impose (selon U)";
-//		cout << " entrez OMEGA" << endl;
-//	        cin >> OMEGA;
-//	        cout << " OMEGA = " << OMEGA << endl;
-	        
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////	        
 // lecture du fichier champ de base (DEMI-ESPACE)	   
-	
-	femp2xfemp2xfemp1 [ux0,uy0,pp0];
-	femp2xfemp2xfemp1<complex> [vx,vy,qr],[ux,uy,pr];
-	femp2xfemp2xfemp1 [uxR,uyR,prR],[uxI,uyI,prI];
+	XXMh [u0x,u0y,u0p];
 
+	XXMh<complex> [vx,vy,qr],[ux,uy,up];
+	XXMh [uxR,uyR,prR],[uxI,uyI,prI];
 
 		{
- 		ifstream cbin("chbase.txt");
-		 cbin >> ux0[];
-		 cbin >> Re;
+ 		ifstream cbin(ffdatadir+"BaseFlow.txt");
+		 cbin >> u0x[];
+		 cbin >> Re;	/*Reynolds number defined*/
 		};
 
-
-cout << " Lecture du champ de base  : Re = " << Re << endl; 
+cout << "_________________________________________________" << endl;
+cout << "| Lecture du champ de base      : Re = " << Re << "       |"<< endl;
+cout << "|_______________________________________________|" << endl;
 real nu=1./Re;
 
-//[ux0,uy0,pp0]=[0,0,0];
-//real nu=1.;
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+///création d'une structure de vecteur permettant de calculer les différents efforts
+//Pressure Drag
+varf DragP([vx,vy,q],[ux,uy,up])=TraineeP(u,"S");
+	real[int] VdragPR(Nt);
+	VdragPR(:) = DragP(0,XXMh);
+	complex[int] VdragPC(Nt);   
+	VdragPC(:) = DragP(0,XXMh);
+//Viscous Drag
+varf DragV([vx,vy,q],[ux,uy,up])=TraineeV(u,"S");
+	real[int] VdragVR(Nt);
+	VdragVR(:) = DragV(0,XXMh);
+	complex[int] VdragVC(Nt);
+	VdragVC(:) = DragV(0,XXMh);
 
-// création d'une structure de vecteur permettant de calculer les différents efforts
-// traînée
-	varf DragT([vx,vy,q],[ux,uy,pp]) = int1d(th,2)( 2*pp*N.x -2*nu * ( 2*dx(ux) * N.x + (dx(uy)+dy(ux)) * N.y ) );
-	real[int] VdragT(Nt);
-	VdragT(:) = DragT(0,femp2xfemp2xfemp1);
-	
-	complex[int] VdragC(Nt);
-	VdragC(:) = DragT(0,femp2xfemp2xfemp1);
-	
-  // portance
-	varf FyT([vx,vy,q],[ux,uy,pp])   
-	= int1d(th,2)( 2*pp*N.y -2*nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) ); 
+//Lift
+varf FyT([vx,vy,q],[ux,uy,up]) = Portance(u,"S");
 	real[int] VFyT(Nt);
-	VFyT(:) = FyT(0,femp2xfemp2xfemp1);
+	VFyT(:) = FyT(0,XXMh);
 	complex[int] VFyC(Nt);
-	VFyC(:) = FyT(0,femp2xfemp2xfemp1);
+	VFyC(:) = FyT(0,XXMh);
 	
-    // Moment	
-	varf MomentT([vx,vy,q],[ux,uy,pp])  = int1d(th,2)( 
-	          2*x * (pp*N.y -nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) )
-	         -2*y * (pp*N.x -nu * ( 2*dx(ux) * N.x + (dx(uy)+dy(ux)) * N.y ) ) );
-	real[int] VmomentT(Nt);
-	VmomentT(:) = MomentT(0,femp2xfemp2xfemp1);
-	complex[int] VmomentC(Nt);
-	VmomentC(:) = MomentT(0,femp2xfemp2xfemp1);
-	
-       
-/// CALCUL trainée du champ de base
-	
-	real Drag0 = VdragT'*ux0[];
-	cout << "Trainee du champ de base : " << Drag0 <<endl;
-	real DragP = int1d(th,2)( 2*pp0*N.x );
-	real DragV = int1d(th,2)( -2*nu * ( 2*dx(ux0) * N.x + (dx(uy0)+dy(ux0)) * N.y ) );
-//	cout << " partie Pression  : " << DragP << endl;
-//	cout << " partie Visqueuse : " << DragV << endl;
-	
+///Base flow Computation
+	real DragP0 = VdragPR'*u0x[];
+	real DragV0 = VdragVR'*u0x[];
+	real DragT0= DragP0+DragV0;
+	real Lift0 = VFyT'*u0y[];
+///Display
+	cout << "________________________________________________" << endl;
+	cout << "| Drag Values:                    " << "              "<< endl;
+	cout << "|      Pressure Base Flow Drag  : " << DragP0 << "       "<<endl;
+	cout << "|      Viscous Base Flow Drag   : " << DragV0 << "      "<<endl;
+	cout << "|      Total Base Flow Drag     : " << DragT0 << "      "<<endl;
+	cout << "| Lift Value:                     " << "              "<< endl;
+	cout << "|      Base Flow Lift:          : " << Lift0 << "      "<<endl;
+	cout << "|_______________________________________________" << endl;
 
-// calcul du champ [ux,uy,pr] correspondant a une vitesse harmonique
+// Il faut faire les moments aussi, avec des macros
+    // Moment	
+	varf MomentT([vx,vy,q],[ux,uy,up])  = int1d(th,2)( 
+	          2*x * (up*N.y -nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) )
+	         -2*y * (up*N.x -nu * ( 2*dx(ux) * N.x + (dx(uy)+dy(ux)) * N.y ) ) );
+	real[int] VmomentT(Nt);
+	VmomentT(:) = MomentT(0,XXMh);
+	complex[int] VmomentC(Nt);
+	VmomentC(:) = MomentT(0,XXMh);
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////	
+// calcul du champ [ux,uy,up] correspondant a une vitesse harmonique
 
 real U0=-1.; // vecteur d'osciallation latérale
 // Oscillation laterale sans changement d'inclinaison  (alpha=-gamma,theta=0)
-problem vfStokes([ux,uy,pr],[vx,vy,qr]) =
-    int2d(th)(
-            -((ux0*dx(ux)+ux*dx(ux0)+uy0*dy(ux)+uy*dy(ux0))*vx)
-            -((ux0*dx(uy)+ux*dx(uy0)+uy0*dy(uy)+uy*dy(uy0))*vy)
-            - nu*(dx(ux)*dx(vx)+dy(ux)*dy(vx))
-            - nu*(dx(uy)*dx(vy)+dy(uy)*dy(vy))
-	    + pr*(dx(vx)+dy(vy))
-            -(dx(ux)+dy(uy))*qr
-	    + pr*qr*(1e-12) 
-	    - 1i*OMEGA*ux*vx
-            - 1i*OMEGA*uy*vy
-             )
-   + int2d(th)(
-            - 1i*OMEGA*vy*U0
-             )
-       + on(2,ux=0)
-       + on(2,uy=0)
-       + on(1,4,ux=0,uy=-U0)          // 1= entree et 4 = paroi (3 = sortie)
-       + on(6,ux=0,pr=0);         		   // axe (mode antisym)
+problem vfStokes([ux,uy,up],[vx,vy,qr]) =
+	int2d(th)(
+		- 1i*OMEGA*ux*vx
+		- 1i*OMEGA*uy*vy // Terme 1: Temporel
+
+		- Convbis(u,u0,v) // Terme 2
+
+		+ up*divbis(v) //Terme 3: multiplie la pression
+
+		-2*nu*(Dbis(u):Dbis(v)) //Terme 4
+
+		-divbis(u)*qr // Terme 5: From continuous equation 
+
+		+ up*qr*(1e-12) // ? Terme 6: C'est le terme de stabilisation ? on multiplie pour eps ?	
+		)
+	+int2d(th)(
+		- 1i*OMEGA*vy*U0
+		)
+
+	+BoundaryconditionsForced(u,v,"A",U0);
+	
+	//+ on(2,ux=0)
+	//+ on(2,uy=0)
+	//+ on(1,4,ux=0,uy=-U0)          // 1= entree et 4 = paroi (3 = sortie)
+	//+ on(6,ux=0,up=0);         		   // axe (mode antisym)
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+//Loop for different OMEGA values
+//Save results in txt file
+
+//This txt file is not created here, it's the matlab script that creates that file
+//If this script is ran in terminal alone, creation of the file first is advised
+//To create the file: uncomment if script.edp is ran in command line manually     
+//ofstream resout(ffdataharmonicdir+"HARMONIC_2D_LateralOscillations_Re"+Re+".txt");
        
-      complex L2,M2;
-      
-      
-      
-    
- ofstream resout("HARMONIC_2D_LateralOscillations_Re"+Re+".txt");
-        
-           for(int Iom=1; Iom < 76; Iom++)
-       {
-       OMEGA = Iom*.02; // lineaire
-       cout << "OMEGA = " << OMEGA << endl;
-       vfStokes;
+complex L2,M2;
 
-       L2 = VFyC'*ux[];
+
+//The matlab script automaticly puts a -1 in final echo statement
+real inputvalue=-1;
+//uncomment next line, when running manually
+cout << "Omega values to comute (type -1 to exit): " << endl; 
+cin >> inputvalue;
+while (inputvalue !=-1)
+{
+	OMEGA=inputvalue;
+	cout << "OMEGA = " << OMEGA << endl;
+	vfStokes;
+
+	L2 = VFyC'*ux[];
 	M2 = VmomentC'*ux[];
-		
-	cout << "OMEGA = " << OMEGA << " ; L2 : " << L2 << endl;
-               ofstream resout("HARMONIC_2D_LateralOscillations_Re"+Re+".txt",append);
-	resout << OMEGA << " " << Re << " " << real(L2) << " " << imag(L2) << "  " << real(M2) << " " << imag(M2) << endl; 	
-	}
+	
+	ofstream resout( ffdataharmonicdir+"HARMONIC_2D_LateralOscillations_Re"+Re+".txt",append);
+	resout << OMEGA << " " << Re << " " << real(L2) << " " << imag(L2) << "  " << real(M2) << " " << imag(M2) <<endl;
+	//NB: If output layout file is changed, the matlab treatement have to change
+	//6 columns table: | OMEGA | Re | real(L2) | imag(L2)| real(M2)| imag(M2) |
+
+cin >> inputvalue;
+}
 
 
+//END EDP FILE
 	
