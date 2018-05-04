@@ -1,0 +1,5 @@
+Defininition of problem type and geometrical parameters for StabFem. Problem type : 
+2D
+Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)
+real ZERO
+0
