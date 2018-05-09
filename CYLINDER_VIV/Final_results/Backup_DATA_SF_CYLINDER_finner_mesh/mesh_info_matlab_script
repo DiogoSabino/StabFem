@@ -1,0 +1,28 @@
+%% Mesh creation and convergence using adapt mesh
+%clear all
+global ffdataharmonicdir verbosity
+
+close all
+
+run('../SOURCES_MATLAB/SF_Start.m');
+
+disp(' ');  disp(' GENERATING  MESH : [-40:120]x[0:40] '); disp(' ');
+
+
+baseflow=SF_Init('Mesh_Cylinder.edp', [-40 80 40]);
+baseflow=SF_BaseFlow(baseflow,'Re',1);
+baseflow=SF_BaseFlow(baseflow,'Re',10);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
+fig_mesh=plotFF(baseflow,'mesh'); %pause;
+set(fig_mesh, 'HandleVisibility', 'off'); %IMFT just have 3 licences, so...
+
+disp(' ');disp('ADAPTING MESH FOR RE=60 ');disp(' ');
+baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
+plotFF(baseflow,'mesh');%pause(0.1);
+baseflow=SF_BaseFlow(baseflow,'Re',60);
+% 
+disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
+% adaptation du maillage sur un mode propre
+[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
+[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
+plotFF(baseflow,'mesh');%pause(0.1);

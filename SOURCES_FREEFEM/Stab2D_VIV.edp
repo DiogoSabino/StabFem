@@ -20,7 +20,7 @@ real zero = 0;
 complex SHIFT;
 string symmetry="a",iadjoint="a",formulation="a";
 int nev,ncv; // number of eigenvalues to compute ; Krylov Basis //What is this ncv?
-real eps=1e-15; 	
+real eps=1e-25; 	
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 ///////////    Parameters    ////////////////////////////////////////////////////	
@@ -79,6 +79,9 @@ while(exitt==false)
 cout << " ### PARAMETERS SELECTED : " << endl;
 cout << " Re = " << Re<< endl;
 cout << " shift = " << SHIFT << endl;
+cout << " mass = " << MASS << endl;
+cout << " DAMPING = " << DAMPING << endl;
+cout << " STIFFNESS = " << STIFFNESS << endl;
 if (symmetry =="S") {cout << " Symmetric modes" << endl;}
 else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	
 else if (symmetry =="N") {cout << " No symmetry axis" << endl;};	
@@ -144,7 +147,7 @@ cbin >> Ubx[];
 
 //Matrix B for fixed cylinder
 varf b([ux,uy,up],[vx,vy,q]) = int2d(th)( (ux*vx+uy*vy+up*q*eps) );
-matrix<complex> BFluid = b(XXMh,XXMh,solver=CG);  
+matrix<complex> BFluid = b(XXMh,XXMh,solver=sparsesolver);  
 
 /////////////////////////////////////////////////////////////////////////////////
 //Terms of Matrix B for VIV cylinder
@@ -155,6 +158,7 @@ matrix<complex> B =
 			[0,	0,	0,	eps]	//A VOIR SI ON A BESOIN D'UN TERME
 							//DE STABILIZATION
 		];
+set(B,solver=sparsesolver);
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 ////// BUILD A-MATRIX //////////////////////////////////////////////////////////////
@@ -236,7 +240,7 @@ OP = 	[
 	[Afv',		-STIFFNESS,		-DAMPING,		-MASS-SHIFT*eps]
 	];
 
-set(OP,solver=GMRES);
+set(OP,solver=sparsesolver);
 
 /*
 OPP = 	[
@@ -253,7 +257,7 @@ OPP = 	[
 
 //complex shiftOP;
 //shiftOP = shift;
-//OP = A+ (-SHIFT)*B; // Dont need because shift is already incorporated in A and B
+//OP = A+ (-SHIFT)*B; // Dont use it, because A and B are stored differently=>doesnt work
 XXMh<complex> [modex,modey,modep];	// partie "fluide" du vecteur propre
 complex modeY,modeV,modeA ; 		// parties "solide" du vecteur propre
 complex[int] EVCalculated(nev);		// vector to store eigenvalues

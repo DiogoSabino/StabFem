@@ -42,35 +42,78 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 % adaptation du maillage sur un mode propre
 [ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005); 
+[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02); 
 
 plotFF(baseflow,'mesh');%pause(0.1);
-
-%% Erase previous data if mesh have change (do it manually!!) à refaire apres
-% Delete the data concerning the solution of the problem
-% (not the baseflow and the mesh; just the others eg .........)
-% NB: If one wants to delete just some of the values of .txt file, go do it manualy
-
-%
-% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
-% % % % % % % % ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
-% % % % % % % % 
-% % % % % % % % % Careful in the use of the next lines
-% % % % % % % % while(false) % change to 'true' if you want delete all this data
-% % % % % % % %     system(['rm -R ' ffdataharmonicdir]);
-% % % % % % % %     
-% % % % % % % %     break % Compulsory to exit the while loop
-% % % % % % % % end
-
 
 %% PARTIE VIV Search in the spectral space
 
 %disp('Press any key to continue to VIV Case');
 %pause;
-
 %To pass to the eigenvalue problem taking into acount the VIV
-baseflow.mesh.problemtype='2D_VIV';
+%baseflow.mesh.problemtype='2D_VIV';
 
+%% Validation Phase: Parameter Definition
+Re=60; verbosity=1;
+baseflow = SF_BaseFlow(baseflow,'Re',Re); %Do it with problemtype 2D
+baseflow.mesh.problemtype='2D_VIV'; verbosity=10;
+
+m_star=5;
+mass=m_star*pi/4;
+%mass=m_star;
+U_star=[3.1:0.1:8.5 8.5:0.05:11 ];%Pour le mode CYL%
+%Pour le mode FLUID%U_star=[4:0.3:7 7:0.05:11 ];
+%U_star=[4:0.3:20];%Pour le mode FLUID 2nd essay%
+
+
+Stiffness_table=pi^3*m_star./((U_star).^2) ;
+%Stiffness_table = [1.5:0.5:10 10: 1 :20];
+%Stiffness_table = [10: 10 :100];
+sigma_tab = []; verbosity=10;
+
+%% Validation Phase: See spectrum
+for STIFFNESS=Stiffness_table
+    %STIFFNESS=Stiffness_table(8) %for searching just for one k
+    realshift=-0.1;
+    imshift=1.8:-0.2:1.8;
+    for ii=realshift
+        for jj=imshift
+            [ev,em] = SF_Stability(baseflow,'shift',ii+jj*1i,'nev',5,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
+        end
+    end
+end
+
+%% Validation Phase: Follow a mode along the Stiffness_table to reproduze Navrose's images
+
+%Manually put the right shift
+%Pour le MODE CYL mstar20
+%[ev,em] = SF_Stability(baseflow,'shift',-0.03+1.5i,'nev',1,'type','D','STIFFNESS',Stiffness_table(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
+%Pour mode fluid mstar20
+sigma_tab = [];
+[ev,em] = SF_Stability(baseflow,'shift',-0.11+1.81i,'nev',1,'type','D','STIFFNESS',Stiffness_table(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
+
+
+for STIFFNESS=Stiffness_table
+	disp('Next sigma calculated'); disp(STIFFNESS);
+	[ev,em] = SF_Stability(baseflow,'shift','cont','nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes'); 
+    sigma_tab = [sigma_tab ev];
+end
+
+
+ figure;hold on;
+ plot(U_star,real(sigma_tab),'r*');
+ title('amplification rate');
+% %
+ figure;hold on;
+ plot(U_star,imag(sigma_tab),'b*');
+ title('oscillation rate');
+ 
+%save('modeCYL_zoom.mat','sigma_tab','Stiffness_table','U_star');
+
+
+
+
+%% Reynolds Analysis
 %Spectrum exploration
 Re_tab = 30: 10 : 60;
 for Re=Re_tab
@@ -124,7 +167,7 @@ if(1==0)
     
     for ii=realshift
         for jj=imshift
-            [ev,em] = SF_Stability(baseflow,'shift',ii+jj*1i,'nev',10,'type','D','STIFFNESS',77.5157,'MASS',15.7080,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
+            [ev,em] = SF_Stability(baseflow,'shift',ii+jj*1i,'nev',5,'type','D','STIFFNESS',77.5157,'MASS',15.7080,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
         end   
     end   
 end
@@ -134,10 +177,10 @@ end
 
 
 
-if(1==0)
-    
-% starting point
 
+    
+%% starting point ; autres choses 
+if(1==0)
 
 [ev,em] = SF_Stability(baseflow,'shift',-.03+.72i,'nev',1,'type','D','STIFFNESS',1,'MASS',30,'DAMPING',0,'Frame','A');
  

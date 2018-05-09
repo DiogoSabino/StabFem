@@ -1,0 +1,12 @@
+\contentsline {chapter}{\numberline {1}General View of \textit {StabFem}}{3}{chapter.1}
+\contentsline {section}{\numberline {1.1}General Features}{3}{section.1.1}
+\contentsline {section}{\numberline {1.2}What is attended from this manual document}{3}{section.1.2}
+\contentsline {chapter}{\numberline {2}How a StabFem project works}{4}{chapter.2}
+\contentsline {section}{\numberline {2.1}Running logic of a \textit {StabFem} project}{4}{section.2.1}
+\contentsline {section}{\numberline {2.2}Create a \textit {StabFem} project}{5}{section.2.2}
+\contentsline {paragraph}{\textit {FreeFEM++} file: SCRIPT\_*.edp}{6}{section*.3}
+\contentsline {paragraph}{\textit {FreeFEM++} file: Mesh\_*.edp}{6}{section*.4}
+\contentsline {paragraph}{\textit {FreeFEM++} file: Macros\_StabFem.edp}{6}{section*.5}
+\contentsline {paragraph}{\textit {Matlab} file: mains\_cript.m}{6}{section*.6}
+\contentsline {chapter}{\numberline {3}Mutual Matlab Files}{7}{chapter.3}
+\contentsline {chapter}{\numberline {4}Mutual FreeFEM++ Files}{8}{chapter.4}

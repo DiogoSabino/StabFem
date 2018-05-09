@@ -52,6 +52,7 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    addParameter(p,'STIFFNESS',0);
    addParameter(p,'MASS',0);
    addParameter(p,'DAMPING',0);
+   addParameter(p,'Frame','A',@ischar);
    
    % parameters for free-surface problems
     if(isfield(baseflow,'gamma')) gammaDefault = baseflow.gamma ;else gammaDefault = 0; end;
@@ -134,22 +135,33 @@ switch baseflow.mesh.problemtype
              
         mydisp(1,['      ### FUNCTION SF_Stability VIV : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         mydisp(1,['      ### USING 2D Solver FOR MOBILE OBJECT (e.g. spring-mounted)']);
-        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '... 
-                            num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
-                            ' ' p.Results.type ' ' num2str(p.Results.nev) ' " ']; 
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' ' num2str(p.Results.STIFFNESS) ' '...
+            num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift)) ' ' p.Results.sym...
+            ' ' p.Results.type ' ' num2str(p.Results.nev) ' " '];
         solvercommand = ['echo ' argumenstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
         status = mysystem(solvercommand);
         
-     case('3DFreeSurfaceStatic')
-        % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)             
+    case('3DFreeSurfaceStatic')
+        % for oscillations of a free-surface problem (liquid bridge, hanging drops/attached bubbles, etc...)
         mydisp(1,['      ### FUNCTION SF_Stability FREE SURFACE POTENTIAL : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
         argumentstring = [' " ' num2str(p.Results.gamma) ' ' num2str(p.Results.rhog) ' ' num2str(p.Results.m) ' ' num2str(10) ' " '];
         solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'StabAxi_FreeSurface_Potential.edp'];
-        status = mysystem(solvercommand);     
-            
-    %case(...)    
-    % adapt to your case !
-    
+        status = mysystem(solvercommand);
+    case('2D_VIV')
+        % 2D_VIV flow (cylinder, etc...)
+        % 2D Baseflow / 2D modes
+        mydisp(1,['      ### FUNCTION SF_Stability : computation of ' num2str(p.Results.nev) ' eigenvalues/modes (DIRECT) with FF solver']);
+        mydisp(1,['      ### USING 2D Solver']);
+        argumentstring = [' " ' num2str(p.Results.Re) ' ' num2str(p.Results.MASS) ' '  num2str(p.Results.STIFFNESS) ' '...
+            num2str(p.Results.DAMPING) ' ' num2str(real(shift)) ' ' num2str(imag(shift))...
+            ' ' p.Results.sym ' ' p.Results.type ' ' num2str(p.Results.nev) ' ' p.Results.Frame ' " '];
+        solvercommand = ['echo ' argumentstring ' | ' ff ' ' ffdir 'Stab2D_VIV.edp'];
+        status = mysystem(solvercommand);
+        
+        
+        %case(...)
+        % adapt to your case !
+        
     case default
         error(['Error in SF_Stability : "problemtype =',baseflow.mesh.problemtype,'  not possible or not yet implemented !'])
 end
@@ -261,12 +273,15 @@ end
         h=plot(real(shift),imag(shift),'o');hold on;
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
+            %text_to_put=[num2str(baseflow.Re) ',' num2str(p.Results.STIFFNESS, '%d') ];
+            text_to_put=[num2str(p.Results.STIFFNESS, '%.2f') ];
+            text(real(eigenvalues(ind)),imag(eigenvalues(ind)),text_to_put); %DIOGO ICI
             %%%%  plotting command for eigenmodes and callback function
-            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ... 
-      'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
-      ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ]; 
+            tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ...
+                'eigenmodeP.plottitle =''Eigenmode for sigma = ', num2str(real(eigenvalues(ind))) ...
+                ' + 1i * ' num2str(imag(eigenvalues(ind))) ' '' ; plotFF(eigenmodeP,''' p.Results.PlotSpectrumField '''); '  ];
             set(h,'buttondownfcn',tt);
-
+            
         end
     xlabel('\sigma_r');ylabel('\sigma_i');
     title('Spectrum (click on eigenvalue to display corresponding eigenmode)');

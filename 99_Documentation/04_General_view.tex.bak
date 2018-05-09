@@ -1,0 +1,31 @@
+\section{General View of \ti{StabFem}}
+
+
+\ti{StabFem} have a main directory where all the projects are located and where the commum scripts are located too. The directory is composed by the following particular project directories:
+
+
+\begin{enumerate}
+\item ACOUSTICS\_PIPES;
+\item CYLINDER;
+\item CYLINDER\_VIV;
+\item DISK\_IN\_PIPE.
+\item \textcolor{red}{Add the other ones...}.
+\end{enumerate}
+
+The commum directories are the followings:
+
+\begin{enumerate}
+\item SOURCES\_FREEFEM;
+\item SOURCES\_MATLAB;
+\item Documentation.
+\end{enumerate}
+
+These directories are used by the several projects of \ti{StabFem}.
+
+\medskip
+
+\begin{leftbar}
+Attention: When you something change inthe commum directories' files, we have to assure that it will work on all the projects. .
+\end{leftbar}
+
+This document presents this first chapter discribing what can be found in a  \ti{StabFem} project, a chapter discribing the running logic of a \ti{StabFem} programm and the main commum files and a chapter for each project, describing succinctly their running features.
