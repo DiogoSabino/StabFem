@@ -58,12 +58,12 @@ Re=60; verbosity=1;
 baseflow = SF_BaseFlow(baseflow,'Re',Re); %Do it with problemtype 2D
 baseflow.mesh.problemtype='2D_VIV'; verbosity=10;
 
-m_star=5;
+m_star=100;
 mass=m_star*pi/4;
 %mass=m_star;
-U_star=[3.1:0.1:8.5 8.5:0.05:11 ];%Pour le mode CYL%
+%U_star=[3.1:0.1:8.5 8.5:0.05:11 ];%Pour le mode CYL%
 %Pour le mode FLUID%U_star=[4:0.3:7 7:0.05:11 ];
-%U_star=[4:0.3:20];%Pour le mode FLUID 2nd essay%
+U_star=[11:0.3:20];%Pour le mode FLUID 2nd essay%
 
 
 Stiffness_table=pi^3*m_star./((U_star).^2) ;
@@ -73,9 +73,9 @@ sigma_tab = []; verbosity=10;
 
 %% Validation Phase: See spectrum
 for STIFFNESS=Stiffness_table
-    %STIFFNESS=Stiffness_table(8) %for searching just for one k
-    realshift=-0.1;
-    imshift=1.8:-0.2:1.8;
+    %STIFFNESS=Stiffness_table(1) %for searching just for one k
+    realshift=-0.05;
+    imshift=1.6:-0.2:1.2;
     for ii=realshift
         for jj=imshift
             [ev,em] = SF_Stability(baseflow,'shift',ii+jj*1i,'nev',5,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
@@ -89,9 +89,8 @@ end
 %Pour le MODE CYL mstar20
 %[ev,em] = SF_Stability(baseflow,'shift',-0.03+1.5i,'nev',1,'type','D','STIFFNESS',Stiffness_table(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
 %Pour mode fluid mstar20
+[ev,em] = SF_Stability(baseflow,'shift',0.04+0.78i,'nev',1,'type','D','STIFFNESS',Stiffness_table(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
 sigma_tab = [];
-[ev,em] = SF_Stability(baseflow,'shift',-0.11+1.81i,'nev',1,'type','D','STIFFNESS',Stiffness_table(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
-
 
 for STIFFNESS=Stiffness_table
 	disp('Next sigma calculated'); disp(STIFFNESS);

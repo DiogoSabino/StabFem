@@ -356,7 +356,7 @@ cout << "Composantes solide du mode : " << mode#Y << " ; " << mode#V << " ; " <<
 
 	err = abs(EVCalculated-sigma0);	
 	/*step3*/
-	u0#x[] = (1./sqrt(abs(Xn1Xn1)))*mode#x[]; /*ce commande donne la valeur max de l'espace ? sqrt(abs(Xn1Xn1))*/
+	u0#x[] = (1./sqrt(abs(Xn1Xn1)))*mode#x[];
 	b0#Y = (1./sqrt(abs(Xn1Xn1)))*mode#Y;		
 	b0#V = (1./sqrt(abs(Xn1Xn1)))*mode#V;
 	b0#A = (1./sqrt(abs(Xn1Xn1)))*mode#A;

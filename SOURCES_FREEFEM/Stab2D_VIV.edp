@@ -364,7 +364,11 @@ cout << " Composantes solide du mode OUTSIDE MACRO : " << b0Y << " ; " << b0V <<
 		cout << " estimated eigenvalue sigma = " << EVCalculated[0] << endl;
 	}; // END ITERATION LOOP
 
-	
+	//Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
+	//modex[] = 1/NormU[].max*modex[];
+	//modeY = 1/NormU[].max*modeY;	
+	//modeV = 1/NormU[].max*modeV;
+	//modeA = 1/NormU[].max*modeA;
 
 
 
