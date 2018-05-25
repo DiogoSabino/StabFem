@@ -1,0 +1,48 @@
+####################################################################################
+#	#This file has all the directories and files that normaly we don't want to add 
+#	#to the reposity
+#
+#	#Normally these unwanted files are the results folders
+#	#The available space in github is limited, so the reposity only contains the 	#	#necessary files to reproduze the results
+#
+#	#Next, the unwanted files are separeted by project, stating with the the SOURCES
+#
+#	(last edit: 25 may 2018)
+####################################################################################
+
+	#Files from SOURCES_MATLAB
+#...
+
+	#Files from SOURCES_FREEFEM
+#...
+
+	#Files from CYLINDER_VIV (D.Sabino files)
+CYLINDER_VIV/Final_results*
+CYLINDER_VIV/WORK/
+CYLINDER_VIV/WORK_copie_FORCED_PROBLEM/
+CYLINDER_VIV/General_images/
+CYLINDER_VIV/Navrose_Data/
+CYLINDER_VIV/Stab2D_VIVbis.edp
+SOURCES_FREEFEM/Stab2D_VIVantigoooooooooooo.edp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
