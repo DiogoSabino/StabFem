@@ -8,7 +8,7 @@ function baseflow = SF_BaseFlow(baseflow,varargin)
 % "BASEFLOW" directory.
 %
 %
-% 		NB if for some reason the mesh/baseflow compatibility was lost, use SF__BaseFlow(baseflow,'Re',Re,'type','PREV') 
+% 		NB if for some reason the mesh/baseflow compatibility was lost, use SF_BaseFlow(baseflow,'Re',Re,'type','PREV') 
 %	    to recontstruct the structures and reposition the files correctly.
 % 
 %       similarly to force recomputation even in the case a file exists (for instance just after adaptmesh) use 

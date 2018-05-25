@@ -78,7 +78,7 @@ savemesh(th,ffdatadir+"mesh.msh");
 {
             ofstream file(ffdatadir+"SF_Init.ff2m"); 
 			file << "Defininition of problem type and geometrical parameters for StabFem. Problem type : " << endl;
-			file << "2D" << endl;
+			file << "2D_VIV" << endl;
 			file << "Format :  (this list may contain geometrical parameters such as domain dimensions, etc..)" << endl;
 			file << "real R real Xmin real Xmax real Rmax" << endl;
 			file <<  RADIUS  << endl << xinlet << endl << xoutlet << endl << yside  << endl;

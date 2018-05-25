@@ -3,7 +3,8 @@
 #	#to the reposity
 #
 #	#Normally these unwanted files are the results folders
-#	#The available space in github is limited, so the reposity only contains the 	#	#necessary files to reproduze the results
+#	#The available space in github is limited, so the reposity only contains the 	
+#	#necessary files to reproduze the results
 #
 #	#Next, the unwanted files are separeted by project, stating with the the SOURCES
 #
@@ -14,6 +15,9 @@
 #...
 
 	#Files from SOURCES_FREEFEM
+#...
+
+	#Files from CYLINDER
 #...
 
 	#Files from CYLINDER_VIV (D.Sabino files)

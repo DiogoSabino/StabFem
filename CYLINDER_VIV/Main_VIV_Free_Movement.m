@@ -15,16 +15,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Mesh creation and convergence using adapt mesh
 %clear all
-%baseflow.mesh.problemtype='2D';
-
 close all
 global ffdataharmonicdir verbosity
 
 run('../SOURCES_MATLAB/SF_Start.m');
-mesh_parameters=[-40 80 40];
+mesh_parameters=[-50 50 50];
 disp_info=[' GENERATING  MESH :[' num2str(mesh_parameters(1)) ':' num2str(mesh_parameters(2)) ']x[0:' num2str(mesh_parameters(3)) ']'];
 disp(' ');  disp(disp_info); disp(' ');
-
+verbosity=10;
 baseflow=SF_Init('Mesh_Cylinder.edp', mesh_parameters);
 baseflow=SF_BaseFlow(baseflow,'Re',1);
 baseflow=SF_BaseFlow(baseflow,'Re',10);
@@ -37,13 +35,13 @@ disp(' ');disp('ADAPTING MESH FOR RE=60 ');disp(' ');
 baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
 
 %plotFF(baseflow,'mesh');%pause(0.1);
-baseflow=SF_BaseFlow(baseflow,'Re',60);
+%baseflow=SF_BaseFlow(baseflow,'Re',60); not needed
 
 % 
 disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 % adaptation du maillage sur un mode propre
-[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
+%%%[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
+%%%[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
 %plotFF(baseflow,'mesh');%pause(0.1);
 %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
 %plotFF(baseflow,'mesh');%pause(0.1);
@@ -52,37 +50,38 @@ disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 %baseflow=SF_Split(baseflow);
 plotFF(baseflow,'mesh');%pause(0.1);
 
+
 %% Validation Phase: Parameters' Definition
 %CHOOSE the Re to test:
-Re=40; verbosity=1;
-baseflow.mesh.problemtype='2D';
-baseflow = SF_BaseFlow(baseflow,'Re',Re); %Do it with problemtype 2D
-%To pass to the eigenvalue problem taking into acount the VIV
-baseflow.mesh.problemtype='2D_VIV'; %verbosity=10;
+Re=40; verbosity=10;
+
+baseflow = SF_BaseFlow(baseflow,'Re',Re);
+
 
 %CHOOSE the m_star to test:
 m_star=10;
 mass=m_star*pi/4;
 %U_star=[11:-0.2:9.5 9.5:-0.05:6.5 6.5:-0.2:3];
-U_star=[3:0.2:6.5 6.5:0.05:9.5 9.5:0.2:11 ];%11:0.1:15
+U_star=[3:0.2:6.5 6.5:0.05:11 ];%11:0.1:15
 %U_star=[3:0.5:6.5 6.5:0.3:9.5 9.5:0.5:11 11:0.5:15];
 
 Stiffness_table=pi^3*m_star./((U_star).^2);
 %sigma_tab = []; mode_tab=[];
 
 %CHOOSE save data version:
-savedata_dir_version='tests_m_different';
+savedata_dir_version='vm50x50x50_ADAPT_4_L5_err_0.01';
+%savedata_dir_version='vm40x80x40ADAPT_1';
 %verbosity=10;
 
 %% Validation Phase: See spectrum if wanted, for discover the shift
 sigma_tab=[]; mode_tab=[];
 %Re and mass are already defined above. Define numbers or tables for:
 STIFFNESS_to_search=Stiffness_table(1); %Use whatever we want 
-RealShift=[-0.06]; 
-ImagShift=[0.733];
+RealShift=[-0.03]; 
+ImagShift=[0.75];
 %ImagShift=[0.7];%ImagShift=[1.5]
-nev=10; %Normally here we don't use just one
-[sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev,'search');
+nev=1; %Normally here we don't use just one
+[baseflow,sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev,'search');
 filename='01spectrum_search';
 Save_Data(Re,m_star,Stiffness_table,U_star,filename,sigma_tab,mode_tab,savedata_dir_version,'spectrum');
 
@@ -114,7 +113,7 @@ filename=[ numbermode 'mode' modename '_spectrum']; %For the saved data
 sigma_tab=[]; mode_tab=[];
 nev=1; %Normally if's just one, but if shift is wrong, it helps put more
 
-[sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,Stiffness_table,mass,nev,'modefollow');
+[baseflow,sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,Stiffness_table,mass,nev,'modefollow');
 Save_Data(Re,m_star,Stiffness_table,U_star,filename,sigma_tab,mode_tab,savedata_dir_version,'spectrum');
 
 

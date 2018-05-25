@@ -83,8 +83,11 @@ cout << " mass = " << MASS << endl;
 real mstar=4*MASS/pi;
 cout << " mstar = " << mstar << endl;
 cout << " STIFFNESS = " << STIFFNESS << endl;
-real Ustar=pi*sqrt(pi*mstar/STIFFNESS);
-cout << " Ustar = " << Ustar << endl;
+if (STIFFNESS !=0){
+	real Ustar=pi*sqrt(pi*mstar/STIFFNESS);
+	cout << " Ustar = " << Ustar << endl;}
+else {cout << " Unable to compute Ustar" << endl;}
+
 cout << " DAMPING = " << DAMPING << endl;
 if (symmetry =="S") {cout << " Symmetric modes" << endl;}
 else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	

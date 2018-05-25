@@ -1,4 +1,4 @@
-function [sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev,stability_analysis)
+function [baseflow,sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev,stability_analysis)
 %%
 switch stability_analysis
     case 'search' %For search "randomly" in the spectrum
@@ -27,16 +27,19 @@ switch stability_analysis
         [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
         set(gcf, 'Position', get(0, 'Screensize'));%img in fullscream during compute
         disp('TOTO1');
-        %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
+        [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
+        plotFF(baseflow,'mesh');
         disp('TOTO2');
         i=1;
+        
         for STIFFNESS=STIFFNESS_to_search
             disp('TOTO3');
             [ev,em] = SF_Stability(baseflow,'shift','cont','nev',nev,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
             disp('TOTO4');
-            if(mod(i,10)==0)
+            if(mod(i,4)==0)
                 disp('TOTO4a');
-                [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
+                [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
+                %plotFF(baseflow,'mesh');
             end
             disp('TOTO5');
             sigma_tab = [sigma_tab ev];

@@ -14,6 +14,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%CE FICHIER CEST LE BORDEL, IL FAUT QUE JE M'EN OCUPE
 
 %% Forced case
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,7 +174,49 @@ plot(Navrose_Re40_mstar10.data(:,1),Navrose_Re40_mstar10.data(:,3),'--*');
 % plot(mstar15_STRU.U_star,imag(mstar15_STRU.sigma_tab).*mstar15_FLUID.U_star/2/pi,'-m','HandleVisibility','off');
 % plot(mstar10_STRU.U_star,imag(mstar10_STRU.sigma_tab).*mstar10_FLUID.U_star/2/pi,'-g','HandleVisibility','off');
 
+%% à la main Comparasion with NAVROSE D33
+%clear all
+%close all
+%RE60 m20
+open('./Final_results_tests_m_different/Re60/mstar20/03modeFLUI.fig');
+%é mais metodico de fazer load do ficheiro mat, do que abrir a figura guardada
 
+mstar20_FLUID=load('./Final_results_v13/Re60/mstar20/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+subplot(2,1,1); hold on;
+plot(mstar20_FLUID.U_star,real(mstar20_FLUID.sigma_tab));
+
+
+Navrose_Re60_mstar20 = importdata('./Navrose_Data/RE60_M20_real.csv');
+subplot(2,1,1); hold on;
+plot(Navrose_Re60_mstar20.data(:,1),Navrose_Re60_mstar20.data(:,2),'--*');
+%legend('FluiMODE with adapt mesh each 10iterations','FluiMODE just 1 initial adapt mesh','FluiMODE Navrose')
+
+%% à la main Comparasion with NAVROSE  D33
+
+
+%Load data to compare
+vm40x80x40_Re40_mstar10_FLUID=load('./Final_results_vm40x80x40/Re40/mstar10/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+vm50x50x50_Re40_mstar10_FLUID=load('./Final_results_vm50x50x50/Re40/mstar10/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+vm40x80x40ADAPT_10_Re40_mstar10_FLUID=load('./Final_results_vm40x80x40ADAPT_10/Re40/mstar10/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+vm40x80x40ADAPT_4_Re40_mstar10_FLUID=load('./Final_results_vm40x80x40ADAPT_4/Re40/mstar10/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+vm50x50x50_ADAPT_4_Re40_mstar10_FLUID=load('./Final_results_vm50x50x50_ADAPT_4/Re40/mstar10/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+
+Navrose_Re40_mstar10 = importdata('./Navrose_Data/RE40_M10_real.csv'); %meter os bons nomes
+
+%Plot the desired data
+figure; hold on
+
+plot(vm40x80x40_Re40_mstar10_FLUID.U_star,real(vm40x80x40_Re40_mstar10_FLUID.sigma_tab));
+plot(vm50x50x50_Re40_mstar10_FLUID.U_star,real(vm50x50x50_Re40_mstar10_FLUID.sigma_tab));
+plot(vm40x80x40ADAPT_10_Re40_mstar10_FLUID.U_star,real(vm40x80x40ADAPT_10_Re40_mstar10_FLUID.sigma_tab));
+plot(vm40x80x40ADAPT_4_Re40_mstar10_FLUID.U_star,real(vm40x80x40ADAPT_4_Re40_mstar10_FLUID.sigma_tab));
+plot(vm50x50x50_ADAPT_4_Re40_mstar10_FLUID.U_star,real(vm50x50x50_ADAPT_4_Re40_mstar10_FLUID.sigma_tab));
+
+%Navrose data
+plot(Navrose_Re40_mstar10.data(:,1),Navrose_Re40_mstar10.data(:,2),'--*'); %ver qual é que é o certo
+
+%title('Amplification Rate: Mass variation for Re=40 (*: Mode FLUID ; °: Mode STRUCTURE)')
+legend('without ADAPTMESH40x80x40','without ADAPTMESH50x50x50','with ADAPT40x80x40 at each 10it','with ADAPT40x80x40 at each 4it','with ADAPT50x50x50 at each 4it','Navrose')
 
 
 
