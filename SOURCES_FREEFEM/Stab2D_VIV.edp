@@ -10,7 +10,7 @@
 //load "BinaryIO"                //////// library to read/write binary files 
 // load "BinaryIO_64"
 //load "UMFPACK64"        ////////  load sparsesolver    
-//load "MUMPS_seq"	//It doesnt work in matlab ?? why?? it's for arpack
+load "MUMPS_seq"
 
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
@@ -20,7 +20,7 @@ real zero = 0;
 complex SHIFT;
 string symmetry="a",iadjoint="a",formulation="a";
 int nev,ncv; // number of eigenvalues to compute ; Krylov Basis //What is this ncv?
-real eps=1e-25; 	
+real eps=1e-30;
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 ///////////    Parameters    ////////////////////////////////////////////////////	
@@ -62,7 +62,7 @@ while(exitt==false)
 
 	cout << " Enter nev ? (will use simple shift-invert if nev = 1) " << endl;
 	cin >> nev ;
-	ncv = 4*nev; ///// Krylov Basis																	//UNDERSTAND THIS
+	ncv = 4*nev; ///// Krylov Basis		//UNDERSTAND THIS
 
 	formulation="a";
 	while(formulation!="A"&&formulation!="R"&&formulation!="restart")
@@ -80,8 +80,12 @@ cout << " ### PARAMETERS SELECTED : " << endl;
 cout << " Re = " << Re<< endl;
 cout << " shift = " << SHIFT << endl;
 cout << " mass = " << MASS << endl;
-cout << " DAMPING = " << DAMPING << endl;
+real mstar=4*MASS/pi;
+cout << " mstar = " << mstar << endl;
 cout << " STIFFNESS = " << STIFFNESS << endl;
+real Ustar=pi*sqrt(pi*mstar/STIFFNESS);
+cout << " Ustar = " << Ustar << endl;
+cout << " DAMPING = " << DAMPING << endl;
 if (symmetry =="S") {cout << " Symmetric modes" << endl;}
 else if (symmetry =="A") {cout << " Antiymmetric modes" << endl;}	
 else if (symmetry =="N") {cout << " No symmetry axis" << endl;};	
@@ -155,8 +159,7 @@ matrix<complex> B =
 		[ 	[BFluid, 0,	0,	0],
 			[0,	1,	0,	0],
 			[0,	0,	1,	0],
-			[0,	0,	0,	eps]	//A VOIR SI ON A BESOIN D'UN TERME
-							//DE STABILIZATION
+			[0,	0,	0,	eps]	//TERME DE STABILIZATION
 		];
 set(B,solver=sparsesolver);
 ////////////////////////////////////////////////////////////////////////////////////
@@ -166,11 +169,11 @@ set(B,solver=sparsesolver);
 //varf for generalized eigenvalue problem: 
 varf   LNSE ([ux,uy,up],[vx,vy,q]) =
 	int2d(th)( 
-		-2*nu*(D(u):D(v))
-		+ up*q*(eps) 
-		+ up*div(v)
-		+ div(u)*q
-		- Conv(u,Ub,v)
+		- Conv(u,Ub,v)		//Terme 2
+		+ up*div(v)		//Terme 3
+		-2*nu*(D(u):D(v))	//Terme 4
+		+ div(u)*q		//Terme 5
+		+ up*q*(eps) 		//Terme Stabilization
              )
 	+ int2d(th)( -SHIFT*(ux*vx+uy*vy+up*q*eps) ) //For taking into acound the shift in B matrix
  	+BoundaryconditionsLNSE(u,v,formulation);
@@ -199,7 +202,7 @@ OPff=LNSE(XXMh,XXMh,solver=sparsesolver);
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix Afv for VIV cylinder
 
-varf afv([vx,vy,q],[ux,uy,up]) = Portance(u,"A"); //We seek just the A modes, for the linear analysis
+varf afv([vx,vy,q],[ux,uy,up]) =Portance(u,"A"); //We seek just the A modes, for the linear analysis
 	// effet du fluide sur la vitesse v ; correspond à la force verticale
 	// WARNING : c'est un vecteur LIGNE, il faut intervertir les inconnues et les fcns tests !
 
@@ -213,10 +216,13 @@ complex[int] Afv = afv(0,XXMh); // maniere de construire un vecteur COLONNE qui 
 complex[int] Avf(ux[].n); //Create Avf with the size of ux
 
 varf avbfluid([ux,uy,up],[vx,vy,q]) = //utiliser les fonctions u comme fonctions testes
-		int1d(th,bcwall)(-vy*TGVCL*(formulation=="A"))		//plus le terme AAA de interaction sur Aff 
-		+int1d(th,bcinlet,bclat) (vy*TGVCL*(formulation=="R"));	//plus le terme BBB de interaction sur Aff
- 		//Term used in formulation A-A: it doesn't work for these cases:	
-		//-int2d(th)(vx*dy(Ubx)*(formulation=="R")+vy*dy(Uby)*(formulation=="R")); 	
+		int1d(th,bcwall)(-vy*TGVCL*(formulation=="A"))		//plus le terme AAA de interaction sur OPff 
+		+int1d(th,bcinlet,bclat) (vy*TGVCL*(formulation=="R"))	//plus le terme BBB de interaction sur OPff
+		+int2d(th)( ( vx*dy(Ubx)+vy*dy(Uby) )*(formulation=="A"));//The correct
+		//-int2d(th)(vy*dx(Ubx)*(formulation=="A")+vy*dy(Uby)*(formulation=="A"));
+		//+int2d(th)(vy*dy(Ubx)*(formulation=="A")+vy*dy(Uby)*(formulation=="A"));
+		//-int2d(th)(vx*dy(Ubx)*(formulation=="R")+vy*dy(Uby)*(formulation=="R"));
+		//- int2d(Th)(v1*dy(Ub1)+v2*dy(Ub2));//Old code:For the R formulation.. wrong...
 
 Avf = avbfluid(0,XXMh);
 
@@ -224,7 +230,7 @@ Avf = avbfluid(0,XXMh);
 complex[int] Aaf(ux[].n);
 
 varf afbfluid([ux,uy,up],[vx,vy,q]) =
-		int2d(th)(vy*(formulation=="R"));
+		int2d(th)(-vy*(formulation=="R")); // attention au signe, c'est un moins
 
 Aaf = afbfluid(0,XXMh); 
 
@@ -347,7 +353,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 		cout << 1/zero;
 	};*/
 
-	int itmax = 100;
+	int itmax = 200;
 	complex sigma0 = 1e6;
 	real err = 1e6;
 	real errmax=1e-6;
@@ -359,7 +365,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	for (i=0; ((err>errmax)&&(i<itmax)); i++) 
 	{ // ITERATION LOOP
 		ShiftAndInvertVIV(OP,B,u0,b0,mode,EVCalculated[0],SHIFT,sigma0,err)
-cout << " Composantes solide du mode OUTSIDE MACRO : " << b0Y << " ; " << b0V << " ; " << b0A << endl;
+		cout << " Composantes solide du mode OUTSIDE MACRO : " << b0Y << " ; " << b0V << " ; " << b0A << endl;
 		cout << " iteration " << i+1 << " : " << endl;
 		cout << " estimated eigenvalue sigma = " << EVCalculated[0] << endl;
 	}; // END ITERATION LOOP
@@ -369,8 +375,6 @@ cout << " Composantes solide du mode OUTSIDE MACRO : " << b0Y << " ; " << b0V <<
 	//modeY = 1/NormU[].max*modeY;	
 	//modeV = 1/NormU[].max*modeV;
 	//modeA = 1/NormU[].max*modeA;
-
-
 
 	/*if(directadjoint==2){sigma=conj(sigma);};  */
  	// renormalization by modeV

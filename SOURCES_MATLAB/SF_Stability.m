@@ -273,8 +273,8 @@ end
         h=plot(real(shift),imag(shift),'o');hold on;
         for ind = 1:length(eigenvalues)
             h=plot(real(eigenvalues(ind)),imag(eigenvalues(ind)),'*');hold on;
-            %text_to_put=[num2str(baseflow.Re) ',' num2str(p.Results.STIFFNESS, '%d') ];
-            text_to_put=[num2str(p.Results.STIFFNESS, '%.2f') ];
+            text_to_put=[num2str(baseflow.Re, '%.1f') ',' num2str(p.Results.STIFFNESS, '%.2f') ];
+            %text_to_put=[num2str(p.Results.STIFFNESS, '%.2f') ];
             text(real(eigenvalues(ind)),imag(eigenvalues(ind)),text_to_put); %DIOGO ICI
             %%%%  plotting command for eigenmodes and callback function
             tt=['eigenmodeP= importFFdata(bf.mesh, ''' ffdatadir '/Eigenmode' num2str(ind) '.ff2m''); ' ...

@@ -32,7 +32,7 @@ string ffdataharmonicdir=ffdatadir+"DATA_SF_CYLINDER/";
 ////////////////////////////////////////////////////////////////////////////////////////////
 string symmetryBaseFlow = "S"; // symmetry propery of base flow :; set "S" if domain is hzalf domain and "N" if it is full domain
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
-real TGVCL = 1e25;
+real TGVCL = 1e30;
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 //GENERAL MACROS apres avoir faire proprement le Stab2D_VIV
@@ -92,14 +92,15 @@ macro BoundaryconditionsLNSE(u,v,formulation)/*For the free movement problem*/
 	+int1d(th,bcwall)(u#y*v#y*TGVCL*(formulation=="R") )
 
 	+int1d(th,bcwall)(u#x*v#x*TGVCL) /*equivalent: on(bcwall, ux=0);Dont put the bcinlet,bclat because it introduces errors, and its useless if domain is big enough*/
-	+int1d(th,bcaxis)(u#x*v#x*TGVCL); /*Valid for the 2 formulations
-	+ int1d(th,bcaxis)(up*q*1e30);don't need*/
+	+int1d(th,bcaxis)(u#x*v#x*TGVCL);/*Valid for the 2 formulations*/
+	/*+int1d(th,bcaxis)(u#p*q*TGVCL);don't need*/
 //EOM
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 // HERE ARE SOME MACROS WHICH ARE USEFUL FOR POST-PROCESSING WITH A 2D FLOW OVER A BLUFF BODY
+/*bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6*/
 
 macro TraineeP(u,symmetry)
 	int1d(th,2,21,22,23)(
@@ -107,7 +108,6 @@ macro TraineeP(u,symmetry)
 	*u#p*N.x
 	)
 //EOM
-
 macro TraineeV(u,symmetry)
 	-int1d(th,2,21,22,23)(
 	( 1*(symmetry=="N") + 2*(symmetry=="S") )
@@ -117,7 +117,6 @@ macro TraineeV(u,symmetry)
 macro Trainee(u,symmetry)
 	TraineeP(u,symmetry)+TraineeV(u,symmetry)
 //EOM
-
 macro Portance(u,symmetry)
 	int1d(th,2,21,22,23)(
 	( 1*(symmetry=="N") + 2*(symmetry=="A") )
@@ -127,6 +126,11 @@ macro Portance(u,symmetry)
 	( 1*(symmetry=="N") + 2*(symmetry=="A") )
         *2*nu*( [0,1]'*(Dbis(u)*[N.x,N.y])  )
 	)
+//EOM
+macro PortanceTEST(u,symmetry)   
+	int1d(th,2,21,22,23)(u#p*N.y*  (1*(symmetry=="N")+2*(symmetry=="A"))   )
+	-int1d(th,2,21,22,23)(nu*2*dy(u#y)*N.y*(1*(symmetry=="N")+2*(symmetry=="A"))+nu*(dx(u#y)+dy(u#x))*N.x*(1*(symmetry=="N")+2*(symmetry=="A")))
+	
 //EOM
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
