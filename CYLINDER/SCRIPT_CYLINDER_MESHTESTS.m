@@ -5,7 +5,7 @@
 % CHAPTER 0 : set the global variables needed by the drivers
 
 run('../SOURCES_MATLAB/SF_Start.m');
-verbosity=0;
+verbosity=2;
 figureformat='png'; AspectRatio = 0.56; % for figure
 
 
@@ -24,10 +24,7 @@ baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_Adapt(baseflow,'Hmax',10);
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
@@ -65,16 +62,12 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
 disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
-
 
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
@@ -95,53 +88,6 @@ figure(81);
 plot(Re_Range,imag(lambda_branch));
 hold on;
 pause(0.1);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp(' ' );
-disp('### 2bis : SPLIT');
-disp(' ' )
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-baseflow=SF_Split(baseflow);
-
-baseflow=SF_BaseFlow(baseflow,'Re',40);
-[ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
-
-disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
-disp(['A : ' num2str(baseflow.mesh.deltaA)]);
-disp(['B : ' num2str(baseflow.mesh.deltaB)]);
-disp(['C : ' num2str(baseflow.mesh.deltaC)]);
-disp(['D : ' num2str(baseflow.mesh.deltaD)]);
-disp(' ' );
-
-
-
-
-baseflow=SF_BaseFlow(baseflow,'Re',40);
-[ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
-Re_Range = [40 : 5: 100];
-Drag_tab = []; Lx_tab = [];lambda_branch=[];
-    for Re = Re_Range
-        baseflow = SF_BaseFlow(baseflow,'Re',Re);
-        Drag_tab = [Drag_tab,baseflow.Cx];
-        Lx_tab = [Lx_tab,baseflow.Lx];
-        [ev,em] = SF_Stability(baseflow,'nev',1,'shift','cont');
-        lambda_branch = [lambda_branch ev];
-    end    
-figure(80);    
-plot(Re_Range,real(lambda_branch));
-hold on;
-figure(81);
-plot(Re_Range,imag(lambda_branch));
-hold on;
-pause(0.1);
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
@@ -156,17 +102,12 @@ baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 [ev,em] = SF_Stability(baseflow,'shift','prev','type','D');
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
 disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
-
-
 
 
 % create figure for this mode;
@@ -209,10 +150,7 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 baseflow=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
@@ -251,16 +189,12 @@ baseflow=SF_BaseFlow(baseflow,'Re',100);
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
 disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
-
 
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
@@ -299,16 +233,12 @@ baseflow=SF_Adapt(baseflow,'Hmax',10);
 baseflow=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.01);
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
 disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
-
 
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
@@ -332,7 +262,7 @@ pause(0.1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
-disp('### 7 : VERY LARGE DOMAIN');
+disp('### 7 : VERY LARGE MESH');
 disp(' ' );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -352,16 +282,12 @@ baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 
 
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
 disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
-
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
@@ -385,7 +311,7 @@ pause(0.1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp(' ' );
-disp('### 8 : SMALLER DOMAIN');
+disp('### 8 : SMALLER MESH');
 disp(' ' );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -401,18 +327,14 @@ baseflow=SF_BaseFlow(baseflow,'Re',60);
 [ev,em] = SF_Stability(baseflow,'shift',0.04+.72i,'type','S');
 baseflow=SF_Adapt(baseflow,em,'Hmax',10);
 
+
 disp(' ');
-disp('### Mesh information :');
-disp([' np = ', num2str(baseflow.mesh.np), '  and ndof = ' ,num2str(baseflow.mesh.Ndof)]);
-disp([' Max and min grid size : '  num2str(baseflow.mesh.deltamin) ' ; ' num2str(baseflow.mesh.deltamax)]);
-disp('# Grid size at point A,B,C,D : ');
+disp('### Mesh grid size at point A,B,C,D : ');
 disp(['A : ' num2str(baseflow.mesh.deltaA)]);
 disp(['B : ' num2str(baseflow.mesh.deltaB)]);
 disp(['C : ' num2str(baseflow.mesh.deltaC)]);
 disp(['D : ' num2str(baseflow.mesh.deltaD)]);
 disp(' ' );
-
-
 
 baseflow=SF_BaseFlow(baseflow,'Re',40);
 [ev,em] = SF_Stability(baseflow,'shift',-0.03+.72i,'type','S');
@@ -439,7 +361,7 @@ pause(0.1);
 
 figure(80);
 xlabel('Re');ylabel('$\sigma$','Interpreter','latex');
-legend('Adapt to BF', 'Ref', 'Split', 'Adapt to mode', 'Err=0.005', 'Adapt for Re=100','Slip BC','[-80,240]x[0,80]','[-20,40]x[0,20]');
+legend('Adapt to BF', 'Ref', 'Adapt to mode', 'Err=0.005', 'Adapt for Re=100','Slip BC','[-80,240]x[0,80]','[-20,40]x[0,20]');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*.8;set(gcf,'Position',pos); % resize aspect ratio
 set(gca,'FontSize', 16);
 legend('Location','SouthEast')
@@ -448,7 +370,7 @@ saveas(gca,'Cylinder_Sigma_Re_TESTMESHES',figureformat);
 figure(81);
 xlabel('Re');ylabel('St');
 box on; pos = get(gcf,'Position'); pos(4)=pos(3)*.8;set(gcf,'Position',pos); % resize aspect ratio
-legend('Adapt to BF', 'Ref', 'Split', 'Adapt to mode', 'Err=0.005', 'Adapt for Re=100','Slip BC','[-80,240]x[0,80]','[-20,40]x[0,20]');
+legend('Adapt to BF', 'Ref', 'Adapt to mode', 'Err=0.005', 'Adapt for Re=100','Slip BC','[-80,240]x[0,80]','[-20,40]x[0,20]');
 legend('Location','South')
 set(gca,'FontSize', 18);
 saveas(gca,'Cylinder_Strouhal_Re_TESTMESHES',figureformat);
