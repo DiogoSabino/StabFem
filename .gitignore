@@ -8,7 +8,7 @@
 #
 #	#Next, the unwanted files are separeted by project, stating with the the SOURCES
 #
-#	(last edit: 25 may 2018)
+#	(last edit: 29 may 2018)
 ####################################################################################
 
 	#Files from SOURCES_MATLAB
@@ -18,7 +18,8 @@
 #...
 
 	#Files from CYLINDER
-#...
+CYLINDER/Cylinder_*
+CYLINDER/WORK/
 
 	#Files from CYLINDER_VIV (D.Sabino files)
 CYLINDER_VIV/Final_results*
