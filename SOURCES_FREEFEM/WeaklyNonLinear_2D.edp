@@ -19,15 +19,12 @@
 //      if Newton iteration diverges, SelfConsistentMode.txt is not generated and "iter" parameter in Eigenmode.ff2m is -1.
 //
 
-
-
-//load "MUMPS_seq"
+load "MUMPS_seq"
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 
 /////////////////////////////////////////////////////////////////////////////////
-
-
+/// Display Menu   //////////////////////////////////////////////////////////////
 string normalisation;
 cout << " Normalisation choice ?  [none, L, E or V] " << endl << "         ( V = Velocity at on point (S&L) ; E = Energy (Mantic-lugo), L = lift force )" << endl;
 cin >> normalisation ;
@@ -45,17 +42,13 @@ cout << " Give a value of Reynolds number to generate 'guess'  fields for selfco
 cin >> Recheck;
 cout << " --> " << Recheck << endl;
 
-
-
-mesh th=readmesh(ffdatadir+"mesh.msh");                    ///// Read mesh
+/////////////////////////////////////////////////////////////////////////////////
+/// Reading Mesh   //////////////////////////////////////////////////////////////
+mesh th=readmesh(ffdatadir+"mesh.msh");
 //int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
 
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////
-
+/// Problem Variables   /////////////////////////////////////////////////////////
 fespace Xh(th,P2);             ////// f.e. space for vel.
 fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
@@ -69,86 +62,96 @@ XXMh<complex> [u1ACx,u1ACy,u1ACp];    //Conjugate of Adjoint
 XXMh [uepsx,uepsy,uepsp]; // base flow correction
 XXMh<complex> [u20x,u20y,u20p], [u22x,u22y,u22p];    //terms |A|^2 and A^2
 
-
 XXMh [vx,vy,vp]; // test functions
 XXMh<complex> [vCx,vCy,vCp]; // test functions
 
 real Re, ReC, omegaC, sigmaC;
-
-     
+  
 ////////////////////////////////////////////////////////////////////////////////
+/// MACROS /////////////////////////////////////////////////////////////////////
+macro div(u) (dx(u#x)+dy(u#y))
+//EOM macro for divergence 
 
-macro div(u) (dx(u#x)+dy(u#y))//EOM macro for divergence 
 macro Conv(ua,ub,v) ( 
               ((ua#x*dx(ub#x)+ua#y*dy(ub#x))+(ub#x*dx(ua#x)+ub#y*dy(ua#x)))*v#x 
             + ((ua#x*dx(ub#y)+ua#y*dy(ub#y))+(ub#x*dx(ua#y)+ub#y*dy(ua#y)))*v#y 
-                    ) //EOM macro for mutual convection operator
+                    ) 
+//EOM macro for mutual convection operator
+
 macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] 
 //EOM macro for rate-of-deformation tensor
 
 macro NS(nu,u,v) 
-		(
-		 -2*nu*(D(u):D(v))
+	(
+	-2*nu*(D(u):D(v))
         + u#p*div(v)
         + v#p*div(u)
         - .5*Conv(u,u,v)
         )
 //EOM
      
-macro NSL(nu,U,u,v) 
-		(
-		-2*nu*(D(u):D(v))
-        + u#p*div(v)
-        + div(u)*v#p
-        - Conv(U,u,v)
-        )
+//macro NSL(nu,U,u,v) 
+//	(
+//	-2*nu*(D(u):D(v))
+//        + u#p*div(v)
+//        /*+ div(u)*v#p*/
+//        - Conv(U,u,v)
+//        )
 //EOM
+macro NSL(nu,U,u,v) 
+	(
+        - Conv(U,u,v)
+	-2*nu*(D(u):D(v))
+        + u#p*div(v)
+	)
+//EOM
+
+
         
 macro Boundaryconditions(u,v,symmetry)
-	           on(bcinlet,u#x=0.0,u#y=0.0) 
-             + on(bcwall,u#x=0.0,u#y=0.0)
-             + int1d(th,bcaxis)(u#x*v#x*1e30*(symmetry=="A")+u#y*v#y*1e30*(symmetry=="S"))
-// 
+	on(bcinlet,u#x=0.0,u#y=0.0) 
+	+ on(bcwall,u#x=0.0,u#y=0.0)
+	+ int1d(th,bcaxis)(u#x*v#x*1e30*(symmetry=="A")+u#y*v#y*1e30*(symmetry=="S"))
+//EOM
 
 macro Lift(nu,u1,u2,p)   
 	(
 	int1d(th,2,21,22,23)(2*p*N.y)
 	+int1d(th,2,21,22,23)( -2*nu*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
 	)
-//
+//EOM
+
 macro Drag(nu,u1,u2,p)   
 	(
 	int1d(th,2,21,22,23)(2*p*N.x)
 	+int1d(th,2,21,22,23)( -2*nu*(2*dx(u1)*N.x+(dx(u2)+dy(u1))*N.y))
 	)
-//
+//EOM
 
-
-       
-
-
-{
+////////////////////////////////////////////////////////////////////////////////
+/// Reading BF and Mode ////////////////////////////////////////////////////////
+{//Baseflow
 ifstream cbin(ffdatadir+"BaseFlow.txt");
 cbin >> ubx[] >> Re;
 cout << "Drag of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 }
-real epsilonTT = sqrt(1/Re-1/Recheck); // warning may fail if subcritical ! to be fixed in due time
-
-{
+real epsilonTT = sqrt(1/Re-1/Recheck);	// warning may fail if subcritical ! to be fixed in due time
+					// Used in SC model
+{//Eigenmode
 cout << "Reading Eigenmode.txt" << endl;
 ifstream cbin(ffdatadir+"Eigenmode.txt");
 cbin >> u1x[] >> ReC >> sigmaC >> omegaC; 
 }
 
-
-{
+{//Eigenmode Adjoint
 cout << "Reading EigenmodeA.txt" << endl;
 ifstream cbin(ffdatadir+"EigenmodeA.txt");
 cbin >> u1Ax[] ; 
 }
 u1ACx[] = conj(u1Ax[]);
 
-
+////////////////////////////////////////////////////////////////////////////////
+/// Reading BF and Mode ////////////////////////////////////////////////////////
 
 
 if(normalisation=="none")
@@ -163,7 +166,7 @@ else if(normalisation=="L")
 		cout << "Fy before renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = Liftguess/modenorm*u1x[]; 
-			cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
+		cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
 	}	
 else if(normalisation=="E")
 		{
@@ -180,7 +183,7 @@ else if(normalisation=="E")
 		}
 else if(normalisation=="V")
 		{
-			cout << " -> Normalisation of mode based on velocity at one point (Sipp & lebedev convention)  " << endl;
+		cout << " -> Normalisation of mode based on velocity at one point (Sipp & lebedev convention)  " << endl;
 		complex Vpoint = u1y(1,0); // convention of Sipp & Lebedev
 		cout << "Energy before renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
@@ -193,27 +196,25 @@ u1Cx[] = conj(u1x[]);
 
 real nu = 1/Re;
 
-
-/////////////////////////////////////////////////////////////////////////////////
-//////// ORDER 2
-
+////////////////////////////////////////////////////////////////////////////////
+///   Order 2  /////////////////////////////////////////////////////////////////
 cout << " Solving problems at order 2 :" << endl;
 
-
-//Calcul de U_2^1
+//Computation of q_{epsilon} (U_2^1)
 solve varfEpsilon([uepsx,uepsy,uepsp],[vx,vy,vp]) =
   	 int2d(th)( NSL(nu,ub,ueps,v) )
-	+ int2d(th) (2*(D(ub):D(v))) //Diogo: est-ce qu'il y a un erreur de signe ?
+	+ int2d(th) (2*(D(ub):D(v))) 
     + Boundaryconditions(ueps,v,"S")			
-	;
-//Calcul de U_2^{|A|^2}
-solve varf20([u20x,u20y,u20p],[vCx,vCy,vCp]) = //Diogo:  Porquoi on utilise des fonctions test differents ?
+	; //Diogo: signes ok, manque voir BC
+
+//Computation of q_{2,0} (U_2^{|A|^2})
+solve varf20([u20x,u20y,u20p],[vCx,vCy,vCp]) = //Diogo: Porquoi on utilise des fonctions test differents ?
   	 int2d(th)( NSL(nu,ub,u20,vC) )
 	- int2d(th)( Conv(u1,u1C,vC) ) 
     + Boundaryconditions(u20,vC,"S")			
-	;
+	; 
 
-//Calcul de U_2^{A^2}	
+//Computation of q_{2,2} (U_2^{A^2})	
 solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) =
   	 int2d(th)( NSL(nu,ub,u22,vC) ) -int2d(th)(2i*omegaC*(u22x*vCx+u22y*vCy) )
 	- int2d(th)(.5*Conv(u1,u1,vC) )  
@@ -231,11 +232,9 @@ cout << " Fx associated to order epsilon correction : " << Fxeps2 << endl;
 cout << " Fx associated to order |A|^2  : " << FxA20 << endl;
 cout << " Fx associated to order A^2  : " << FxA22 << endl;
 
-/////////////////////////////////////////////////////////////////////////////////
-/////// ORDER 3
+////////////////////////////////////////////////////////////////////////////////
+///   Order 3  /////////////////////////////////////////////////////////////////
 cout << " Computing coeffs at order 3 :" << endl;
-
-
 
 complex Cn;
 
@@ -256,16 +255,12 @@ else if(AdjointType=="dA")
 //      which is at the end equivalent to the continous product. Hence I keep
 Cn = int2d(th)(u1ACx*u1x+u1ACy*u1y);
 // FLAVIO WHAT DO YOU THINK ???
-
-}
-;
-
-
-
+};
 
 cout << " Cn : " << Cn << endl;
 
-
+////////////////////////////////////////////////////////////////////////////////
+///   Landau equation coeffs.  /////////////////////////////////////////////////
 complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC)));
 
 complex Nu0 = 1/Cn*int2d(th)(Conv(u20,u1,u1AC));

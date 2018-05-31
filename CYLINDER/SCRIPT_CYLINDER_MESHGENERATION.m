@@ -12,10 +12,8 @@
 
 % CHAPTER 0 : set the global variables needed by the drivers
 
+function [bf]= SCRIPT_CYLINDER_MESHGENERATION()
 run('../SOURCES_MATLAB/SF_Start.m');
-figureformat='png'; AspectRatio = 0.56; % for figures
-
-
     
 bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
 bf=SF_BaseFlow(bf,'Re',1);
@@ -31,3 +29,4 @@ bf.xlim = [-2 4]; bf.ylim=[0,3];
 plotFF(bf,'ux');
 
 
+end

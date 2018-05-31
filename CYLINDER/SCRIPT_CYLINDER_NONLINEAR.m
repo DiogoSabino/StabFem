@@ -1,67 +1,55 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  Instability of the wake of a cylinder with STABFEM  
 %
-%  this script demonstrates the main fonctionalities of StabFem for the
+%  This script demonstrates the main fonctionalities of StabFem for the
 %  reference case of the wake of a cylinder.
 %  1/ Generation of an adapted mesh 
-
+%
 %  3/ Stability curves St(Re) and sigma(Re) for Re = [40-100]
 %  4/ Determination of the instability threshold and Weakly-Nonlinear
 %  analysis
 %  5/ Harmonic-Balance for Re = REc-100
 %  6/ Self-consistent model for Re=100
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% CHAPTER 0 : set the global variables needed by the drivers
+%% CHAPTER 0 & 1: Set the global variables needed by the drivers
+%                 and Computing the mesh with adapt procedure
 
-
-run('../SOURCES_MATLAB/SF_Start.m');
 figureformat='png'; AspectRatio = 0.56; % for figures
 verbosity = 10; % to follow what's going on...
 
-%##### CHAPTER 1 : COMPUTING THE MESH WITH ADAPTMESH PROCEDURE
-
-
 if(exist('mesh_completed')==0)
-disp('generation of a mesh : ')    
-bf=SF_Init('Mesh_Cylinder.edp',[-40 80 40]);
-bf=SF_BaseFlow(bf,'Re',1);
-bf=SF_BaseFlow(bf,'Re',10);
-bf=SF_BaseFlow(bf,'Re',60);
-bf=SF_Adapt(bf,'Hmax',5);
-bf=SF_Adapt(bf,'Hmax',5);
-disp(' ');
-disp('mesh adaptation to SENSITIVITY : ')
-[ev,em] = SF_Stability(bf,'shift',0.04+0.76i,'nev',1,'type','S');
-[bf,em]=SF_Adapt(bf,em,'Hmax',10);
-mesh_completed = 1;
+    [bf]=SCRIPT_CYLINDER_MESHGENERATION();
+    mesh_completed = 1;
+else
+    run('../SOURCES_MATLAB/SF_Start.m');
 end
 
-
-%%% CHAPTER 2 : determining instability threshold
+%% CHAPTER 2 : Determining the instability threshold
 
 if(exist('Rec')==1)
     disp('INSTABILITY THRESHOLD ALREADY COMPUTED');
     bf=SF_BaseFlow(bf,'Re',Rec);
     [ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
-else 
-%%% DETERMINATION OF THE INSTABILITY THRESHOLD
-disp('COMPUTING INSTABILITY THRESHOLD');
-bf=SF_BaseFlow(bf,'Re',50);
-[ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','D');
-[bf,em]=SF_FindThreshold(bf,em);
-Rec = bf.Re;  Fxc = bf.Fx; 
-Lxc=bf.Lx;    Omegac=imag(em.lambda);
-%[ev,em] = SF_Stability(bf,'shift',em.lambda,'type','S','nev',1);
+else
+    % DETERMINATION OF THE INSTABILITY THRESHOLD
+    disp('COMPUTING INSTABILITY THRESHOLD');
+    bf=SF_BaseFlow(bf,'Re',50);
+    [ev,em] = SF_Stability(bf,'shift',+.75i,'nev',1,'type','D');
+    [bf,em]=SF_FindThreshold(bf,em);
+    Rec = bf.Re;  Fxc = bf.Fx;
+    Lxc=bf.Lx;    Omegac=imag(em.lambda);
 end
 
-
-
-
-%%% CHAPTER 3 : computation of weakly nonlinear expansion
+%% CHAPTER 3 : Computation of weakly nonlinear expansion
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.); % Here to generate a starting point for the next chapter
 
-%%% PLOTS of WNL predictions
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L');
+% Starting point generated for next chapter with 'Retest'
+% Norm chosen with 'Normalization': 'L' (lift)
+
+% PLOTS of WNL predictions
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
@@ -70,7 +58,7 @@ Fy_WNL = wnl.Fyeps*2*real(sqrt(epsilon2_WNL));
 omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) ...
                   - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
 Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
-                 + real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL*(epsilon2_WNL>0) ;
+                 + real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL.*(epsilon2_WNL>0) ;
 
 figure(20);hold on;
 plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--','LineWidth',2);hold on;
@@ -80,11 +68,11 @@ plot(Re_WNL,omega_WNL/(2*pi),'g--','LineWidth',2);hold on;
 xlabel('Re');ylabel('St');
 
 figure(22);hold on;
-plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on;
+plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on; %DIOGO: doute ici
 xlabel('Re');ylabel('Cx');
 
 figure(24); hold on;
-plot(Re_WNL,Fy_WNL,'g--','LineWidth',2);
+plot(Re_WNL,Fy_WNL,'g--','LineWidth',2); % Il manque dire que c'est la partie réelle
 xlabel('Re');ylabel('Cy')
 
 figure(25);hold on;
@@ -95,8 +83,8 @@ pause;
 
 
 
-%%% CHAPTER 5 : SELF CONSISTENT
-
+%% CHAPTER 5 : SELF CONSISTENT
+if(1==0)
 if(exist('HB_completed')==1)
     disp('SC quasilinear model on the range [Rec , 100] already computed');
 else
@@ -235,5 +223,5 @@ saveas(gca,'Cylinder_SC100_EnergySigma',figureformat);
 
 
 %save('Results_Cylinder.mat');
-
+end
 
