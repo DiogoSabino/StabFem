@@ -61,7 +61,7 @@ omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) ...
                   - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
 Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
                  + wnl.Fxeps20*epsilon2_WNL.*(epsilon2_WNL>0);
-Fx_WNL=Fx_WNL*2; %PORQUOI J'ai besoin de faire ça ici ?
+Fx_WNL=Fx_WNL*2; 
 % PLOTS of WNL predictions
 colors=['g--';'b--';'r--']; j=3;
 color_used=colors(j,:);
@@ -78,7 +78,7 @@ plot(Re_WNL,Fx_WNL,color_used,'LineWidth',2);hold on; %DIOGO: petite doute ici
 xlabel('Re');ylabel('Cx');
 
 figure(24); hold on;%Do real(Fy_WNL), to delete truncation errs. at 10^-17:
-plot(Re_WNL,real(Fy_WNL),color_used,'LineWidth',2);
+plot(Re_WNL,abs(Fy_WNL),color_used,'LineWidth',2);
 xlabel('Re');ylabel('Cy')
 
 figure(25);hold on;

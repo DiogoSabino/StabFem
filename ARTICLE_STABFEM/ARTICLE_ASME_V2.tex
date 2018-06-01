@@ -534,47 +534,44 @@ instability mechanism acts.
 
 
 %For $Re\right>Re_c$, the linear stability analysis based on the {\em base flow} does not allow to predict the properties of the limit cycle; in particular the Strouhal number is substantially underestimated. %It has been shown that investigating the stability properties of the {\em mean flow} obtained by averaging time-marching solution gives a better accordance. Attempts to on a rigourous basis  
-In the past decade, efforts have been devoted to extend the range of validity of global approaches into the nonlinear regime for $Re>Re_c$, with the double objective to describe the properties of the limit cycle reached after saturation and to derive amplitude equations describing the transitent dynamics towards this cycle. The two main milestones in this direction is the {\em weakly nonlinear model}  (WNL) of Sipp \& Lebedev \cite{SippLebedev} and the {\em self-consistent model} (SC) of Manti\v{c}-Lugo et al \cite{MLugo2014}.
- {\color{blue} In this review, we will address only the first of the two questions, namely description of the saturated cycle, and leave aside the question of transient dynamics. We will successively review the two aforementioned models, in a simplified formulation devoted to describe only the saturated cycle. We also provide a simple implementation of these two models. Finally, in line with the previous section, we will again illustrate with results obtained for the wake of a cylinder.
+In the past decade, efforts have been devoted to extend the range of validity of global approaches into the nonlinear regime for $Re>Re_c$, with the double objective to describe the properties of the limit cycle reached after saturation and to derive amplitude equations describing the transitent dynamics towards this cycle. The two main milestones in this direction {\color{red} are} the {\em weakly nonlinear model}  (WNL) of Sipp \& Lebedev \cite{SippLebedev} and the {\em self-consistent model} (SC) of Manti\v{c}-Lugo et al \cite{MLugo2014}.
+ {\color{blue} In this review, we will address only the first of the two questions, namely {\color{red} the} description of the saturated cycle, and leave aside the question of transient dynamics. We will successively review the two aforementioned models, in a simplified formulation devoted to describe only the saturated cycle. We also provide a simple implementation of these two models. Finally, in line with the previous section, we will again illustrate with results obtained for the wake of a cylinder.
  }
  
  
 
-\paragraph{General definitions in the nonlinear régime}
+\paragraph{General definitions in the nonlinear r{\color{red}e}gime}
  
-In this part, to simplify the notations, we symbolically write the Navier-Stokes equations, as $\partial_t {\bf u} = {\cal 
-NS} ({\bf u};p)$, therefore dropping the systematic reference to the 
-incompressibility constraint and associated pressure field. 
+In this part, to simplify the notations, we symbolically write the Navier-Stokes equations, as {\color{red}$\partial_t {\bf u} = {\cal NS} ({\bf u})$}, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. 
 
-In the nonlinear régime, the {\em base flow} introduced in the linear theory is not directly accessible and no longer relevant, especially when the oscillation amplitudes become large. 
-Instead, we will define a {\em mean flow}  as the time-average  of the flow :
+In the nonlinear r{\color{red}e}gime, the {\em base flow} introduced in the linear theory is not directly accessible and no longer relevant, especially when the oscillation amplitudes become large. 
+Instead, {\color{red} we taken the decomposition ${\bf q}={\bf q}_m({\bf x})+{\bf q}'({\bf x},t)$, with ${\bf q}'$ the nonlinear perturbation and ${\bf u}_m$ the {\em mean flow} defined as the time-average  of the flow:}
 \be{defumean}
-{\bf u}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf u}({\bf x},t)  dt
+{\bf u}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf u}({\bf x},t)  dt,
 \ee
-where $T = 2\pi/\omega$ is the period of the oscillation cycle. 
+where $T = 2\pi/\omega$  is the period of the oscillation cycle.
 
-A convenient measure of the unsteady part of the flow, which has been adopted in both the WNL and SC models, is the energy-amplitude, defined as the square-root of the total energy associated to the fluctuating part of the velocity field :
-
+A convenient measure of the unsteady part of the flow, which has been adopted in both the WNL and SC models, is the energy-amplitude, defined as the square-root of the total energy associated to the fluctuating part of the velocity field:
 \be{defAnergy}
-A_E = \sqrt{\frac{1}{T} \int_0^{T} \left( \int_\Omega | {\bf u} - {\bf u}_m |^2 \, dS \right) dt}
+A_E = \sqrt{\frac{1}{T} \int_0^{T} \left( \int_\Omega | {\bf u} - {\bf u}_m |^2 \, dS \right) dt}.
 \ee
-
 
 Another quantity which has been particularly addressed in previous studies is the mean recirculation length $L_x$
-already discussed introduced and documented in figure ??. In the nonlinear regime, the recirculation bubble becomes unsteady so it is difficult to define properly an instantaneous recirculation length. It is still possible to define a mean recirculation length associated to the mean flow.
+already discussed{\color{red},} introduced and documented in figure {\color{red}??}. {\color{red} However, in a} nonlinear regime, the recirculation bubble becomes unsteady, {\color{red} becoming} difficult to define properly an instantaneous recirculation length. It is still possible to define a mean recirculation length associated to the mean flow. %On va le faire ??
 
-In the next sections we will document the predictions of the WNL and SC models regarding the quantities $A_E$ and $L_x$ adopted in past studies. In addition, we will document two other quantities of practical interest : the drag and Lift forces $F_x$ and $F_y$ exerted on the cylinder. 
-Both are periodic functions of time, and owing to symmetry consideration, the drag contains only even harmonics and the lift only odd harmonics :
-$$
-F_x  = F_{x,0}  + \Sigma \left(  F_{x,2n,c} \cos 2 n \omega t + F_{x,2n,s} \sin 2 n  \omega t \right)
-$$
-$$
-F_y  =  \Sigma \left(  F_{y,{2n+1},c} \cos (2n+1) \omega t + F_{y,(2n+1),s} \sin (2n+1) \omega t \right)
-$$
-
-In the sequel we will focus on the {\em mean drag}
- $F_{x,0}$ and the part of the fundamental frequency part of the lift  given by $F_{y,1,c}$ and $F_{y,1,s}$.
- 
+In the next sections we will document the predictions of the WNL and SC models regarding the quantities $A_E$ and $L_x$ adopted in past studies. In addition, we will document two other quantities of practical interest : the Drag and Lift forces $F_x$ and $F_y$ exerted on the cylinder. 
+Both are periodic functions of time and{\color{red},} owing to symmetry consideration, the drag contains only even harmonics and the lift only odd harmonics:{\color{red}
+\be{drag_lift_def}
+\begin{cases}
+F_x=F_{x,0} + \sum_{n=1}^\infty \big( F_{x,2n,c} \cos ( 2 n \omega t) + F_{x,2n,s} \sin( 2 n  \omega t ) \big) \\
+\begin{split}
+F_y  =  \sum_{n=1}^\infty \big(  F_{y,{2n-1},c} \cos ((2n-1) \omega t ) +\\
+ F_{y,(2n-1),s} \sin ((2n-1) \omega t) \big)
+\end{split}
+\end{cases}.
+\ee
+}
+In the sequel we will focus on the {\em mean drag}  $F_{x,0}$ and on the fundamental frequency part of the lift given by $F_{y,1,c}$ and $F_{y,1,s}$.
  
    
 %MThe mean drag is given by 
@@ -599,7 +596,7 @@ In the sequel we will focus on the {\em mean drag}
 
 
 \paragraph{Weakly nonlinear model}
-
+%REFAIRE
 \begin{figure*}
 \small
 \begin{lstlisting}
@@ -628,47 +625,61 @@ end
 
 We give here a brief account of the weakly nonlinear model of Sipp \& 
 Lebedev\cite{SippLebedev}, also discussed by Gallaire et al. \cite{FDR2016}. 
-The derivation is based on a multiple scale  decomposition based on the parameter $\epsilon^2 = 1/Re - 1/Re_c$. 
-In the case where we are interested only in the desciption of the saturation cycle, the starting point can be taken as the following expansion of the state-vector ${\bf{q}}=({\bf{u}},p)$ defining the flow :
-
-\begin{eqnarray}
-{\bf q} &=& {\bf q}_{bc} + \epsilon \left[ A_{wnl}  \hat{\bf q} e^{i (\omega_c+\epsilon \omega_\epsilon)  t} + c.c. \right] \label{WNL1}\\
-&+& \epsilon^2 \left[ {\bf q}_\epsilon + |A_{wnl}|^2  {\bf q}_{2,0} + \left(  A_{wnl}^2 {\bf q}_{2,2} e^{2 i(\omega_c+\epsilon \omega_\epsilon)  t} + c.c. \right) \right] + {\cal O}( \epsilon ^3)
-\nonumber
-\label{eq:WNLdevelopment}
-\end{eqnarray}
+The derivation is based on a multiple scale  decomposition based on the parameter {\color{red}$\epsilon^2 = 1/Re_c - 1/Re$}. 
+In the case where we are interested only in the desciption of the saturation cycle, the starting point can be taken as the following expansion of the state-vector ${\bf{q}}=({\bf{u}},p)$ defining the flow:
+\be{WNL1}
+\begin{aligned}
+&{\bf q} = {}  {\bf q}_{bc} + \epsilon \left[ A_{wnl}  \hat{\bf q} e^{i (\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right]\\
+&+ \epsilon^2 \left[ {\bf q}_\epsilon + |A_{wnl}|^2  {\bf q}_{2,0} + \left(  A_{wnl}^2 {\bf q}_{2,2} e^{2 i(\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right) \right]\\
+& + {\cal O}( \epsilon ^3),
+\end{aligned}
+\ee
 where ${\bf q}_{bc}$ is the base flow at the threshold $Re_c$, $\hat{\bf q}$ the neutral 
-eigenmode at $Re_c$, $A_{wnl}$, an amplitude, $\omega_c$ the frequency predicted by the linear approach at $Re=Re_c$ and $\omega_\epsilon$ a small deviation of the frequency.
+eigenmode at $Re_c$, {\color{red} $A_{wnl}$ an amplitude,} $\omega_c$ the frequency predicted by the linear approach at $Re=Re_c$ and $\omega_\epsilon$ a small deviation of the frequency, {\color{red} ${\bf q}_{\epsilon}$ the base flow modifications related to the increase of $\epsilon$, ${\bf q}_{2,0}$ the flow response to the steady nonlinear interactions of $\hat{\bf q}$ with its conjugate, ${\bf q}_{2,2}$ the flow response to the unsteady nonlinear interactions of $\hat{\bf q}$ with itself and  ${\cal O}( \epsilon ^3)$ the third order terms.   }
 
-Note that this starting point is slightly different from the original approach of \cite{SippLebedev} who used a multiple scale method and assumed a dependence of the amplitude $A_{wnl}$ as function of a slow time-scale $\tau = \epsilon t$. This latter starting point is the righth way to parametrize the problem if one wants to obtain an amplitude equation, but as specified above our goal here is to provide a simpler formulation descibing only the saturated cycle. 
+Note that this starting point is slightly different from the original approach of \cite{SippLebedev} who used a multiple scale method and assumed a dependence of the amplitude $A_{wnl}$ as function of a slow time-scale $\tau = \epsilon t$. This latter starting point is the {\color{red}right} way to parametrize the problem if one wants to obtain an amplitude equation, but{\color{red},} as specified above{\color{red},} our goal here is to provide a simpler formulation {\color{red}describing} only the saturated cycle. 
 
-Details of the approach are given in the appendix. The outcome is a relationship with the form 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%DETAILS IN APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\color{red}
+The expansion \ref{WNL1} can be introduced into the Navier-Stokes equations \ref{NSprimitive}. Details at the different $\epsilon^i$ orders are given in the appendix}. The outcome is a relationship with the form
 \be{WNL3}
 i \omega_\epsilon A_{wnl} = \Lambda A_{wnl} - (\nu_0+\nu_2)  |A_{wnl}|^2 A_{wnl},
 \ee
+where the coefficients $\Lambda$, $\nu_0$ and $\nu_2$ are given by {\color{red}equations \ref{LAMBDA}, \ref{NU0} and \ref{NU2}, respectively.
 
+We note that $\Lambda$ does not depend on the normalization choice of the eigenmode, discussed later, while $\nu_0$ and $\nu_2$ depend. Hence, if one is interested in the amplitude of the limit cycle, the latter will depend on it and will be given by $|A_{wnl}| = \sqrt{\Lambda_r/(\nu_{0,r}+\nu_{2,r})}$.
 
-Where coefficients $\Lambda$, $\nu_0$ and $\nu_2$ are given by eqs. (???)
-
-If one is interested in the amplitude of the limit cycle, we have 
-$|A_{wnl}| = \sqrt{\Lambda_r/(\nu_{0,r}+\nu_{2,r})}$.
-
-% and eventually, reintroducing the scaling :
-%\be{ANL} 
-%|A| =  \epsilon |A_{wnl}| = \frac{\Lambda_r}{\nu_{0,r}+\nu_{2,r} } \sqrt{\frac{1}{Re_c}-\frac{1}{Re}}.
-%\ee
-
-The frequency of the limit cycle is given by
-\be{omegaWNL} 
-\omega_\epsilon =  - \Lambda_i \frac{\nu_{0,i}+\nu_{2,i} }{\nu_{0,r}+\nu_{2,r} } 
+Reintroducing the scaling
+\be{ANL} 
+|A| =  \epsilon |A_{wnl}| =\sqrt{ \frac{\Lambda_r}{\nu_{0,r}+\nu_{2,r} }} \sqrt{\frac{1}{Re_c}-\frac{1}{Re}},
 \ee
+the frequency of the limit cycle is given by
+\be{omegaWNL} 
+\omega_{LC}=\omega_c+ \epsilon^2\Lambda_i- (\nu_{0,i}+\nu_{2,i})|A|^2.
+\ee 
+}
+{\color{red}
+
+Recasting equation \ref{WNL1} in the {\em mean flow} definition \ref{defumean}, we obtain
+\be{mean_flow_WNL}
+{\bf u}_m({\bf x })= {\bf u}_{bc}+\epsilon^2 {\bf u}_\epsilon + |A|^2{\bf u}_{2,0},
+\ee
+where the first two terms give the base flow approximation at the $Re$ prescribed by $\epsilon$. }
+
+The associated Drag and Lift are given respectively by:
+\begin{eqnarray}
+F_{x,WNL} &=& F_{x}({\bf q}_{bc})+\epsilon^2 F_{x}({\bf q}_{\epsilon})+F_{x}({\bf q}_{2,0})|A|^2,\\
+F_{y,WNL} &=& |A|^2 \big[ F_{y}({\bf \hat{q}})e^{i\omega_{LC} t} +c.c. \big],
+\end{eqnarray}
+where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift}, respectively.
 
 
-THE MEAN FLOW IS GIVEN BY :
-
-AND THE ASSOCIATED DRAG FORCE IS GIVEN BY :
+I'M HERE
 
 
 {\color{blue}
@@ -1037,39 +1048,33 @@ $$
 \caption{Results for mesh adaptation strategy ($Re = 60$)}
 \end{table*}
 
+\section{Details of the weakly nonlinear approach}
 
-
-
-\section{detail of WNL approach}
-
-
-Substituting the above expansion (\ref{WNL1}) into the Navier-Stokes equations and grouping terms 
-multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained.
-The order $\epsilon^2$ contains three terms respectively computed as the solutions of the following linear problems :
+Substituting the expansion \ref{WNL1} into the Navier-Stokes equations \ref{NSprimitive} and grouping terms multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained. {\color{red} The order $\epsilon^0$ gives directly the base flow at $Re_c$. The order $\epsilon^1$ describes the linear perturbation behavior at a frequency $\omega_{WNL}=\omega_c+\epsilon\omega_\epsilon$ whose solution is computed as explained in the first part of this article.}
+The order $\epsilon^2$ contains three terms respectively computed as the solutions of the following linear problems:
 \begin{eqnarray}
-{\cal L}_{{\bf u}_{bc}} ({\bf u}_\epsilon) + 2 \nabla \cdot {\bf D}( \hat{\bf u}) &=&0,\\
+{\color{red} {\cal L}_{{\bf u}_{bc}} ({\bf u}_\epsilon) - 2 \nabla \cdot {\bf D}({\bf u}_{bc})} &=&0,\\
 {\cal L}_{{\bf u}_{bc}} ({\bf u}_{2,0}) &=& {\cal C}(\hat{\bf u},\overline{\hat{\bf u}}),\\
 {\cal L}_{{\bf u}_{bc}} ({\bf u}_{2,2}) - 2 i \omega_c {\bf u}_{2,2}  &=& \frac{1}{2} {\cal C}(\hat{\bf u},\hat{\bf u}).
  \end{eqnarray}
 
-Finally, compatibility conditions are imposed at order $\epsilon^3$ lead to 
-
+Finally, compatibility conditions, {\color{red}given by the Fredholm's alternative, are imposed at order $\epsilon^3$ to remove the secular terms, leading to an amplitude equation, known as Stuart-Landau equation:
 \be{WNL3}
-i \omega_\epsilon A_{wnl} = \Lambda A_{wnl} - (\nu_0+\nu_2)  |A_{wnl}|^2 A_{wnl},
+\frac{\partial A_{wnl}}{\partial \tau} = \Lambda A_{wnl} - (\nu_0+\nu_2)  |A_{wnl}|^2 A_{wnl},
 \ee
-
-
+}
+where coefficients $\Lambda$, $\nu_0$ and $\nu_2$ are given by
+{\color{red}
 \begin{eqnarray}
-\Lambda &=& \frac{ \left< {\hat{\bf u}}^\dag, 
-\left( {\cal C}({\bf u}_\epsilon, \hat{\bf u}) - 2 \nabla \cdot  {\bf D}( \hat{\bf u}) \right) \right>}
-{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> },\\
-\nu_0 &=& -\frac{ \left< {\hat{\bf u}}^\dag,  {\cal C}({\bf u}_{20}, \hat{\bf u} ) \right>}
-{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> },\\
-\nu_2 &=& -\frac{ \left< {\hat{\bf u}}^\dag,  {\cal C}({\bf u}_{22}, \overline{\hat{\bf u}})  \right>}
-{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> }.
+\Lambda &=& -\frac{ \left< {\hat{\bf u}}^\dag, 
+\left( {\cal C}({\bf u}_\epsilon, \hat{\bf u}) + 2 \nabla \cdot  {\bf D}( \hat{\bf u}) \right) \right>}
+{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> },\label{LAMBDA}\\
+\nu_0 &=& \frac{ \left< {\hat{\bf u}}^\dag,  {\cal C}({\bf u}_{20}, \hat{\bf u} ) \right>}
+{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> },\label{NU0}\\
+\nu_2 &=& \frac{ \left< {\hat{\bf u}}^\dag,  {\cal C}({\bf u}_{22}, \overline{\hat{\bf u}})  \right>}
+{  \left<  \hat{\bf u}^\dag,\hat{\bf u} \right> }.,\label{NU2}
  \end{eqnarray}
-
-
+}
 
 \section{Detail of the weak formulation}
 %The problem can be set into weak form by multiplying by multiplying Eq. \ref{Newton2} by a test function ${\bf v}$ and the associated divergence constraint by a test function $q$. After a few integration by parts we are led to :

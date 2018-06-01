@@ -181,8 +181,6 @@ else if(normalisation=="V")
 		cout << " -> Normalisation of mode based on velocity at one point (Sipp & lebedev convention)  " << endl;
 		complex Vpoint = u1y(1,0); // convention of Sipp & Lebedev
 		cout << "Energy before renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
-		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
-		u1x[] = -1/modenorm*u1x[]; // LIGNE MANQUANTE : DIOGO A AJOUTé ... il y a l'energie quivaut 760, c'est normal ?
 		u1x[] = 0.4612/Vpoint*u1x[];  // convention of Sipp & Lebedev
 		cout << "Energy after renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
 	};
@@ -218,7 +216,7 @@ solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) = //DIOGO DOUTe: les memes fonction
 	;
 
 real Fx0 = Drag(nu,ubx,uby,ubp);
-real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)); // Porquoi mettre 1 et 0 ? DOUTE DIOGO
+real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)); //Second term commes from the development of Drag force.
 real FxA20 = real(Drag(nu,u20x,u20y,u20p));
 complex FxA22 = Drag(nu,u22x,u22y,u22p);
 complex FyA1 = Lift(1/Re,u1x,u1y,u1p);
@@ -257,7 +255,7 @@ cout << " Cn : " << Cn << endl;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///   Landau equation coeffs.  /////////////////////////////////////////////////
-complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC))); //DIOGO DOUTE: dernier signe +2*(D(u1):D(u1AC)
+complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC)));
 
 complex Nu0 = 1/Cn*int2d(th)(Conv(u20,u1,u1AC));
 
