@@ -90,21 +90,16 @@ macro NS(nu,u,v)
         )
 //EOM
      
-//macro NSL(nu,U,u,v) 
-//	(
-//	-2*nu*(D(u):D(v))
-//        + u#p*div(v)
-//        /*+ div(u)*v#p*/
-//        - Conv(U,u,v)
-//        )
-//EOM
 macro NSL(nu,U,u,v) 
-	(
-        - Conv(U,u,v)
-	-2*nu*(D(u):D(v))
+	( 
+	- Conv(U,u,v)
         + u#p*div(v)
-	)
+	-2*nu*(D(u):D(v))
+        + div(u)*v#p
+       
+        )
 //EOM
+
 
 
         
@@ -169,7 +164,7 @@ else if(normalisation=="L")
 		cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;	
 	}	
 else if(normalisation=="E")
-		{
+	{
 		cout << " -> Normalisation of mode based on ENERGY OF PERTURBATION (Mantic-lugo convention)  " << endl;
 		real Eguess = 1;
 		cout << "  -> Energy = " << Eguess << endl;
@@ -180,16 +175,17 @@ else if(normalisation=="E")
 		modenorm = 2*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2));
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that || ums ||_L2 = 1/sqrt(2)
 		cout << "Energy after renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
-		}
+	}
 else if(normalisation=="V")
-		{
+	{
 		cout << " -> Normalisation of mode based on velocity at one point (Sipp & lebedev convention)  " << endl;
 		complex Vpoint = u1y(1,0); // convention of Sipp & Lebedev
 		cout << "Energy before renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		u1x[] = -1/modenorm*u1x[]; // LIGNE MANQUANTE : DIOGO A AJOUTé ... il y a l'energie quivaut 760, c'est normal ?
 		u1x[] = 0.4612/Vpoint*u1x[];  // convention of Sipp & Lebedev
 		cout << "Energy after renarmalisation : " << sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl;	
-		};
+	};
 
 
 u1Cx[] = conj(u1x[]);
@@ -215,14 +211,14 @@ solve varf20([u20x,u20y,u20p],[vCx,vCy,vCp]) = //Diogo: Porquoi on utilise des f
 	; 
 
 //Computation of q_{2,2} (U_2^{A^2})	
-solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) =
+solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) = //DIOGO DOUTe: les memes fonctions tests ?...
   	 int2d(th)( NSL(nu,ub,u22,vC) ) -int2d(th)(2i*omegaC*(u22x*vCx+u22y*vCy) )
 	- int2d(th)(.5*Conv(u1,u1,vC) )  
     + Boundaryconditions(u22,vC,"S")			
 	;
 
 real Fx0 = Drag(nu,ubx,uby,ubp);
-real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0));
+real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)); // Porquoi mettre 1 et 0 ? DOUTE DIOGO
 real FxA20 = real(Drag(nu,u20x,u20y,u20p));
 complex FxA22 = Drag(nu,u22x,u22y,u22p);
 complex FyA1 = Lift(1/Re,u1x,u1y,u1p);
@@ -261,7 +257,7 @@ cout << " Cn : " << Cn << endl;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///   Landau equation coeffs.  /////////////////////////////////////////////////
-complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC)));
+complex Lambda = -1/Cn*int2d(th)(Conv(ueps,u1,u1AC)-2*(D(u1):D(u1AC))); //DIOGO DOUTE: dernier signe +2*(D(u1):D(u1AC)
 
 complex Nu0 = 1/Cn*int2d(th)(Conv(u20,u1,u1AC));
 
@@ -273,23 +269,23 @@ real AAA = sqrt(real(Lambda)/real(Nu0+Nu2)); /// amplitude/sqrt(eps) ; value dep
 
 cout << endl << endl << "######### SUMMARY : ##############" << endl << endl;
 
-cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon^(1/2) " << endl;
+cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon^(1/2) " << endl;  // DOUTE DIOGO:  Amplitude :  A = " << AAA << " * epsilon " ou pas ?
 cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl;
 cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1 << " exp(i omega0 t) + c.c. ] * eps" << endl;
-cout << "                             : Fy = " << real(AAA*FyA1*2) << " cos(omega0 t) + " 
+cout << "                             : Fy = [" << real(AAA*FyA1*2) << " cos(omega0 t) + " 
                                                      << -imag(AAA*FyA1*2) << " sin(omega0 t) ] * eps" << endl;
 
-cout << " >> Drag force  = Fx0 + Fxeps2 * eps^2 + FxA20 *|A|^2 + |A^2| * [FxA22 exp(2 i omega0 t ) + c.c. ]"  << endl;
-cout << "                      = " << Fx0 << " + " << Fxeps2 << " * eps + << " << -FxA20 << " * |A|^2 + [" << FxA22 << " exp(2 i omega0 t) + c.c.] |A|^2 "  << endl << endl;
-cout << "                      = Fx0 + [ Fxeps2 + CxA20*(A^2/eps^2)] * eps^2 " 
-                            << " +  [ 2*Re(FxA22)*cos( 2 omega0 t ) - 2*Im(FxA22)*sin( 2 omega0 t ) ] * "  << endl;
+cout << " >> Drag force  = Fx0 + Fxeps2 * eps^2 + FxA20 *|A|^2 + |A^2| * [FxA22 exp(2 i omega0 t ) + c.c. ]*eps^2"  << endl; //DOUTE DIOGO: Manque multiplier FxA20 *|A|^2  *eps^2
+cout << "                      = " << Fx0 << " + " << Fxeps2 << " * eps^2 + << " << -FxA20 << " * |A|^2 + [" << FxA22 << " exp(2 i omega0 t) + c.c.]*|A|^2 *eps^2 "  << endl << endl; //DIOGO DOUTE: Porquoi le signe moins -FxA20
+cout << "                      = Fx0 + [ Fxeps2 + FxA20*(|A|^2/eps^2)] * eps^2 " //DOUTE DIOGO: il faut pas diviser par eps^2
+                            << " +  [ 2*Re(FxA22)*cos( 2 omega0 t ) - 2*Im(FxA22)*sin( 2 omega0 t ) ] * |A^2|"  << endl;
 cout << "                      = " << Fx0 << " + " << (Fxeps2 + FxA20*AAA^2) << " * eps^2 + [ " << real(2*FxA22)*AAA^2 << " * cos(2 omega0 t ) + " 
 																					<< -imag(2*FxA22)*AAA^2 << " * sin(2 omega0 t ) ] * eps^2"   << endl;
          
          
 cout << endl << "  >> Frequency = omega0 + im(Lambda)*eps - im(nu0+nu2)*|A|^2 "  << endl;
-cout << endl << "               = " << omegaC <<  " + " << imag(Lambda) - imag(Nu0+Nu2)*AAA^2 << " * eps^2 "  << endl;
-        
+cout << endl << "               = " << omegaC <<  " + " << imag(Lambda)<<"*eps"<< - imag(Nu0+Nu2)*AAA^2 << endl;
+       
                                                   
 real omegaNL;
 if(Recheck>0)
@@ -303,8 +299,8 @@ cout << "                             : Fy = " << real(AAA*FyA1)*2*epsilonTT << 
 													 << -imag(AAA*FyA1)*2*epsilonTT << " sin(omega0 t) " << endl; 
 
 cout << endl << "  >> Drag force   = " << Fx0+(Fxeps2 + FxA20*AAA^2)*epsilonTT^2 << " + [ " 
-										 << real(FxA20*2)*epsilonTT^2 << " * cos(2 omega0 t ) + " 
-			                             << -imag(FxA22*2)*epsilonTT^2 << " * sin(2 omega0 t ) "   << endl;
+										 << real(FxA22*2)*epsilonTT^2 << " * cos(2 omega0 t ) + " 
+			                             << -imag(FxA22*2)*epsilonTT^2 << " * sin(2 omega0 t ) "   << endl;//DIOGO DOUTE: il manque multiplier le dernier terme par AAA^2
 
 omegaNL = omegaC+(imag(Lambda) - imag(Nu0+Nu2)*AAA^2)*epsilonTT^2;
 			                             
@@ -331,9 +327,9 @@ cout << endl << "########################################################" << en
 			  << real(Lambda) << " " << imag(Lambda) << endl 
 			  << real(Nu0) << " " << imag(Nu0) << endl 
 			  << real(Nu2) << " " << imag(Nu2) <<  endl 
-			  << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl
+			  << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl //O numero dois vem do complexo conjugado
 			  << real(AAA*FyA1) << " " << imag(AAA*FyA1) << endl
-			  << Fx0 << endl 
+			  << Fx0 << endl ///////////////////////////////////////////////////////////////////////////
 			  << Fxeps2 << endl
 			  << FxA20 << endl  
 			  << " " << real(FxA22) << " " << imag(FxA22) << endl

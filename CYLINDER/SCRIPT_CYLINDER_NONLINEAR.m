@@ -45,41 +45,47 @@ end
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
 
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L');
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','V');
 % Starting point generated for next chapter with 'Retest'
-% Norm chosen with 'Normalization': 'L' (lift)
-
-% PLOTS of WNL predictions
+% Norm chosen with 'Normalization': 'L' (lift) (ops:E,L,V)
 
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
-A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL));
-Fy_WNL = wnl.Fyeps*2*real(sqrt(epsilon2_WNL));
+
+%NB.: 1)The real part of sqrt(epsilon2_WNL)is taken to include its 
+%negative values; 2) The term (epsilon2_WNL>0) is used to take or not into
+%account the NL interaction due to the unsteadyness
+A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL)); % Amplitude associated to first harmonic (includes de c.c): A_wnl*sqrt(2*|mode|^2)*eps
+Fy_WNL = wnl.Fyeps*2*real(sqrt(epsilon2_WNL)); %A_wnl*FyA1*eps*2 (times 2 to take into account the c.c)
 omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) ...
                   - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
 Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
-                 + real(wnl.Lambda)/real(wnl.nu0+wnl.nu2)*epsilon2_WNL.*(epsilon2_WNL>0) ;
+                 + wnl.Fxeps20*epsilon2_WNL.*(epsilon2_WNL>0);
+Fx_WNL=Fx_WNL*2; %PORQUOI J'ai besoin de faire ça ici ?
+% PLOTS of WNL predictions
+colors=['g--';'b--';'r--']; j=3;
+color_used=colors(j,:);
 
 figure(20);hold on;
-plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,'g--','LineWidth',2);hold on;
+plot(Re_WNL,real(wnl.Lambda)*epsilon2_WNL,color_used,'LineWidth',2);hold on;
 
 figure(21);hold on;
-plot(Re_WNL,omega_WNL/(2*pi),'g--','LineWidth',2);hold on;
+plot(Re_WNL,omega_WNL/(2*pi),color_used,'LineWidth',2);hold on;
 xlabel('Re');ylabel('St');
 
 figure(22);hold on;
-plot(Re_WNL,Fx_WNL,'g--','LineWidth',2);hold on; %DIOGO: doute ici
+plot(Re_WNL,Fx_WNL,color_used,'LineWidth',2);hold on; %DIOGO: petite doute ici
 xlabel('Re');ylabel('Cx');
 
-figure(24); hold on;
-plot(Re_WNL,Fy_WNL,'g--','LineWidth',2); % Il manque dire que c'est la partie réelle
+figure(24); hold on;%Do real(Fy_WNL), to delete truncation errs. at 10^-17:
+plot(Re_WNL,real(Fy_WNL),color_used,'LineWidth',2);
 xlabel('Re');ylabel('Cy')
 
 figure(25);hold on;
-plot(Re_WNL,A_WNL,'g--','LineWidth',2);
+plot(Re_WNL,A_WNL,color_used,'LineWidth',2);
 xlabel('Re');ylabel('AE')
 
-pause;
+%pause;
 
 
 
