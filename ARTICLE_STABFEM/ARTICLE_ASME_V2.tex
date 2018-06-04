@@ -545,7 +545,7 @@ In the past decade, efforts have been devoted to extend the range of validity of
 In this part, to simplify the notations, we symbolically write the Navier-Stokes equations, as {\color{red}$\partial_t {\bf u} = {\cal NS} ({\bf u})$}, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. 
 
 In the nonlinear r{\color{red}e}gime, the {\em base flow} introduced in the linear theory is not directly accessible and no longer relevant, especially when the oscillation amplitudes become large. 
-Instead, {\color{red} we taken the decomposition ${\bf q}={\bf q}_m({\bf x})+{\bf q}'({\bf x},t)$, with ${\bf q}'$ the nonlinear perturbation and ${\bf q}_m$ the {\em mean flow} defined as the time-average  of the flow:}
+Instead, {\color{red} we taken the Reynolds decomposition ${\bf q}={\bf q}_m({\bf x})+{\bf q}'({\bf x},t)$, with ${\bf q}'$ the nonlinear perturbation and ${\bf q}_m$ the {\em mean flow} defined as the time-average  of the flow:}
 \be{defumean}
 {\bf q}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf q}({\bf x},t)  dt,
 \ee
@@ -719,7 +719,7 @@ F_{y,WNL} =2\big(|A|_r F_{x,r}({\bf \hat{q}})\cos(\omega t)-
 |A|_i F_{x,i}({\bf \hat{q}})\sin(\omega t) \big),\\
 \end{aligned}
 \ee
-where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift}, respectively. All terms in these equations can be matched with the interesting ones in \ref{drag_lift_def}: $F_{x,0}$ is the first 3 terms of \ref{drag_cos}; $F_{x,2,c}$, $F_{x,2,s}$ the fourth and fifth terms of \ref{drag_cos}; $F_{y,1,c}$, $F_{y,1,s}$ the first and second terms of \ref{lift_cos}. We note that the \textit{sine} term is associated to the phase of the forces in a physical way. }
+where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift}, respectively. All terms in these equations can be matched with the interesting ones in \ref{drag_lift_def}: $F_{x,0}$ is the first 4 terms of \ref{drag_cos}; $F_{x,2,c}$, $F_{x,2,s}$ are the fifth and sixth terms of \ref{drag_cos}; $F_{y,1,c}$, $F_{y,1,s}$ are the first and second terms of \ref{lift_cos}. We note that the \textit{sine} term is associated to the phase of the forces in a physical way. }
 
 \iffalse
 \begin{eqnarray}
@@ -812,7 +812,7 @@ $$
 \end{table*}
 
 {\color{red} 
-The forces coefficients given by $F_x({\bf q})$ and $F_y({\bf q})$ are then converted in the more traditional form, $C_x=2F_x({\bf q})$ and $C_y=2F_y({\bf q})$.
+The forces coefficients given by $F_x({\bf q})$ and $F_y({\bf q})$ are then converted in a more traditional form, $C_x=2F_x({\bf q})$ and $C_y=2F_y({\bf q})$.
 }
 As can be seen on figure \ref{fig:Comp2},  the approach gives good prediction in the immediate vicinity of $Re_c$, but deviation appears very rapidly and disagreement is already large at $Re=48$ (although, as discussed by Gallaire et al.? and also observed by Tchoufag et al. \cite{Tchoufag2015}, a convenient definition of the $\epsilon$ improves the results). {\color{red} These aspects are justified by the pertubative nature of the WNL approach. The description of the limit cycle can be extended to larger $Re$ with the approach presented next.  }
 
