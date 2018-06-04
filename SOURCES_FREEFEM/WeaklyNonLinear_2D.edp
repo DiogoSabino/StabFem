@@ -262,29 +262,39 @@ complex Nu0 = 1/Cn*int2d(th)(Conv(u20,u1,u1AC));
 complex Nu2 = 1/Cn*int2d(th)(Conv(u22,u1C,u1AC));
 	
 cout << "Lambda : "  << Lambda << " ; Nu0 = " << Nu0 << " ; Nu2 = " << Nu2 << endl;
-real AAA = sqrt(real(Lambda)/real(Nu0+Nu2)); /// amplitude/sqrt(eps) ; value depends on normalisation choice
+real AAA = sqrt(real(Lambda)/real(Nu0+Nu2)); /// amplitude/eps ; value depends on normalisation choice
 
 
 cout << endl << endl << "######### SUMMARY : ##############" << endl << endl;
+//Here, the omega0 have to be substituted by omega, I think
 
-cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon^(1/2) " << endl;  // DOUTE DIOGO:  Amplitude :  A = " << AAA << " * epsilon " ou pas ?
-cout << "  >>  In terms of Energy = " << AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl;
-cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1 << " exp(i omega0 t) + c.c. ] * eps" << endl;
+cout << endl << "  >>  Amplitude :  A = " << AAA << " * epsilon " << endl; //=|A_{wnl}|*eps
+cout << "  >>  In terms of Energy = " << AAA*sqrt(4*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << " * eps " << endl; // |A_wnl|*\sqrt{\hat{u}^2}*2
+cout << "  >>  In terms of Lift force : Fy = [" << AAA*FyA1 << " exp(i omega0 t) + c.c. ] * eps" << endl; 
 cout << "                             : Fy = [" << real(AAA*FyA1*2) << " cos(omega0 t) + " 
                                                      << -imag(AAA*FyA1*2) << " sin(omega0 t) ] * eps" << endl;
 
-cout << " >> Drag force  = Fx0 + Fxeps2 * eps^2 + FxA20 *|A|^2 + |A^2| * [FxA22 exp(2 i omega0 t ) + c.c. ]*eps^2"  << endl; //DOUTE DIOGO: Manque multiplier FxA20 *|A|^2  *eps^2
-cout << "                      = " << Fx0 << " + " << Fxeps2 << " * eps^2 + << " << -FxA20 << " * |A|^2 + [" << FxA22 << " exp(2 i omega0 t) + c.c.]*|A|^2 *eps^2 "  << endl << endl; //DIOGO DOUTE: Porquoi le signe moins -FxA20
-cout << "                      = Fx0 + [ Fxeps2 + FxA20*(|A|^2/eps^2)] * eps^2 " //DOUTE DIOGO: il faut pas diviser par eps^2
-                            << " +  [ 2*Re(FxA22)*cos( 2 omega0 t ) - 2*Im(FxA22)*sin( 2 omega0 t ) ] * |A^2|"  << endl;
+cout << " >> Drag force  = Fx0 + eps^2*Fxeps2 + FxA20 *|A|^2 + |A^2| * [FxA22 exp(2 i omega0 t ) + c.c. ]"  << endl; 
+cout << "                      = " << Fx0 << " + " << Fxeps2 << " * eps^2 + " << FxA20 << " * |A|^2 * eps^2 + [" << FxA22 << " exp(2 i omega0 t) + c.c.]*|A|^2 *eps^2 "  << endl << endl; 
+
+cout << "                      = Fx0 + [ Fxeps2 + FxA20*(|A|^2/eps^2)] * eps^2 " 
+                            << " +  [ 2*Re(FxA22)*cos( 2 omega0 t ) - 2*Im(FxA22)*sin( 2 omega0 t ) ] * |A^2|"  << endl; 
 cout << "                      = " << Fx0 << " + " << (Fxeps2 + FxA20*AAA^2) << " * eps^2 + [ " << real(2*FxA22)*AAA^2 << " * cos(2 omega0 t ) + " 
 																					<< -imag(2*FxA22)*AAA^2 << " * sin(2 omega0 t ) ] * eps^2"   << endl;
          
          
-cout << endl << "  >> Frequency = omega0 + im(Lambda)*eps - im(nu0+nu2)*|A|^2 "  << endl;
-cout << endl << "               = " << omegaC <<  " + " << imag(Lambda)<<"*eps"<< - imag(Nu0+Nu2)*AAA^2 << endl;
+cout << endl << "  >> Frequency = omega0 + im(Lambda)*eps^2 - im(nu0+nu2)*|A|^2 "  << endl;
+cout << endl << "               = " << omegaC <<  " + " << imag(Lambda)<<"*eps^2 -"<< imag(Nu0+Nu2)*AAA^2<<"*eps^2" << endl;
+cout << endl << "               = " << omegaC <<  " + " << imag(Lambda)-imag(Nu0+Nu2)*AAA^2 <<"*eps^2" << endl;
        
-                                                  
+// Summary verified by Diogo and in accordance with article Stabfem (à compreendre le signe moins)
+cout << endl << endl << "######### Values for table in article: ##############" << endl << endl;
+cout << "Fx0= "<< Fx0 << " + " << (Fxeps2 + FxA20*AAA^2) << " * eps^2" << endl;
+cout << "|Fx2|= " << sqrt((real(2*FxA22)*AAA^2)^2+(imag(2*FxA22)*AAA^2)^2) <<  " * eps^2" << endl;
+cout << "|Fy1|= " << sqrt( real(AAA*FyA1*2)^2+imag(AAA*FyA1*2)^2 ) << " * eps" <<  endl;
+
+
+
 real omegaNL;
 if(Recheck>0)
 {

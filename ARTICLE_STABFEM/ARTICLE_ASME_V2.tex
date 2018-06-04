@@ -545,9 +545,9 @@ In the past decade, efforts have been devoted to extend the range of validity of
 In this part, to simplify the notations, we symbolically write the Navier-Stokes equations, as {\color{red}$\partial_t {\bf u} = {\cal NS} ({\bf u})$}, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. 
 
 In the nonlinear r{\color{red}e}gime, the {\em base flow} introduced in the linear theory is not directly accessible and no longer relevant, especially when the oscillation amplitudes become large. 
-Instead, {\color{red} we taken the decomposition ${\bf q}={\bf q}_m({\bf x})+{\bf q}'({\bf x},t)$, with ${\bf q}'$ the nonlinear perturbation and ${\bf u}_m$ the {\em mean flow} defined as the time-average  of the flow:}
+Instead, {\color{red} we taken the decomposition ${\bf q}={\bf q}_m({\bf x})+{\bf q}'({\bf x},t)$, with ${\bf q}'$ the nonlinear perturbation and ${\bf q}_m$ the {\em mean flow} defined as the time-average  of the flow:}
 \be{defumean}
-{\bf u}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf u}({\bf x},t)  dt,
+{\bf q}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf q}({\bf x},t)  dt,
 \ee
 where $T = 2\pi/\omega$  is the period of the oscillation cycle.
 
@@ -570,9 +570,10 @@ F_y  =  \sum_{n=1}^\infty \big(  F_{y,{2n-1},c} \cos ((2n-1) \omega t ) +\\
 \end{split}
 \end{cases}.
 \ee
-}
-In the sequel we will focus on the {\em mean drag}  $F_{x,0}$ and on the fundamental frequency part of the lift given by $F_{y,1,c}$ and $F_{y,1,s}$.
- 
+
+
+In the sequel we will focus on the {\em mean drag}  $F_{x,0}$ and on the fundamental frequency part of the drag and lift given by $F_{x,2,c}$, $F_{x,2,s}$ and $F_{y,1,c}$, $F_{y,1,s}$.
+ }
    
 %MThe mean drag is given by 
 
@@ -597,6 +598,7 @@ In the sequel we will focus on the {\em mean drag}  $F_{x,0}$ and on the fundame
 
 \paragraph{Weakly nonlinear model}
 %REFAIRE
+\iffalse
 \begin{figure*}
 \small
 \begin{lstlisting}
@@ -616,17 +618,46 @@ for Re = Re_HB(2:end)
     omega_HB = [omega_HB imag(mode.lambda)];
     Aenergy_HB  = [Aenergy_HB mode.Energy];
 end
-
 \end{lstlisting}
 \normalsize
 \caption{Illustration of the procedure for nonlinear calculations using StabFem (from script {\em SCRIPT\_CYLINDER.m}. }
 \label{fig:listingNL}
 \end{figure*}
+\fi
+\begin{figure*}
+\small
+\begin{lstlisting}
+[bf,em]=SF_FindThreshold(bf,em); Omegac=imag(em.lambda);
+[ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); 
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L');
+
+Re_HB = [Rec 47.5 48 49 50 55 60 65 70 75 80 85 90 95 100];
+omega_HB = [Omegac]; Aenergy_HB = [0]; 
+
+bf=SF_BaseFlow(bf,47.5);
+[ev,em] = SF_Stability(bf,'shift',Omegac*i);
+Astart = sqrt(wnl.Lambda/(wnl.Nu0+wnl.Nu2)*(1/Rec-1/47.5));
+[meanflow,mode] = SF_HarmonicBalance(bf,em,'sigma',0.,'Re',47.5,'Aguess',Astart);
+
+for Re = Re_HB(2:end)
+    [meanflow,mode] = SF_HarmonicBalance(meanflow,mode,'Re',Re);
+    omega_HB = [omega_HB imag(mode.lambda)];
+    Aenergy_HB  = [Aenergy_HB mode.Energy];
+end
+\end{lstlisting}
+\normalsize
+\caption{Illustration of the procedure for nonlinear calculations using StabFem (from script {\color{red}{\em SCRIPT\_CYLINDER\_NONLINEAR.m})}. }
+\label{fig:listingNL}
+\end{figure*}
+
+
+
+
 
 We give here a brief account of the weakly nonlinear model of Sipp \& 
 Lebedev\cite{SippLebedev}, also discussed by Gallaire et al. \cite{FDR2016}. 
 The derivation is based on a multiple scale  decomposition based on the parameter {\color{red}$\epsilon^2 = 1/Re_c - 1/Re$}. 
-In the case where we are interested only in the desciption of the saturation cycle, the starting point can be taken as the following expansion of the state-vector ${\bf{q}}=({\bf{u}},p)$ defining the flow:
+In the case where we are interested only in the {\color{red}description} of the saturation cycle, the starting point can be taken as the following expansion of the state-vector ${\bf{q}}=({\bf{u}},p)$ defining the flow:
 \be{WNL1}
 \begin{aligned}
 &{\bf q} = {}  {\bf q}_{bc} + \epsilon \left[ A_{wnl}  \hat{\bf q} e^{i (\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right]\\
@@ -637,7 +668,7 @@ In the case where we are interested only in the desciption of the saturation cyc
 where ${\bf q}_{bc}$ is the base flow at the threshold $Re_c$, $\hat{\bf q}$ the neutral 
 eigenmode at $Re_c$, {\color{red} $A_{wnl}$ an amplitude,} $\omega_c$ the frequency predicted by the linear approach at $Re=Re_c$ and $\omega_\epsilon$ a small deviation of the frequency, {\color{red} ${\bf q}_{\epsilon}$ the base flow modifications related to the increase of $\epsilon$, ${\bf q}_{2,0}$ the flow response to the steady nonlinear interactions of $\hat{\bf q}$ with its conjugate, ${\bf q}_{2,2}$ the flow response to the unsteady nonlinear interactions of $\hat{\bf q}$ with itself and  ${\cal O}( \epsilon ^3)$ the third order terms.   }
 
-Note that this starting point is slightly different from the original approach of \cite{SippLebedev} who used a multiple scale method and assumed a dependence of the amplitude $A_{wnl}$ as function of a slow time-scale $\tau = \epsilon t$. This latter starting point is the {\color{red}right} way to parametrize the problem if one wants to obtain an amplitude equation, but{\color{red},} as specified above{\color{red},} our goal here is to provide a simpler formulation {\color{red}describing} only the saturated cycle. 
+Note that this starting point is slightly different from the original approach of \cite{SippLebedev} who used a multiple scale method and assumed a dependence of the amplitude $A_{wnl}$ as function of a slow time-scale $\tau = {\color{red}\epsilon^2} t$. This latter starting point is the {\color{red}right} way to parametrize the problem if one wants to obtain an amplitude equation, but{\color{red},} as specified above{\color{red},} our goal here is to provide a simpler formulation {\color{red}describing} only the saturated cycle. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -660,87 +691,92 @@ Reintroducing the scaling
 \ee
 the frequency of the limit cycle is given by
 \be{omegaWNL} 
-\omega_{LC}=\omega_c+ \epsilon^2\Lambda_i- (\nu_{0,i}+\nu_{2,i})|A|^2.
+\omega_{LC}=\omega_c+ \epsilon^2\Lambda_i- (\nu_{0,i}+\nu_{2,i})|A|^2,
 \ee 
+
+where the subscripts $r$ and $i$ represent the real and imaginary parts.
 }
 {\color{red}
-
 Recasting equation \ref{WNL1} in the {\em mean flow} definition \ref{defumean}, we obtain
 \be{mean_flow_WNL}
-{\bf u}_m({\bf x })= {\bf u}_{bc}+\epsilon^2 {\bf u}_\epsilon + |A|^2{\bf u}_{2,0},
+{\bf q}_m({\bf x })= {\bf q}_{bc}+\epsilon^2 {\bf q}_\epsilon + |A|^2{\bf q}_{2,0},
 \ee
 where the first two terms give the base flow approximation at the $Re$ prescribed by $\epsilon$. }
 
-The associated Drag and Lift are given respectively by:
+{\color{red} Finally, the associated Drag and Lift are given respectively by:
+\be{drag_cos}
+\begin{aligned}
+F_{x,WNL} = F_{x}({\bf q}_{bc})&+\epsilon^2 \big( 
+F_{x}({\bf q}_{\epsilon})- 2\mathsf{D}({\bf u}_{bc}).{\bf n}_x \big)\\
+&+|A|^2 F_{x}({\bf q}_{2,0})\\
+&+2|A|^2\big(F_{x,r}({\bf q}_{2,2})\cos(2\omega t)
+-F_{x,i}({\bf q}_{2,2})\sin(2\omega t) \big),
+\end{aligned}
+\ee
+\be{lift_cos}
+\begin{aligned}
+F_{y,WNL} =2\big(|A|_r F_{x,r}({\bf \hat{q}})\cos(\omega t)-
+|A|_i F_{x,i}({\bf \hat{q}})\sin(\omega t) \big),\\
+\end{aligned}
+\ee
+where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift}, respectively. All terms in these equations can be matched with the interesting ones in \ref{drag_lift_def}: $F_{x,0}$ is the first 3 terms of \ref{drag_cos}; $F_{x,2,c}$, $F_{x,2,s}$ the fourth and fifth terms of \ref{drag_cos}; $F_{y,1,c}$, $F_{y,1,s}$ the first and second terms of \ref{lift_cos}. We note that the \textit{sine} term is associated to the phase of the forces in a physical way. }
+
+\iffalse
 \begin{eqnarray}
-F_{x,WNL} &=& F_{x}({\bf q}_{bc})+\epsilon^2 F_{x}({\bf q}_{\epsilon})+F_{x}({\bf q}_{2,0})|A|^2,\\
-F_{y,WNL} &=& |A|^2 \big[ F_{y}({\bf \hat{q}})e^{i\omega_{LC} t} +c.c. \big],
+\begin{aligned}
+F_{x,WNL} = F_{x}({\bf q}_{bc})&+\epsilon^2 \big( 
+F_{x}({\bf q}_{\epsilon})- 2\mathsf{D}({\bf u}_{bc}) \big)\\
+&+F_{x}({\bf q}_{2,0})|A|^2\\
+&+2F_{x,r}({\bf q}_{2,2}\cos(2\omega t)+
+2F_{x,i}({\bf q}_{2,2}\sin(2\omega t)
+),\\
+\end{aligned}\\
+F_{y,WNL} = |A|^2 \big[ F_{y}({\bf \hat{q}})e^{i\omega_{LC} t} +c.c. \big],
 \end{eqnarray}
-where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift}, respectively.
+\fi
 
-
-I'M HERE
 
 
 {\color{blue}
-A key issue in the weakly nonlinear expansion is that the definition of the amplitude depends upon a normalization choice 
-of the eigenmodes. Several choices are possible. In the litterature three possibilities have been used :
+A key issue in the weakly nonlinear expansion is that the definition of the amplitude depends upon a normalization choice of the eigenmodes{\color{red}, as pointed before}. Several choices are possible. In the literature three possibilities have been used:
 \begin{itemize}
-\item First, \cite{SippLebedev} normalized the eigenmode by assuming a specified value to the $y$-component of the velocity at one point, namely :
+\item First, \cite{SippLebedev} normalized the eigenmode by assuming a specified value to the $y$-component of the velocity at one point, namely:
 \be{normsipp}
-\hat{u_y}(1,0) = 0.4612
+\hat{u_y}(1,0) = 0.4612.
 \ee
-The advantage of this choice is that the amplitude is then a measure of the energy of the perturbation: 
-$\epsilon A_{wnl} \approx A_E$.
+The advantage of this choice is that the amplitude ${\color{red}|A|}$ is then a measure of the energy of the perturbation: 
+${\color{red}|A|} \approx A_E$. {\color{red}However the lift phase its not fixed.}
 
-\item Secondly, \cite{FDR2016} proposed the following normalisation choice :
+\item Secondly, \cite{FDR2016} proposed the following {\color{red}normalization} choice:
 \be{normFDR}
-\int_\Omega |\hat{\bf u}|^2 d {\bf x}  = \frac{1}{2}
+\int_\Omega |\hat{\bf u}|^2 d {\bf x}  = \frac{1}{2}.
 \ee
-This directly leads to $\epsilon A_{wnl} = A_E$.
+This directly leads to ${\color{red}|A|} = A_E$.{\color{red} The lift phase is not specified in \cite{FDR2016} and can be set to nil before the normalization.}
 
 \item Thirdly, following \cite{Fabre2012}, another convenient choice is to normalize the eigenmode with its lift 
-force : 
+force: 
 \be{normfabre}
-L(\hat{\bf u};\hat{p}) = 1/2
+{\color{red}F_y(\hat{\bf q}) }={\color{red} \frac{1}{2}}.
 \ee
-The advantage of this choice is that the amplitude $\epsilon A_{wnl}$ is directly related to the fundamental lift :
-$
+The advantage of this choice is that the amplitude ${\color{red}|A|}$ is directly related to the fundamental lift:
+\be{lift_explanation}
 F_{y,1,c} 
-%= \epsilon A \left( 1/2 e^{i \omega t} + c.c. \right)
-=   \epsilon A \cos (\omega t) ; \quad F_{y,1,c} = 0. 
-$
+= {\color{red}|A|} \left( {\color{red}\frac{1}{2}} e^{i \omega t} + c.c. \right)
+=   {\color{red}|A|} \cos (\omega t) ; \quad F_{y,1,{\color{red}s}} = 0. 
+\ee
 
 \end{itemize}
 }
 
-In our implementation of the WNL approach, we allowed to choose the normalization convention. 
-In table (??) we give the predictions of the WNL approach using the three normalization choices.
-We can note that the coefficients $\nu_0$ and $\nu_2$ strongly depend on the normalization choice.
-on the other hand, the frequency deviation as well as the drag and lift coefficients are independent of it.
- 
 
-
-\begin{table}
-$$\begin{array}{cc}
-a&b
-\end{array}$$
-\caption{Coefficients of the weakly nonlinear coefficients : }
-\end{table}
-
-
-
-
-Figure \ref{fig:listingNL}, which is extracted from the script 
-\verb|SCRIPT_CYLINDER_DEMO.m|, illustrate the sequence of commands to 
+Figure \ref{fig:listingNL}, which is extracted from the script {\color{red}
+\verb|SCRIPT_CYLINDER_NONLINEAR.m|}, illustrate the sequence of commands to 
 perform the weakly nonlinear study for the cylinder wake.
-On line 1, we first determine the instability threshold, and the corresponding base flow 
-and eigenmode\footnote{This routine uses Newton iteration to directly compute the 
-base flow, the eigenmode, the frequency and the critical Reynolds. The algorithm is 
-very similar to the one presented for the HB, with an additional unknown (Re) and an 
-additional constraint (normalization of the mode). The interested reader should 
-reconstruct easily the whole procedure from the code provided.}.
-On line 2, we then compute all the terms and coefficients of the WNL model. 
+On line 1, we first determine the instability threshold, and the corresponding base flow and eigenmode
+\footnote{This routine uses Newton iteration to directly compute the base flow, the eigenmode, the frequency and the critical Reynolds. The algorithm is very similar to the one presented for the HB, with an additional unknown (Re) and an additional constraint (normalization of the mode). The interested reader should reconstruct easily the whole procedure from the code provided.}. 
+{\color{red} On line 2 we solve the adjoint problem required for some terms in the WNL formulation.}
+On line 3, we then compute all the terms and coefficients of the WNL model.
+{\color{red}The other lines are explained latter.} 
 %After that, 
 %we construct  vectors to store the frequency and the amplitude of the limit cycle in the 
 %range $Re = [47.5-100]$. Note that for the computation at $Re=47.5$, we need a guess 
@@ -748,9 +784,37 @@ On line 2, we then compute all the terms and coefficients of the WNL model.
 %the sequel of the loop no guess value is prescribed, hence the solver uses 
 %continuation.
 
+{\color{red}
+In our implementation of the WNL approach, we allowed to choose the normalization convention, as seen in line 3 of figure \ref{fig:listingNL}.
+%%ATTENTION, si figure est actualisé, il faut actualiser la ligne
+In table \ref{tab:WNL_coefs} we give the predictions of the WNL approach using the three normalization choices.
+We can note that the coefficients $\nu_0$ and $\nu_2$ strongly depend on the normalization choice. On the other hand, the frequency deviation $\omega_\epsilon$ and the $\lambda$ coefficient, as well as the drag and lift coefficients are independent of it.
+%On the other hand, the frequency deviation as well as the drag and lift coefficients are independent of it.
+}
+\begin{table*}[!h]
+\centering
+$$
+\begin{array}{|c||c|c|c|c|c|c|c|}
+\hline
+\mbox{Norm.} & \lambda & \nu_{0} & \nu_{2} &\omega_{\epsilon}(rad/s)&F_{x,0}&|F_{x,2}|&|F_{y,1}|\\%& F_{y,1}
+\hline
+\mbox{\cite{SippLebedev}} & 9.1+3.3i & 9.4-32.1i & -0.3-0.9i & 36.2
+&0.71+5.3\epsilon^2&0.032\epsilon^2&0.54\epsilon\\
+\mbox{\cite{FDR2016}} & 9.1+3.3i  & 4.9\times 10^{-4}-1.7\times 10^{-3}i & -1.6\times 10^{-5}-4.5\times 10^{-5}i &36.2&
+0.71+5.3\epsilon^2&0.032\epsilon^2&0.54\epsilon \\
+\mbox{\cite{Fabre2012}} & 9.1+3.3i & 32.6-111.2i & -1.1-3.0i & 36.2
+&0.71+5.3\epsilon^2&0.032\epsilon^2&0.54\epsilon\\
+\hline
+\end{array}
+$$
+\caption{Coefficients of the weakly nonlinear approach }
+\label{tab:WNL_coefs}
+\end{table*}
 
-
-As can be seen on figure \ref{fig:Comp2},  the approach gives good prediction in the immediate vicinity of $Re_c$, but deviation appears very rapidly and disagreement is already large at $Re=48$ (although, as discussed by Gallaire et al.? and also observed by Tchoufag et al. \cite{Tchoufag2015}, a convenient definition of the $\epsilon$ improves the results).
+{\color{red} 
+The forces coefficients given by $F_x({\bf q})$ and $F_y({\bf q})$ are then converted in the more traditional form, $C_x=2F_x({\bf q})$ and $C_y=2F_y({\bf q})$.
+}
+As can be seen on figure \ref{fig:Comp2},  the approach gives good prediction in the immediate vicinity of $Re_c$, but deviation appears very rapidly and disagreement is already large at $Re=48$ (although, as discussed by Gallaire et al.? and also observed by Tchoufag et al. \cite{Tchoufag2015}, a convenient definition of the $\epsilon$ improves the results). {\color{red} These aspects are justified by the pertubative nature of the WNL approach. The description of the limit cycle can be extended to larger $Re$ with the approach presented next.  }
 
 \begin{figure}
 \begin{center}

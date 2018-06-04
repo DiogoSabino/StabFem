@@ -45,7 +45,7 @@ end
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
 
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','V');
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L');
 % Starting point generated for next chapter with 'Retest'
 % Norm chosen with 'Normalization': 'L' (lift) (ops:E,L,V)
 
@@ -77,7 +77,7 @@ figure(22);hold on;
 plot(Re_WNL,Fx_WNL,color_used,'LineWidth',2);hold on; %DIOGO: petite doute ici
 xlabel('Re');ylabel('Cx');
 
-figure(24); hold on;%Do real(Fy_WNL), to delete truncation errs. at 10^-17:
+figure(24); hold on;%Do abs(Fy_WNL), to take into account de fase in Sipp def.:
 plot(Re_WNL,abs(Fy_WNL),color_used,'LineWidth',2);
 xlabel('Re');ylabel('Cy')
 
