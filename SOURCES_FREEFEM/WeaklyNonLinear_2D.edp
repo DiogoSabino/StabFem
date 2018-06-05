@@ -287,7 +287,7 @@ cout << endl << "  >> Frequency = omega0 + im(Lambda)*eps^2 - im(nu0+nu2)*|A|^2 
 cout << endl << "               = " << omegaC <<  " + " << imag(Lambda)<<"*eps^2 -"<< imag(Nu0+Nu2)*AAA^2<<"*eps^2" << endl;
 cout << endl << "               = " << omegaC <<  " + " << imag(Lambda)-imag(Nu0+Nu2)*AAA^2 <<"*eps^2" << endl;
        
-// Summary verified by Diogo and in accordance with article Stabfem (à compreendre le signe moins)
+// Summary verified by Diogo and in accordance with article Stabfem:
 cout << endl << endl << "######### Values for table in article: ##############" << endl << endl;
 cout << "Fx0= "<< Fx0 << " + " << (Fxeps2 + FxA20*AAA^2) << " * eps^2" << endl;
 cout << "|Fx2|= " << sqrt((real(2*FxA22)*AAA^2)^2+(imag(2*FxA22)*AAA^2)^2) <<  " * eps^2" << endl;

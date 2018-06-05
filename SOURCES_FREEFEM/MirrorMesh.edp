@@ -1,8 +1,8 @@
 //
-//  PROGRAM SplitMesh.edp
-//  adaptmesh for 2D flow 
-//   
-// Usage : FreeFem++ SplitMesh.edp 
+//  PROGRAM MirrorMesh.edp
+//  double a mesh for a symmetrical domain : initial mesh is half-domain (y>0), final mesh is full domain.
+ 
+// Usage : FreeFem++ MirrorMesh.edp 
 //
 //  INPUT PARAMETERS : none
 
@@ -43,15 +43,15 @@
         fespace femp0(th,P0);
         fespace femp2xfemp2xfemp1(th,[P2,P2,P1]);
         fespace femp2xfemp2xfemp2xfemp1(th,[P2,P2,P2,P1]);
-        femp2xfemp2xfemp1 [vB,uB,pB]; // base flow
+        femp2xfemp2xfemp1 [vB,uB,pB]; // base flow, 
         femp2xfemp2xfemp2xfemp1 [vBS,uBS,wBS,pBS]; // base flow
-        	
-	cout << "###################################" << endl;
-cout << endl << "       Adapt_Mode.edp        " << endl; 
+        
+	cout << 	"###################################" << endl;
+cout << endl << "       MIRROR_MESH.edp        		" << endl; 
 cout << endl << "###################################" << endl << endl;
 	
 
-cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;  
+cout << endl << "#### Mesh information BEFORE MIRROR :" << endl;  
         cout << "#### Number of vertices    " << th.nv <<  endl;
 	    cout << "### Dimension of matrices " << vB[].n << endl << endl;
 	
@@ -96,18 +96,27 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 	
     cout << " lecture of Base flow : Reynolds number = " << Re << endl;
 
-	mesh thnew;	
+	mesh thmirror,thnew;	
 	
 	
 // selection of the type of adaptation to be done 
 	
-	thnew = splitmesh(th,2);	
+	thmirror = movemesh(th,[x,-y]);
+	 
+
+
+	fespace femp2xfemp2xfemp1M(thmirror,[P2,P2,P1]);
+	femp2xfemp2xfemp1M [vBM,uBM,pBM];
+	vBM[] = vB[];
+	[vBM,uBM,pBM]=[vBM,-uBM,pBM];
+
+	thnew = thmirror+th;
 		
 	plot(thold,wait=1);
 	plot(thnew,wait=1);
 	
 	savemesh(thnew,ffdatadir+"mesh.msh");
-	SFWriteMesh(ffdatadir+"mesh.ff2m",thnew);
+	SFWriteMesh(ffdatadir+"mesh_adapt.ff2m",thnew);
 
 
 	
@@ -119,10 +128,10 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
  	fespace femp2xfemp2xfemp2xfemp1N(thnew,[P2,P2,P2,P1]);
     femp2xfemp2xfemp1N [uNx,uNy,uNp];
   
-    [uNx,uNy,uNp] = [vB,uB,pB]; // interpolation of base flow
-//	plot(uBN,fill=1,wait=1);
-//	plot(vBN,fill=1,wait=1);
-//	plot(pBN,fill=1,wait=1);
+    [uNx,uNy,uNp] = [vB,uB,pB]+[vBM,uBM,pBM]; // interpolation of base flow
+	plot(uNx,fill=1,wait=1);
+	plot(uNy,fill=1,wait=1);
+	plot(uNp,fill=1,wait=1);
 
 	Re = Reans;
 	real nu = 1/Re;
@@ -147,6 +156,8 @@ cout << endl << "#### Mesh information BEFORE ADAPT :" << endl;
 
 // INTERPOLATE THE DATA AND WRITE TO FILE
 
+ 
+ 
  
 
 
