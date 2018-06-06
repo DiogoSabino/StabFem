@@ -121,7 +121,7 @@ XXMh [Ubx,Uby,Pb];		///////  -> Base Flow
 //cout << " nb of Vertices: " << th.nv << endl;
 //cout << " -.-.-.-.-.-.-.-._________-.-.-.-.-.-.-.-." << endl;
 
-//Les macros bis sont definies dans le Macros_StabFEM.edp donc il faut efacer celles-ci et renomer les autres
+//Les macros bis sont definies dans le Macros_StabFEM.edp donc il faut efacer celles-ci et renomer les autres !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 macro div(u) (dx(u#x)+dy(u#y))// macro for divergence 
 macro Conv(ua,ub,v) ( 
               ((ua#x*dx(ub#x)+ua#y*dy(ub#x))+(ub#x*dx(ua#x)+ub#y*dy(ua#x)))*v#x 
