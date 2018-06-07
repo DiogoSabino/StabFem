@@ -1,9 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Instability of the wake of a cylinder with STABFEM  
+%  Instability of the wake of a cylinder with STABFEM
 %
 %  This script demonstrates the main fonctionalities of StabFem for the
 %  reference case of the wake of a cylinder.
-%  1/ Generation of an adapted mesh 
+%  1/ Generation of an adapted mesh
 %
 %  3/ Stability curves St(Re) and sigma(Re) for Re = [40-100]
 %  4/ Determination of the instability threshold and Weakly-Nonlinear
@@ -52,16 +52,16 @@ end
 epsilon2_WNL = -0.003:.0001:.005; % will trace results for Re = 40-55 approx.
 Re_WNL = 1./(1/Rec-epsilon2_WNL);
 
-%NB.: 1)The real part of sqrt(epsilon2_WNL)is taken to include its 
+%NB.: 1)The real part of sqrt(epsilon2_WNL)is taken to include its
 %negative values; 2) The term (epsilon2_WNL>0) is used to take or not into
 %account the NL interaction due to the unsteadyness
 A_WNL = wnl.Aeps*real(sqrt(epsilon2_WNL)); % Amplitude associated to first harmonic (includes de c.c): A_wnl*sqrt(2*|mode|^2)*eps
 Fy_WNL = wnl.Fyeps*2*real(sqrt(epsilon2_WNL)); %A_wnl*FyA1*eps*2 (times 2 to take into account the c.c)
 omega_WNL =Omegac + epsilon2_WNL*imag(wnl.Lambda) ...
-                  - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
+    - epsilon2_WNL.*(epsilon2_WNL>0)*real(wnl.Lambda)*imag(wnl.nu0+wnl.nu2)/real(wnl.nu0+wnl.nu2)  ;
 Fx_WNL = wnl.Fx0 + wnl.Fxeps2*epsilon2_WNL  ...
-                 + wnl.Fxeps20*epsilon2_WNL.*(epsilon2_WNL>0);
-Fx_WNL=Fx_WNL*2; 
+    + wnl.Fxeps20*epsilon2_WNL.*(epsilon2_WNL>0);
+Fx_WNL=Fx_WNL*2;
 % PLOTS of WNL predictions
 colors=['g--';'b--';'r--']; j=3;
 color_used=colors(j,:);
@@ -87,37 +87,33 @@ xlabel('Re');ylabel('AE')
 
 %pause;
 
-
-
 %% CHAPTER 5 : SELF CONSISTENT
-if(1==0)
+
 if(exist('HB_completed')==1)
     disp('SC quasilinear model on the range [Rec , 100] already computed');
 else
     disp('SC quasilinear model on the range [Rec , 100]');
-Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
-
-
-
-%%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
-%%% ANALYSIS
-Res = 47. ; 
-
- Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
-%bf=SF_BaseFlow(bf,'Re',Res);
-%[ev,em] = SF_Stability(bf,'shift',Omegac*i);
-
-[meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',0.,'Re',47.5); 
-
-for Re = Re_HB(2:end)
-    [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'Re',Re);
-    Lx_HB = [Lx_HB meanflow.Lx];
-    Fx_HB = [Fx_HB meanflow.Fx];
-    omega_HB = [omega_HB imag(mode.lambda)];
-    Aenergy_HB  = [Aenergy_HB mode.AEnergy];
-    Fy_HB = [Fy_HB mode.Fy];
-end
-HB_completed = 1;   
+    Re_HB = [Rec 47 47.5 48 49 50 52.5 55 60 65 70 75 80 85 90 95 100];
+    
+    %%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
+    %%% ANALYSIS
+    Res = 47. ;
+    
+    Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
+    %bf=SF_BaseFlow(bf,'Re',Res);
+    %[ev,em] = SF_Stability(bf,'shift',Omegac*i);
+    
+    [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',0.,'Re',47.5);
+    
+    for Re = Re_HB(2:end)
+        [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'Re',Re);
+        Lx_HB = [Lx_HB meanflow.Lx];
+        Fx_HB = [Fx_HB meanflow.Fx];
+        omega_HB = [omega_HB imag(mode.lambda)];
+        Aenergy_HB  = [Aenergy_HB mode.AEnergy];
+        Fy_HB = [Fy_HB mode.Fy];
+    end
+    HB_completed = 1;
 end
 
 %%% chapter 5b : figures
@@ -182,26 +178,26 @@ saveas(gca,'Cylinder_Energy_Re_SC',figureformat);
 pause(0.1);
 
 
-%%% CHAPTER 6 : SELFCONSISTENT APPROACH WITH RE = 100
+%% CHAPTER 6 : SELFCONSISTENT APPROACH WITH RE = 100 and sigma not zero (canceled)
 
 if(exist('SC_completed')==1)
     disp(' SC model for Re=100 : calculation already done');
 else
     disp(' COMPUTING SC model for Re=100');
-% determination of meanflow/selfconsistentmode for Re = 100
-
-bf=SF_BaseFlow(bf,'Re',100);
-[ev,em] = SF_Stability(bf,'shift',0.12+0.72i,'nev',1,'type','D');
-sigma_SC = [real(em.lambda),0.12:-.01:0];
-
-Fy_SC = [0]; Energy_SC = [0];
-[meanflow,mode] = SF_SelfConsistentDirect(bf,em,'sigma',0.12,'Fyguess',0.00728)
-for sigma = sigma_SC(2:end)
-    [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',sigma)
-    Fy_SC = [Fy_SC mode.Fy];
-    AEnergy_SC = [AEnergy_SC mode.AEnergy];
-end
-SC_completed = 1;
+    % determination of meanflow/selfconsistentmode for Re = 100
+    
+    bf=SF_BaseFlow(bf,'Re',100);
+    [ev,em] = SF_Stability(bf,'shift',0.12+0.72i,'nev',1,'type','D');
+    sigma_SC = [real(em.lambda),0.12:-.01:0];
+    
+    Fy_SC = [0]; Energy_SC = [0];
+    [meanflow,mode] = SF_SelfConsistentDirect(bf,em,'sigma',0.12,'Fyguess',0.00728)
+    for sigma = sigma_SC(2:end)
+        [meanflow,mode] = SF_SelfConsistentDirect(meanflow,mode,'sigma',sigma)
+        Fy_SC = [Fy_SC mode.Fy];
+        AEnergy_SC = [AEnergy_SC mode.AEnergy];
+    end
+    SC_completed = 1;
 end
 
 figure(31);hold on;
@@ -223,11 +219,11 @@ saveas(gca,'Cylinder_SC100_EnergySigma',figureformat);
 
 %%%% CHAPTER 7 : HARMONIC BALANCE WITH ORDER 2 (in progress...)
 
-
-[wnl,meanflow,mode,mode2] = SF_WNL(bf,'Retest',47.5); % Here to generate a starting point for the next chapter
+ bf=SF_BaseFlow(bf,'Re',Rec);
+ [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S');
+[wnl,meanflow,mode,mode2] = SF_WNL(bf,em,'Retest',47.5); % Here to generate a starting point for the next chapter
 [meanflow,mode,mode2] = SF_HarmonicBalance_Ordre2(meanflow,mode,mode2);
 
 
 %save('Results_Cylinder.mat');
-end
 

@@ -8,7 +8,7 @@
 //	u = u_0 + [ u_{1,c} cos (omega t) + u_{1,s} sin (omega t) ] e^{lambda t}
 //  This expansion is equivalent to Mantic-Lugo et al: 
 //	u = u_0 + A [U_1 e^{i omega t + sigma t + cc], 
-//		where u_1 is the complex self-consistent mode.											 /////////////// DIOGO a enlevé le "i" sur lambda
+//		where u_1 is the complex self-consistent mode.							/////////////// DIOGO a enlevé le "i" sur lambda
 //  The connection between both parametrizations is: 
 //	u_{1,c} - i u_{1,s} = 2 A u_1,
 //		where u_1 is normalised with ||u_1|| = 1/sqrt(2). 
@@ -54,10 +54,8 @@ fespace Mh(th,P1);            ////// f.e. space for pressure
 fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
 fespace BIGSPACE(th,[P2,P2,P1,P2,P2,P1,P2,P2,P1]); //For the second way formulation
 
-
 XXMh [ubx,uby,ubp]; // base flow (start) 
-XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)      
-//Mh dumb; // to construct the rhs's    											///DIOGO:		ITS USELESS: TAKE IT OUT
+XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)
 
 XXMh [u0x,u0y,u0p],[u1cx,u1cy,u1cp],[u1sx,u1sy,u1sp]; // components 0 (mean flow) and 1 (fundamental, re and im) of HB  
 XXMh [du0x,du0y,du0p],[du1cx,du1cy,du1cp],[du1sx,du1sy,du1sp]; // Increments in Newton
@@ -97,8 +95,8 @@ macro NSL(nu,U,u,v)
 //EOM
         
 macro Boundaryconditions(u1,u2,v1,v2,symmetry)
-	on(bcinlet,u1=0.0,u2=0.0) 
-	+ on(bcwall,u1=0.0,u2=0.0)
+	/* on(bcinlet,u1=0.0,u2=0.0) + on(bcwall,u1=0.0,u2=0.0) */
+          int1d(th,bcinlet,bcwall)(u1*v1*1e30+u2*v2*1e30)
 	+ int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
 //EOM 
 
@@ -124,7 +122,7 @@ macro EnergyNormCS(uc,us) sqrt( 2*.5* int2d(th)(abs(uc#x)^2+abs(uc#y)^2+abs(us#x
 
 /////////////////////////////////////////////////////////////////////////////////
 /// Display Menu   //////////////////////////////////////////////////////////////
-real eps=1.e-7;      
+//real eps=1.e-7;      
 real sigma1; // parameter sigma1 from Mantic-lugo et al ; should be zero for harmonic balance
 //real A,dA ; // amplitude 
 
@@ -205,10 +203,8 @@ else if(normalisation=="E")
 		cout << "Cy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 	};
 
+
 [u0x,u0y,u0p] = [ubx,uby,ubp];
-
-
- 
 [u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
 [u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)]; 
 cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s) << endl << endl;
@@ -227,7 +223,7 @@ cout << " Defining operators for nonlinear term..." << endl;
 // block 1 : NS for base flow
 varf NLOpF1([du0x,du0y,du0p],[vx,vy,vp]) =
 	int2d(th)( NS(nu,u0,v) )
- 	+ Boundaryconditions(du0x,du0y,vx,vy,"S")								///DIOGO DOUTE	serve a alguma coisa ? é que nos metemos a zeros quando construimos a matrix...
+ 	+ Boundaryconditions(du0x,du0y,vx,vy,"S")				///DIOGO DOUTE	serve a alguma coisa ? é que nos metemos a zeros quando construimos a matrix...
 	+int2d(th)( - .25*Conv(u1c,u1c,v) - .25*Conv(u1s,u1s,v) ); 						
 			
 // block 2 : base-flow effect on real part of eigenmode			
@@ -332,7 +328,7 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 	real RHSF4 = Lift(1/Re,u1sx,u1sy,u1sp); 	
 	
 	real[int] RHS = [RHSF1, RHSF2, RHSF3, RHSF4];		
-//	cout <<  " max RHS : " << RHSF1.l2 <<  ", " << RHSF2.l2 <<  ", " << RHSF3.l2 <<  ", " << RHSF4 << endl;
+	cout <<  " max RHS : " << RHSF1.l2 <<  ", " << RHSF2.l2 <<  ", " << RHSF3.l2 <<  ", " << RHSF4 << endl;
 
 	cout << " Assembling matrix..." << endl;
 		matrix matLinOp11 = LinOp11(XXMh,XXMh);

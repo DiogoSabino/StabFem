@@ -42,7 +42,9 @@ load "MUMPS_seq"
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
-
+real TGV=1.e20;
+real cpuINIT,cpuEND;
+cpuINIT=clock();
 /////////////////////////////////////////////////////////////////////////////////
 /// Reading Mesh   //////////////////////////////////////////////////////////////
 mesh th=readmesh(ffdatadir+"mesh.msh");
@@ -52,12 +54,11 @@ mesh th=readmesh(ffdatadir+"mesh.msh");
 /// Problem Variables   /////////////////////////////////////////////////////////
 //fespace Xh(th,P2);             ////// f.e. space for vel.
 //fespace Mh(th,P1);            ////// f.e. space for pressure
-fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]  // j'ai besoin à la fin pour ecrire les resultats; voir ecriture MeanFlow.txt
+fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]  
 fespace BIGSPACE(th,[P2,P2,P1,P2,P2,P1,P2,P2,P1]); //For the second way formulation
 
 XXMh [ubx,uby,ubp]; // base flow (start) 
 XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)      
-//Mh dumb; // to construct the rhs's    											///DIOGO:		ITS USELESS: TAKE IT OUT
 
 //XXMh [u0x,u0y,u0p],[u1cx,u1cy,u1cp],[u1sx,u1sy,u1sp]; // components 0 (mean flow) and 1 (fundamental, re and im) of HB  
 //XXMh [du0x,du0y,du0p],[du1cx,du1cy,du1cp],[du1sx,du1sy,du1sp]; // Increments in Newton
@@ -66,7 +67,8 @@ XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)
 //BIGSPACE [uuubx,uuuby,uuubp,uuu1rx,uuu1ry,uuu1rp,uuu1ix,uuu1iy,uuu1ip]; // THE BIG VARIABLE for the initial guess value
 BIGSPACE [uuu0x,uuu0y,uuu0p,uuu1cx,uuu1cy,uuu1cp,uuu1sx,uuu1sy,uuu1sp]; // THE BIG VARIABLE for the state vector
 BIGSPACE [duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp]; // THE BIG VARIABLE for the Newton increments
-BIGSPACE [v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p];
+BIGSPACE [v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p]; //test functions
+
 
 real Re, ReM;
 real omega, omegaM, sigmaM, domega;
@@ -129,7 +131,7 @@ macro EnergyNormCS(uc,us) sqrt( 2*.5* int2d(th)(abs(uc#x)^2+abs(uc#y)^2+abs(us#x
 
 /////////////////////////////////////////////////////////////////////////////////
 /// Display Menu   //////////////////////////////////////////////////////////////
-real eps=1.e-7;      
+real eps=1.e-25;      
 real sigma1; // parameter sigma1 from Mantic-lugo et al ; should be zero for harmonic balance
 //real A,dA ; // amplitude 
 
@@ -157,9 +159,6 @@ cbin >> u1x[] >> ReM >> sigmaM >> omegaM;
 cout << " 			omega of the starting field = " << omegaM<< endl;
 cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u1)/sqrt(2) << endl;	
-//[u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 									// I think thid is not essencial
-//[u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)];  
-//cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s) << endl << endl;
 }
 
 cout << " Guess for omega ? [-1 -> the one read in the guess file] " << endl; 
@@ -231,19 +230,24 @@ cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS
 //////// varf for BIGSPACE RHS    ///////////////////////////////////////////////
 cout << "Constructing RHS: " << endl;
 varf NLOpFBIGSPACE ([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p])=
-	/////////////////////////////////////////////////////////////////////////	
+	/////////////////////////////////////////////////////////////////////////
+	// block 1 : NS for base flow        ////////////////////////////////////	
 	int2d(th)( NS(nu,uuu0,v1) )
  	+ Boundaryconditions(duuu0x,duuu0y,v1x,v1y,"S")
 	+int2d(th)( - .25*Conv(uuu1c,uuu1c,v1) - .25*Conv(uuu1s,uuu1s,v1) )
-	///////////////////////////////////////////////////////////////////////// 
+	/////////////////////////////////////////////////////////////////////////
+	// block 2 : base-flow effect on real part of eigenmode	   //////////////
+	//+int2d(th)((uuu0x*v2x+uuu0y*v2y+uuu0p*v2p)*eps) 
 	+int2d(th)( NSL(nu,uuu0,uuu1c,v2) )
-	//- int2d(th) ( sigma1 * (uuu1cx*vx+u1cy*vy) )
+	- int2d(th) ( sigma1 * (uuu1cx*v2x+uuu1cy*v2y) )
 	- int2d(th) ( omega * (uuu1sx*v2x+uuu1sy*v2y ) ) 
 	+ Boundaryconditions(duuu1cx,duuu1cy,v2x,v2y,"A")
 	/////////////////////////////////////////////////////////////////////////
+	// block 3 : base-flow effect on imag part of eigenmode	   //////////////
+	//+int2d(th)((uuu0x*v3x+uuu0y*v3y+uuu0p*v3p)*eps) 
 	+int2d(th)( NSL(nu,uuu0,uuu1s,v3)  )              
 	+ Boundaryconditions(duuu1sx,duuu1sy,v3x,v3y,"A")			
-	//- int2d(th) ( sigma1 * (u1sx*vx+u1sy*vy) )
+	- int2d(th) ( sigma1 * (uuu1sx*v3x+uuu1sy*v3y) )
 	+ int2d(th) ( omega * (uuu1cx*v3x+uuu1cy*v3y ) );
 	/////////////////////////////////////////////////////////////////////////
 	// blocks 4 : fix the phase with imag(lift)
@@ -259,43 +263,46 @@ varf LinOpBIGSPACE ([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1s
 	int2d(th)( NSL(nu,uuu0,duuu0,v1) )        
  	+ Boundaryconditions(duuu0x,duuu0y,v1x,v1y,"S")
 	// Block 1-2/////////////////////////////////////////////////////////////
-	+int2d(th)( -.5*Conv(uuu1c,duuu1c,v2) )
+	+int2d(th)( -.5*Conv(uuu1c,duuu1c,v1) )
 	// Block 1-3/////////////////////////////////////////////////////////////
-	+int2d(th)( -.5*Conv(uuu1s,duuu1s,v3) )
+	+int2d(th)( -.5*Conv(uuu1s,duuu1s,v1) )
 	/////////////////////////////////////////////////////////////////////////
 	// Block 2-1/////////////////////////////////////////////////////////////
-	+int2d(th)( - Conv(duuu0,uuu1c,v1) )
+	+int2d(th)( - Conv(duuu0,uuu1c,v2) )
 	// Block 2-2/////////////////////////////////////////////////////////////
 	+int2d(th)( NSL(nu,uuu0,duuu1c,v2) )
-	//- int2d(th)( sigma1*(duuu1cx*v2x+duuu1cy*v2y) )
+	- int2d(th)( sigma1*(duuu1cx*v2x+duuu1cy*v2y) )
 	+ Boundaryconditions(duuu1cx,duuu1cy,v2x,v2y,"A")
 	// Block 2-3/////////////////////////////////////////////////////////////
-	+int2d(th)(-omega*(duuu1sx*v3x+duuu1sy*v3y))
+	+int2d(th)(-omega*(duuu1sx*v2x+duuu1sy*v2y))
 	/////////////////////////////////////////////////////////////////////////
 	// Block 3-1/////////////////////////////////////////////////////////////
-	+int2d(th)( - Conv(duuu0,uuu1s,v1) )
+	+int2d(th)( - Conv(duuu0,uuu1s,v3) )
 	// Block 3-2/////////////////////////////////////////////////////////////
-	+int2d(th)(omega*(duuu1cx*v2x+duuu1cy*v2y))
+	+int2d(th)(omega*(duuu1cx*v3x+duuu1cy*v3y))
 	// Block 3-3/////////////////////////////////////////////////////////////
 	+int2d(th)( NSL(nu,uuu0,duuu1s,v3) )
-	//- int2d(th) ( sigma1*(duuu1sx*v3x+duuu1sy*v3y) )
-//	+int2d(th)((/*duuu0x*v1x+duuu0y*v1y+*/duuu0p*v1p+duuu1cx*v2x+duuu1cy*v2y+duuu1cp*v2p+duuu1sx*v3x+duuu1sy*v3y+duuu1sp*v3p)*1e-7)
+	- int2d(th) ( sigma1*(duuu1sx*v3x+duuu1sy*v3y) )
+//	+int2d(th)((/*duuu0x*v1x+duuu0y*v1y+*/duuu0p*v1p+duuu1cx*v2x+duuu1cy*v2y+duuu1cp*v2p+duuu1sx*v3x+duuu1sy*v3y+duuu1sp*v3p)*1e-7) Pour assurer avoir tout les termes sur la diagonale
 	+ Boundaryconditions(duuu1sx,duuu1sy,v3x,v3y,"A");
 cout << "Constructing Linear Main part done. " << endl;
 
 varf LinOpColumn4([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p])=
 	/////////////////////////////////////////////////////////////////////////
 	// block 2-4 : effect of domega on eigenmode-real equations /////////////
-	int2d(th)(-(uuu1sx*v1x+uuu1sy*v1y)) //Pas sur des fonctions tests// this is to be multiplied by domega
+	int2d(th)(-(uuu1sx*v2x+uuu1sy*v2y)) //Pas sur des fonctions tests// this is to be multiplied by domega
 	/////////////////////////////////////////////////////////////////////////
 	// block 3-4 : effect of domega on eigenmode-imag equations /////////////
-	+int2d(th)((uuu1cx*v1x+uuu1cy*v1y));//Pas sur des fonctions tests
+	//+int2d(th)(eps*(duuu0x*v1x+duuu0y*v1y+duuu0p*v1p))//Pas sur des fonctions tests //DIOGO qui essaye des choses...
+	+int2d(th)(uuu1cx*v3x+uuu1cy*v3y);//Pas sur des fonctions tests
 cout << "Constructing Linear Colum part done. " << endl;
 
-varf LinOpLine4([v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p],[duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp])	//ATTENTION inversion
+varf LinOpLine4([v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p],[duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp])= 	//ATTENTION inversion
 	/////////////////////////////////////////////////////////////////////////
+	//int2d(th)(eps*(duuu0x*v1x+duuu0y*v1y+duuu0p*v1p+duuu1cx*v2x+duuu1cy*v2y+duuu1cp*v2p))+
+	//int2d(th)(eps*(duuu0x+duuu0y+duuu0p+duuu1cx+duuu1cy+duuu1cp))+
 	// bloc 4-3 : to fix the phase by imposing Lift(u1s) = 0
-	= Lift(1/Re,duuu1sx,duuu1sy,duuu1sp);
+	Lift(1/Re,duuu1sx,duuu1sy,duuu1sp);
 cout << "Constructing Linear Line part done. " << endl;
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -309,43 +316,41 @@ cout << "Entering in Newton" << endl;
 real tolBIGSPACE = 1e-6;
 real dddXX = 1;
 int iterBIGSPACE=1;
-while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<1000&&iterBIGSPACE<100)
+while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 { 
 	//Construct the RHS
-	cout << "RHS_1" << endl;
+	cout << "1-Constructing the RHS..." << endl;
 	real[int] RHSBIGSPACE(uuu0x[].n);
-	cout << "RHS_2" << endl;
 	RHSBIGSPACE = NLOpFBIGSPACE(0,BIGSPACE);
-	cout << "RHS_3" << endl;
 	real RHSF4BIGSPACE = Lift(1/Re,uuu1sx,uuu1sy,uuu1sp); 
-	cout << "RHS_4" << endl;
 	real[int] RHS=[RHSBIGSPACE, RHSF4BIGSPACE];
-	cout << "RHS_5" << endl;
+	cout << "2-RHS Done" << endl;
+	cout <<  " max RHS: " << RHSBIGSPACE.l2 << endl;
 
 	//Assembling Matrix
-	cout << "Matrix_1" << endl;
+	cout << "3-Constructing Blocks of Matrix..." << endl;
 	matrix matLinOp = LinOpBIGSPACE(BIGSPACE,BIGSPACE);
 	real[int] matLinOpColumn4=LinOpColumn4(0,BIGSPACE);
 	real[int] matLinOpLine4 = LinOpLine4(0,BIGSPACE);
-	cout << "Matrix_2" << endl;
+	cout << "4-Assembling Matrix..." << endl;
 
 	matrix LinOpMATRIXBIGSPACE =	[	
-						[	matLinOp	,		matLinOpColumn4 ],
-						[	matLinOpLine4'	,			1e-30  	]
+						[	matLinOp	,	matLinOpColumn4 ],
+						[	matLinOpLine4'	,		0  	]   //A VOIR SI ON A BESOIN D'UN EPS
 					];
-	cout << "Matrix_3" << endl;	
+	cout << "5-Matrix Done" << endl;	
 	//LU-ing matrix
-	cout << "LU_1" << endl;
-	set(LinOpMATRIXBIGSPACE,solver=sparsesolver); 			/////////////////////////////////////////Parler à Paul
+	cout << "6-LU-ing matrix..." << endl;
+	set(LinOpMATRIXBIGSPACE,solver=sparsesolver); 		
 
 	//Solving BIG problem...
-	cout << "SOLVE_1" << endl;
+	cout << "7-Solving BIG problem..." << endl;
 	real[int] dddX(LinOpMATRIXBIGSPACE.n);
-	cout << "SOLVE_2" << endl;
-	dddX = LinOpMATRIXBIGSPACE^-1*RHS; 				/////////////////////////////////////////Parler à Paul
-	cout << "SOLVE_3" << endl;
+	cout << "8-SOLVE_2" << endl;
+	dddX = LinOpMATRIXBIGSPACE^(-1)*RHS; 
+	cout << "9-SOLVE_3" << endl;
 	[duuu0x[], domega] = dddX;
-	cout << "SOLVE_4" << endl;
+	cout << "10-SOLVED" << endl;
 	
 	uuu0x[] -= duuu0x[];
 	omega -= domega;
@@ -426,6 +431,9 @@ else
 	};
 
 };
-	
+
+
+cpuEND=clock();
+cout << "Time consumed by the all program: " <<cpuINIT-cpuEND << endl;
 // END PROGRAM
 

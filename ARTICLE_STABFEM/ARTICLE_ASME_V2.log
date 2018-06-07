@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.23)  5 JUN 2018 10:16
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.23)  5 JUN 2018 17:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -332,7 +332,11 @@ Package: suffix 2006/07/15 1.5a Variant command support
 \c@CPT@numB=\count123
 \CPT@commandatend@toks=\toks21
 )
-(./ARTICLE_ASME_V2.aux)
+(./ARTICLE_ASME_V2.aux
+
+LaTeX Warning: Label `WNL3' multiply defined.
+
+)
 \openout1 = `ARTICLE_ASME_V2.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 73.
@@ -350,8 +354,7 @@ LaTeX Font Info:    ... okay on input line 73.
 LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 73.
 LaTeX Font Info:    ... okay on input line 73.
 LaTeX Font Info:    Try loading font information for OT1+ptm on input line 73.
-
-(/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+ (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
 (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
@@ -455,22 +458,6 @@ Overfull \hbox (39.74762pt too wide) in paragraph at lines 77--77
  [] 
  []
 
-
-LaTeX Warning: Citation `MLugo2014' on page 1 undefined on input line 86.
-
-
-LaTeX Warning: Citation `Dreid2004' on page 1 undefined on input line 104.
-
-
-LaTeX Warning: Citation `GiannettiLuchini' on page 1 undefined on input line 11
-1.
-
-
-LaTeX Warning: Citation `Marquet' on page 1 undefined on input line 111.
-
-
-LaTeX Warning: Citation `SippLebedev' on page 1 undefined on input line 112.
-
 \openout3 = `ARTICLE_ASME_V2-1.cpt'.
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <8> not available
@@ -505,36 +492,20 @@ ase-flow
  []
 
 [2]
-
-LaTeX Warning: Citation `LucBott2014' on page 3 undefined on input line 267.
-
-
-LaTeX Warning: Citation `SchmidHenningson2001' on page 3 undefined on input lin
-e 279.
-
-
-LaTeX Warning: Citation `Jmc2005' on page 3 undefined on input line 286.
-
-
-LaTeX Warning: Citation `Ps2007' on page 3 undefined on input line 286.
-
-
-LaTeX Warning: Citation `Arnoldi51' on page 3 undefined on input line 318.
-
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 335.
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 340.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <7> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 340.
-<./FIGURES/Cylinder_Mesh.png, id=77, 562.2606pt x 314.6154pt>
+ <./FIGURES/Cylinder_Mesh.png, id=106, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Mesh.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Mesh.png>
 Package pdftex.def Info: ./FIGURES/Cylinder_Mesh.png used on input line 363.
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_BaseFlowRe60.png, id=78, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_BaseFlowRe60.png, id=107, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_BaseFlowRe60.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_BaseFlowRe60.png>
@@ -546,7 +517,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 363--368
 [][]
  []
 
-<./FIGURES/Cylinder_Lx_baseflow.png, id=79, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Lx_baseflow.png, id=108, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Lx_baseflow.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Lx_baseflow.png>
@@ -554,7 +525,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_Lx_baseflow.png used on input line
 373.
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_Drag_baseflow.png, id=80, 562.2606pt x 315.0972pt>
+<./FIGURES/Cylinder_Drag_baseflow.png, id=109, 562.2606pt x 315.0972pt>
 File: ./FIGURES/Cylinder_Drag_baseflow.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Drag_baseflow.png>
@@ -567,10 +538,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 373--375
  []
 
 [3]
-
-LaTeX Warning: Citation `adapt' on page 4 undefined on input line 389.
-
-
 Underfull \hbox (badness 1472) in paragraph at lines 388--391
 \OT1/ptm/m/n/10 adap-ta-tion method. The im-ple-men-ta-tion re-lies on the
  []
@@ -581,7 +548,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 408--415
 he two-
  []
 
-[4] <./FIGURES/Cylinder_Sigma_Re.png, id=132, 562.2606pt x 314.6154pt>
+[4] <./FIGURES/Cylinder_Sigma_Re.png, id=169, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Sigma_Re.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Sigma_Re.png>
@@ -589,7 +556,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_Sigma_Re.png used on input line 472
 .
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_Strouhal_Re.png, id=133, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Strouhal_Re.png, id=170, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Strouhal_Re.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Strouhal_Re.png>
@@ -608,7 +575,7 @@ Underfull \hbox (badness 7796) in paragraph at lines 474--474
 er $\OML/ptmcm/m/it/10 St \OT1/ptmcm/m/n/10 =
  []
 
-<./FIGURES/Cylinder_EigenModeRe60.png, id=134, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_EigenModeRe60.png, id=171, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_EigenModeRe60.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_EigenModeRe60.png>
@@ -616,7 +583,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_EigenModeRe60.png used on input lin
 e 480.
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_EigenModeAdjRe60.png, id=135, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_EigenModeAdjRe60.png, id=172, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_EigenModeAdjRe60.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_EigenModeAdjRe60.png>
@@ -624,7 +591,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_EigenModeAdjRe60.png used on input
 line 483.
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_SensitivityRe60.png, id=136, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_SensitivityRe60.png, id=173, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_SensitivityRe60.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_SensitivityRe60.png>
@@ -657,46 +624,24 @@ Overfull \hbox (1.51396pt too wide) detected at line 572
  []
 
 
-LaTeX Warning: Citation `FDR2016' on page 7 undefined on input line 658.
-
-
-LaTeX Warning: Reference `LAMBDA' on page 7 undefined on input line 684.
-
-
-LaTeX Warning: Reference `NU0' on page 7 undefined on input line 684.
-
-
-LaTeX Warning: Reference `NU2' on page 7 undefined on input line 684.
-
-
 Overfull \hbox (29.18896pt too wide) detected at line 715
 [][] []
  []
 
 [7]
-Underfull \hbox (badness 1286) in paragraph at lines 750--751
-[]\OT1/ptm/m/n/10 Secondly, [?] pro-posed the fol-low-ing []nor-mal-iza-tion[]
- []
-
 
 LaTeX Warning: Citation `Fabre2012' on page 8 undefined on input line 756.
 
 
-LaTeX Warning: Reference `fig:listingNL' on page 8 undefined on input line 772.
-
-
-
-Underfull \hbox (badness 7415) in paragraph at lines 772--786
-[]\OT1/ptm/m/n/10 Figure [], which is ex-tracted from the script
+Underfull \hbox (badness 10000) in paragraph at lines 772--786
+[]\OT1/ptm/m/n/10 Figure [][]6[][], which is ex-tracted from the script
  []
 
 
-LaTeX Warning: Reference `fig:listingNL' on page 8 undefined on input line 788.
-
-
-
-LaTeX Warning: Reference `tab:WNL_coefs' on page 8 undefined on input line 790.
-
+Underfull \hbox (badness 10000) in paragraph at lines 772--786
+[][]\OT1/pcr/m/n/10 SCRIPT_CYLINDER_NONLINEAR.m[]\OT1/ptm/m/n/10 , il-lus-trate
+ the
+ []
 
 
 Overfull \hbox (52.86089pt too wide) detected at line 809
@@ -706,13 +651,7 @@ Overfull \hbox (52.86089pt too wide) detected at line 809
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-
-LaTeX Warning: Reference `fig:Comp2' on page 8 undefined on input line 817.
-
-
-LaTeX Warning: Citation `Tchoufag2015' on page 8 undefined on input line 817.
-
-<./FIGURES/Cylinder_Strouhal_Re_HB.png, id=188, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Strouhal_Re_HB.png, id=244, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Strouhal_Re_HB.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Strouhal_Re_HB.png>
@@ -720,7 +659,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_Strouhal_Re_HB.png used on input li
 ne 821.
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_Cx_Re_HB.png, id=189, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Cx_Re_HB.png, id=245, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Cx_Re_HB.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Cx_Re_HB.png>
@@ -728,7 +667,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_Cx_Re_HB.png used on input line 822
 .
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_Cy_Re_SC.png, id=190, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Cy_Re_SC.png, id=246, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Cy_Re_SC.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Cy_Re_SC.png>
@@ -736,7 +675,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_Cy_Re_SC.png used on input line 823
 .
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/Cylinder_Energy_Re_SC.png, id=191, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Energy_Re_SC.png, id=247, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Energy_Re_SC.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Energy_Re_SC.png>
@@ -744,7 +683,7 @@ Package pdftex.def Info: ./FIGURES/Cylinder_Energy_Re_SC.png used on input line
  824.
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
 
-<./FIGURES/toto.png, id=192, 1009.7725pt x 512.91624pt>
+<./FIGURES/toto.png, id=248, 1009.7725pt x 512.91624pt>
 File: ./FIGURES/toto.png Graphic file (type png)
 
 <use ./FIGURES/toto.png>
@@ -756,51 +695,19 @@ Overfull \vbox (10.21275pt too high) has occurred while \output is active []
 
 [8]
 
-LaTeX Warning: Reference `SC' on page 9 undefined on input line 866.
-
-
-LaTeX Warning: Reference `sis1' on page 9 undefined on input line 879.
-
-
-LaTeX Warning: Reference `sis2' on page 9 undefined on input line 880.
-
-
-LaTeX Warning: Reference `SC' on page 9 undefined on input line 890.
-
-
-LaTeX Warning: Reference `SC' on page 9 undefined on input line 893.
-
-
 LaTeX Warning: Reference `fig:SC100' on page 9 undefined on input line 896.
 
-<./FIGURES/Cylinder_Lx_Re_HB.png, id=224, 562.2606pt x 314.6154pt>
+<./FIGURES/Cylinder_Lx_Re_HB.png, id=291, 562.2606pt x 314.6154pt>
 File: ./FIGURES/Cylinder_Lx_Re_HB.png Graphic file (type png)
 
 <use ./FIGURES/Cylinder_Lx_Re_HB.png>
 Package pdftex.def Info: ./FIGURES/Cylinder_Lx_Re_HB.png used on input line 904
 .
 (pdftex.def)             Requested size: 217.24239pt x 121.55695pt.
- [9]
-
-LaTeX Warning: Reference `HBEq0' on page 10 undefined on input line 949.
-
-
-LaTeX Warning: Reference `HBEq1' on page 10 undefined on input line 949.
-
-
-LaTeX Warning: Reference `HBphase' on page 10 undefined on input line 949.
-
-[10 <./FIGURES/Cylinder_Strouhal_Re_HB.png (PNG copy)> <./FIGURES/Cylinder_Cx_R
-e_HB.png (PNG copy)> <./FIGURES/Cylinder_Cy_Re_SC.png (PNG copy)> <./FIGURES/Cy
-linder_Energy_Re_SC.png (PNG copy)> <./FIGURES/toto.png> <./FIGURES/Cylinder_Lx
-_Re_HB.png (PNG copy)>]
-
-LaTeX Warning: Reference `fig:Comp2' on page 11 undefined on input line 993.
-
-
-LaTeX Warning: Reference `fig:Comp1' on page 11 undefined on input line 995.
-
-
+ [9] [10 <./FIGURES/Cylinder_Strouhal_Re_HB.png (PNG copy)> <./FIGURES/Cylinder
+_Cx_Re_HB.png (PNG copy)> <./FIGURES/Cylinder_Cy_Re_SC.png (PNG copy)> <./FIGUR
+ES/Cylinder_Energy_Re_SC.png (PNG copy)> <./FIGURES/toto.png> <./FIGURES/Cylind
+er_Lx_Re_HB.png (PNG copy)>]
 Underfull \hbox (badness 1102) in paragraph at lines 1017--1018
 \OT1/ptm/m/n/10 the script \OT1/ptm/m/it/10 SCRIPT[]CYLINDER[]MESHCONVERGENCE.m
 
@@ -835,28 +742,22 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 1172.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1172.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1172.
 
+Package rerunfilecheck Info: File `ARTICLE_ASME_V2.out' has not changed.
+(rerunfilecheck)             Checksum: B1358F8E2DF1F109BF10BB103C284F32;694.
 
-
-Package rerunfilecheck Warning: File `ARTICLE_ASME_V2.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `ARTICLE_ASME_V2.out':
-(rerunfilecheck)             Before: 329DEB1B941BDB4D8D59279E0500B357;508
-(rerunfilecheck)             After:  B1358F8E2DF1F109BF10BB103C284F32;694.
 
 LaTeX Warning: There were undefined references.
 
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: There were multiply-defined labels.
 
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1172.
  ) 
 Here is how much of TeX's memory you used:
- 8351 strings out of 493029
- 120310 string characters out of 6136234
- 263249 words of memory out of 5000000
- 11575 multiletter control sequences out of 15000+600000
+ 8354 strings out of 493029
+ 120343 string characters out of 6136234
+ 265723 words of memory out of 5000000
+ 11578 multiletter control sequences out of 15000+600000
  56496 words of font info for 112 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  34i,17n,40p,1304b,1643s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -874,10 +775,10 @@ ive/texmf-dist/fonts/type1/urw/symbol/usyr.pfb></usr/share/texlive/texmf-dist/f
 onts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/
 times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.p
 fb></usr/share/texlive/texmf-dist/fonts/type1/urw/zapfchan/uzcmi8a.pfb>
-Output written on ARTICLE_ASME_V2.pdf (13 pages, 840483 bytes).
+Output written on ARTICLE_ASME_V2.pdf (13 pages, 842415 bytes).
 PDF statistics:
- 377 PDF objects out of 1000 (max. 8388607)
- 327 compressed objects within 4 object streams
+ 430 PDF objects out of 1000 (max. 8388607)
+ 380 compressed objects within 4 object streams
  161 named destinations out of 1000 (max. 500000)
- 132 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 156 words of extra memory for PDF output out of 10000 (max. 10000000)
 
