@@ -17,10 +17,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% use twocolumn and 10pt options with the asme2ej format
+
 \documentclass[twocolumn,10pt]{asme2ej}
 
+\usepackage[none]{hyphenat}
 \usepackage{epsfig} %% for loading postscript figures
 \usepackage{amsmath}
+
+\usepackage{breqn}
 
 \graphicspath{{./}{./FIGURES/}}
 \usepackage{listings}
@@ -153,8 +157,8 @@ Although we don't claim to invent any radically new method, our exposition and i
 
 We start from the general problem of a flow field $[{\bf u},p]$ satisfying the incompressible Navier-Stokes equations on a domain $\Omega$,
 \begin{eqnarray} \label{NSprimitive}
-\partial_t {\bf u} = {\cal NS} ({\bf u};p)
-\equiv - {\bf u} \cdot \nabla {\bf u} - \nabla p + \frac{2}{Re}  \nabla \cdot {\mathsf{D}}({\bf u})  \\
+\partial_t {\bf u} = {\color{red}{\cal NS} ({\bf u},p)}
+\equiv - {\bf u} \cdot \nabla {\bf u} - \nabla p + \frac{2}{Re}  \nabla \cdot {\mathsf{D}}({\bf u}),  \\
 \nabla \cdot {\bf u} = 0,
 \end{eqnarray}
 
@@ -162,19 +166,19 @@ with suitable boundary conditions on the frontier $\partial \Omega$ of the domai
 Here $ {\mathsf{D}}({\bf u}) $ is the rate-of-strain tensor defined as
 $$
  {\mathsf{D}}({\bf u}) = 1/2
-\left( \nabla {\bf u} +  \nabla^T  {\bf u}\right)
+\left( \nabla {\bf u} +  \nabla^T  {\bf u}\right),
 $$ 
 In the framework of finite element methods, we need to write the equation in weak form.
 Prior to this we define a scalar product as follows, for either scalar or vectorial quantities 
 $\left< \phi_1, \phi_2 \right> $:
 $$
-\left< \phi_1, \phi_2 \right> = \int_\Omega \overline{\phi}_1 \cdot \phi_2   \mbox{ d} \Omega
+\left< \phi_1, \phi_2 \right> = \int_\Omega \overline{\phi}_1 \cdot \phi_2   \mbox{ d} \Omega,
 $$
 The weak form of the Navier-Stokes equations is readily defined by introducing test functions 
 $[{\bf v},q]$ associated with the momentum and continuity equations, and integrating over the domain\footnote{In the simple presentation given here we have omitted the issue of boundary conditions. Details on way boundary conditions can be incorporated in the weak formulation through integration by parts can be found in the appendix.}
 
 \be{NSweak}
-\forall [{\bf v},q], \quad \partial_t \left< {\bf v}, {\bf u}\right> = \left< {\bf v} , {\cal NS} ({\bf u};p) \right> + \left< q, \nabla \cdot {\bf u}\right>.
+\forall [{\bf v},q], \quad \partial_t \left< {\bf v}, {\bf u}\right> = \left< {\bf v} , {\color{red}{\cal NS} ({\bf u},p)} \right> + \left< q, \nabla \cdot {\bf u}\right>.
 \ee
 
 
@@ -201,14 +205,15 @@ $[{\bf v},q]$ associated with the momentum and continuity equations, and integra
 \paragraph{Newton iteration}
 
 
-We look for a steady base-flow $({\bf u}_b;p_b)$ satisfying the steady Navier-Stokes equations, i.e. 
-${\cal NS} ({\bf u}_b,p_b) = 0$.
-Suppose that we have a 'guess' for the base flow $[{\bf u}_b^g,p_b^g]$  which almost satisfies the equations.  We look for a better approximation under the form
+We look for a steady base-flow {\color{red}$[{\bf u}_b,p_b]$} satisfying the steady Navier-Stokes equations, i.e. 
+%${\cal NS} ({\bf u}_b,p_b) = 0$.
+{\color{red}${\cal NS} ({\bf u}_b,p_b) = 0$.}
+Suppose that we have a {\color{red}``guess''}  for the base flow $[{\bf u}_b^g,p_b^g]$  which almost satisfies the equations.  We look for a better approximation under the form
 \be{Newton1}
 [{\bf u}_b,p_b]  = [{\bf u}_b^g,p_b^g] + [\delta {\bf u}_b, \delta p_b].
 \ee
 Injecting (\ref{Newton1}) into the weak form (\ref{NSweak}) of the Navier-Stokes equations and developing up to linear terms in terms of the perturbation lead to  
-${\cal NS}  ({\bf u}_b^g,p_b^g) + {\cal L} _{{\bf u}_b^g}(\delta {\bf u}_b,\delta p_b;{\bf u}_b^g)$, which can also be written in weak form as :
+${\cal NS}  ({\bf u}_b^g,p_b^g) + {\color{red} {\cal L} _{{\bf u}_b^g}(\delta {\bf u}_b,\delta p_b)}$, which can also be written in weak form as :
 %\be
 %{\cal C}( {\bf u}_b^g , \delta {\bf u}_b) -\nabla \delta p_b 
 %-2 \nu \nabla  {\bf D}(\delta {\bf u}_b)
@@ -218,13 +223,13 @@ ${\cal NS}  ({\bf u}_b^g,p_b^g) + {\cal L} _{{\bf u}_b^g}(\delta {\bf u}_b,\delt
 %\ee
 %Or equivalently, in weak form :
 \bes{Newton2}
-&\left< {\bf v}, {\cal NS} ({\bf u}_b^g)\right> + \left<q, \nabla \cdot {\bf u}_b^g\right>  
+&\left< {\bf v}, {\color{red}{\cal NS} ({\bf u}_b^g,p_b^g)}\right> + \left<q, \nabla \cdot {\bf u}_b^g\right>  
 \\
-+ &\left< { \bf v}, {\cal L} _{{\bf u}_b^g}( \delta {\bf u}_b,\delta p_b; {\bf u}_b^g) \right> + \left<q, \nabla \cdot \delta{\bf u}_b\right> = 0,
++ &\left< { \bf v}, {\color{red}{\cal L} _{{\bf u}_b^g}( \delta {\bf u}_b,\delta p_b) }\right> + \left<q, \nabla \cdot \delta{\bf u}_b\right> = 0,
 \ees
-where ${\cal L}$ is the linearised Navier-Stokes operator, defined by its action on a flow field $({\bf u} ; p)$ as follows 
+where ${\cal L}$ is the linearised Navier-Stokes operator, defined by its action on a flow field {\color{red}$[{\bf u} , p]$} as follows 
 \be{defNSL}
- {\cal L}_{{\bf U}}( {\bf u}, p; {\bf U}) = - {\cal C}( {\bf U} , {\bf u}) -\nabla p
+{\color{red} {\cal L}_{{\bf U}}( {\bf u}, p)} = - {\cal C}( {\bf U} , {\bf u}) -\nabla p
 +\frac{2}{Re} \nabla  \cdot {\mathsf{D}}({\bf u}), %\quad ( \mbox{ with } \nabla \cdot {\bf u } = 0 \, ).
  \ee
 and ${\cal C}$ is the convection operator defined by 
@@ -232,7 +237,7 @@ and ${\cal C}$ is the convection operator defined by
 {\cal C}( {\bf U} , {\bf u}) = \left( {\bf U} \cdot \nabla \right) {\bf u} + \left( {\bf u} \cdot \nabla \right)  {\bf U}.
 \ee
 
-This problem can now be discretized by projecting upon a basis of Taylor-Hood $(u,v,p) \rightarrow (P2,P2,P1)$ finite elements. Noting $\delta X$ the discretization of ($\delta {\bf u}_b;\delta p_b$) this eventually leads to a matricial problem of the form $A \cdot \delta X = Y$. The procedure of Newton iteration is to solve iteratively this set of equations up to convergence.
+This problem can now be discretized by projecting upon a basis of Taylor-Hood $(u,v,p) \rightarrow (P2,P2,P1)$ finite elements. Noting $\delta X$ the discretization of {\color{red}$[\delta {\bf u}_b,\delta p_b]$} this eventually leads to a matricial problem of the form $A \cdot \delta X = Y$. The procedure of Newton iteration is to solve iteratively this set of equations up to convergence.
 In our implementation, the algorithm is written in the Freefem++ solver {\em Newton\_2D.edp} 
 which is wrapped by the Matlab driver {\em Freefem\_BaseFlow.m}.
 
@@ -243,7 +248,7 @@ which is wrapped by the Matlab driver {\em Freefem\_BaseFlow.m}.
 We study the onset of the instability within the linear theory by using a normal-mode analysis:
 
 \be{startmodepropre}
-{\bf u} ({\bf{x}},t) = {\bf u}_b({\bf{x}}) + \epsilon \hat{\bf u}({\bf{x}}) e^{\lambda t}, \,\,\,\, {p}({\bf{x}},t) = {p}_b({\bf{x}}) + \epsilon \hat{p}({\bf{x}}) e^{\lambda t}
+{\bf u} ({\bf{x}},t) = {\bf u}_b({\bf{x}}) + \epsilon \hat{\bf u}({\bf{x}}) e^{\lambda t}, \,\,\,\, {p}({\bf{x}},t) = {p}_b({\bf{x}}) + \epsilon \hat{p}({\bf{x}}) e^{\lambda t},
 \ee
 where $\lambda = \sigma + i \omega$ is the eigenvalue, $\sigma$ the amplification rate,
 $\omega$ the oscillation rate, $\hat{{\bf u}},\hat{p}$ the eigenmodes, and $\epsilon$ a small parameter.
@@ -258,9 +263,9 @@ or, in weak form :
 \ee
 After discretization, we end up with an eigenvalue problem with the matricial form
 \be{Eigen_matricial}
-\lambda {\mathsf{B}} \hat{X} = {\mathsf{A}} \hat{X}
+\lambda {\mathsf{B}} \hat{X} = {\mathsf{A}} \hat{X},
 \ee
-Where ${\mathsf{A}}$ is the matrix resulting from the discretization of ${\cal L}_{{\bf u}_b}$, i.e. the same matrix  appearing in the Newton computation of the base flow, and  $B$ is a 'weight' matrix associated to the scalar product $\left<v,u\right> = \int \overline{\bf v} \cdot {\bf u} \mbox{ d} \Omega$.
+{\color{red} where} ${\mathsf{A}}$ is the matrix resulting from the discretization of ${\cal L}_{{\bf u}_b}$, i.e. the same matrix  appearing in the Newton computation of the base flow, and  $B$ is a 'weight' matrix associated to the scalar product $\left<v,u\right> = \int \overline{\bf v} \cdot {\bf u} \mbox{ d} \Omega$.
 
 \paragraph{Adjoint eigenvalue problem and structural sensitivity}
 Developed in the two past decades, the concept adjoint modes has now become an unavoidable complement to the linear global stability approach. We here give a short summary of the definition and usefulness of this concept, 
@@ -419,7 +424,7 @@ In particular, the hydrodynamic lift and drag forces read
 
 \be{drag}
 D = F_x ({\bf u},p) = 
- \int_{\Gamma_{cil}} \left[-p {\bf n} + \frac{2}{Re} {\bf D}({\bf u}) \cdot {\bf n} \right]   \cdot {\bf e_x} d\ell
+ \int_{\Gamma_{cil}} \left[-p {\bf n} + \frac{2}{Re} {\bf D}({\bf u}) \cdot {\bf n} \right]   \cdot {\bf e_x} d\ell,
 \ee
 
 
@@ -542,12 +547,12 @@ In the past decade, efforts have been devoted to extend the range of validity of
 
 \paragraph{General definitions in the nonlinear r{\color{red}e}gime}
  
-In this part, to simplify the notations, we symbolically write the Navier-Stokes equations, as {\color{red}$\partial_t {\bf u} = {\cal NS} ({\bf u})$}, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. 
+In this part, to simplify the notations, we symbolically write the Navier-Stokes equations, as {\color{red}$\partial_t {\bf u} = {\cal NS} ({\bf u})$}, therefore dropping the systematic reference to the incompressibility constraint and associated pressure field. {\color{red} The same is done with the linearised operator ${\cal L}_{{\bf U}}( {\bf u})$.}
 
 In the nonlinear r{\color{red}e}gime, the {\em base flow} introduced in the linear theory is not directly accessible and no longer relevant, especially when the oscillation amplitudes become large. 
-Instead, {\color{red} we taken the Reynolds decomposition ${\bf q}={\bf q}_m({\bf x})+{\bf q}'({\bf x},t)$, with ${\bf q}'$ the nonlinear perturbation and ${\bf q}_m$ the {\em mean flow} defined as the time-average  of the flow:}
+Instead, {\color{red} we taken the Reynolds decomposition ${\bf u}={\bf u}_m({\bf x})+{\bf u}'({\bf x},t)$, with ${\bf u}'$ the nonlinear perturbation and ${\bf u}_m$ the {\em mean flow} defined as the time-average  of the flow:}
 \be{defumean}
-{\bf q}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf q}({\bf x},t)  dt,
+{\bf u}_m({\bf x})  = \frac{1}{T} \int_0^{T}  {\bf u}({\bf x},t)  dt,
 \ee
 where $T = 2\pi/\omega$  is the period of the oscillation cycle.
 
@@ -557,22 +562,32 @@ A_E = \sqrt{\frac{1}{T} \int_0^{T} \left( \int_\Omega | {\bf u} - {\bf u}_m |^2 
 \ee
 
 Another quantity which has been particularly addressed in previous studies is the mean recirculation length $L_x$
-already discussed{\color{red},} introduced and documented in figure {\color{red}??}. {\color{red} However, in a} nonlinear regime, the recirculation bubble becomes unsteady, {\color{red} becoming} difficult to define properly an instantaneous recirculation length. It is still possible to define a mean recirculation length associated to the mean flow. %On va le faire ??
+already discussed{\color{red},} introduced and {\color{red}documented in figure \ref{fig:LxandDrag}}. {\color{red} However, in a} nonlinear regime, the recirculation bubble becomes unsteady, {\color{red} becoming} difficult to define properly an instantaneous recirculation length. It is still possible to define a mean recirculation length associated to the mean flow. %On va le faire ??
 
 In the next sections we will document the predictions of the WNL and SC models regarding the quantities $A_E$ and $L_x$ adopted in past studies. In addition, we will document two other quantities of practical interest : the Drag and Lift forces $F_x$ and $F_y$ exerted on the cylinder. 
 Both are periodic functions of time and{\color{red},} owing to symmetry consideration, the drag contains only even harmonics and the lift only odd harmonics:{\color{red}
-\be{drag_lift_def}
-\begin{cases}
-F_x=F_{x,0} + \sum_{n=1}^\infty \big( F_{x,2n,c} \cos ( 2 n \omega t) + F_{x,2n,s} \sin( 2 n  \omega t ) \big) \\
+%\be{drag_lift_def}
+%\begin{cases}
+%F_x=F_{x,0} + \sum_{n=1}^\infty \big( F_{x,2n,c} \cos ( 2 n \omega t) + F_{x,2n,s} \sin( 2 n  \omega t ) \big) \\
+%\begin{split}
+%F_y  =  \sum_{n=1}^\infty \big(  F_{y,{2n-1},c} \cos ((2n-1) \omega t ) +\\
+% F_{y,(2n-1),s} \sin ((2n-1) \omega t) \big)
+%\end{split}
+%\end{cases}.
+%\ee
+\begin{align}
+F_x &=F_{x,0} + \sum_{n=1}^\infty \big( F_{x,2n,c} \cos ( 2 n \omega t) + F_{x,2n,s} \sin( 2 n  \omega t ) \big),
+\\
 \begin{split}
-F_y  =  \sum_{n=1}^\infty \big(  F_{y,{2n-1},c} \cos ((2n-1) \omega t ) +\\
- F_{y,(2n-1),s} \sin ((2n-1) \omega t) \big)
+F_y  & =\sum_{n=1}^\infty \big( F_{y,{2n-1},c} \cos ((2n-1) \omega t )\\
+             &\qquad + F_{y,(2n-1),s}  \sin ((2n-1) \omega t) \big).
 \end{split}
-\end{cases}.
-\ee
+\label{drag_lift_def}
+\end{align}
 
 
-In the sequel we will focus on the {\em mean drag}  $F_{x,0}$ and on the fundamental frequency part of the drag and lift given by $F_{x,2,c}$, $F_{x,2,s}$ and $F_{y,1,c}$, $F_{y,1,s}$.
+
+In the sequel we will focus on the {\em mean drag}  $F_{x,0}$ and on the fundamental frequency part of the lift given by $F_{y,1,c}$ and $F_{y,1,s}$.
  }
    
 %MThe mean drag is given by 
@@ -657,16 +672,19 @@ end
 We give here a brief account of the weakly nonlinear model of Sipp \& 
 Lebedev\cite{SippLebedev}, also discussed by Gallaire et al. \cite{FDR2016}. 
 The derivation is based on a multiple scale  decomposition based on the parameter {\color{red}$\epsilon^2 = 1/Re_c - 1/Re$}. 
-In the case where we are interested only in the {\color{red}description} of the saturation cycle, the starting point can be taken as the following expansion of the state-vector ${\bf{q}}=({\bf{u}},p)$ defining the flow:
+In the case where we are interested only in the {\color{red}description} of the saturation cycle, the starting point can be taken as the following expansion of %the state-vector ${\bf{q}}=({\bf{u}},p)$ defining the flow:
+ {\color{red}the velocity flow field:} 
+ {\color{red}
 \be{WNL1}
 \begin{aligned}
-&{\bf q} = {}  {\bf q}_{bc} + \epsilon \left[ A_{wnl}  \hat{\bf q} e^{i (\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right]\\
-&+ \epsilon^2 \left[ {\bf q}_\epsilon + |A_{wnl}|^2  {\bf q}_{2,0} + \left(  A_{wnl}^2 {\bf q}_{2,2} e^{2 i(\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right) \right]\\
+&{\bf u} = {}  {\bf u}_{bc} + \epsilon \left[ A_{wnl}  \hat{\bf u} e^{i (\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right]\\
+&+ \epsilon^2 \left[ {\bf u}_\epsilon + |A_{wnl}|^2  {\bf u}_{2,0} + \left(  A_{wnl}^2 {\bf u}_{2,2} e^{2 i(\omega_c+\epsilon^{\color{red}2} \omega_\epsilon)  t} + c.c. \right) \right]\\
 & + {\cal O}( \epsilon ^3),
 \end{aligned}
 \ee
-where ${\bf q}_{bc}$ is the base flow at the threshold $Re_c$, $\hat{\bf q}$ the neutral 
-eigenmode at $Re_c$, {\color{red} $A_{wnl}$ an amplitude,} $\omega_c$ the frequency predicted by the linear approach at $Re=Re_c$ and $\omega_\epsilon$ a small deviation of the frequency, {\color{red} ${\bf q}_{\epsilon}$ the base flow modifications related to the increase of $\epsilon$, ${\bf q}_{2,0}$ the flow response to the steady nonlinear interactions of $\hat{\bf q}$ with its conjugate, ${\bf q}_{2,2}$ the flow response to the unsteady nonlinear interactions of $\hat{\bf q}$ with itself and  ${\cal O}( \epsilon ^3)$ the third order terms.   }
+}
+where {\color{red}${\bf u}_{bc}$} is the base flow at the threshold $Re_c$, {\color{red} $\hat{\bf u}$} the neutral 
+eigenmode at $Re_c$, {\color{red} $A_{wnl}$ an amplitude,} $\omega_c$ the frequency predicted by the linear approach at $Re=Re_c$ and $\omega_\epsilon$ a small deviation of the frequency, {\color{red} ${\bf u}_{\epsilon}$ the base flow modifications related to the increase of $\epsilon$, ${\bf u}_{2,0}$ the flow response to the steady nonlinear interactions of $\hat{\bf u}$ with its conjugate, ${\bf u}_{2,2}$ the flow response to the unsteady nonlinear interactions of $\hat{\bf u}$ with itself and  ${\cal O}( \epsilon ^3)$ the third order terms.   }
 
 Note that this starting point is slightly different from the original approach of \cite{SippLebedev} who used a multiple scale method and assumed a dependence of the amplitude $A_{wnl}$ as function of a slow time-scale $\tau = {\color{red}\epsilon^2} t$. This latter starting point is the {\color{red}right} way to parametrize the problem if one wants to obtain an amplitude equation, but{\color{red},} as specified above{\color{red},} our goal here is to provide a simpler formulation {\color{red}describing} only the saturated cycle. 
 
@@ -699,27 +717,27 @@ where the subscripts $r$ and $i$ represent the real and imaginary parts.
 {\color{red}
 Recasting equation \ref{WNL1} in the {\em mean flow} definition \ref{defumean}, we obtain
 \be{mean_flow_WNL}
-{\bf q}_m({\bf x })= {\bf q}_{bc}+\epsilon^2 {\bf q}_\epsilon + |A|^2{\bf q}_{2,0},
+{\bf u}_m({\bf x })= {\bf u}_{bc}+\epsilon^2 {\bf u}_\epsilon + |A|^2{\bf u}_{2,0},
 \ee
 where the first two terms give the base flow approximation at the $Re$ prescribed by $\epsilon$. }
 
 {\color{red} Finally, the associated Drag and Lift are given respectively by:
 \be{drag_cos}
 \begin{aligned}
-F_{x,WNL} = F_{x}({\bf q}_{bc})&+\epsilon^2 \big( 
-F_{x}({\bf q}_{\epsilon})- 2\mathsf{D}({\bf u}_{bc}).{\bf n}_x \big)\\
-&+|A|^2 F_{x}({\bf q}_{2,0})\\
-&+2|A|^2\big(F_{x,r}({\bf q}_{2,2})\cos(2\omega t)
--F_{x,i}({\bf q}_{2,2})\sin(2\omega t) \big),
+F_{x,WNL} = F_{x}({\bf u}_{bc})&+\epsilon^2 \big( 
+F_{x}({\bf u}_{\epsilon})- 2\mathsf{D}({\bf u}_{bc}).{\bf n}_x \big)\\
+&+|A|^2 F_{x}({\bf u}_{2,0})\\
+&+2|A|^2\big(F_{x,r}({\bf u}_{2,2})\cos(2\omega t)
+-F_{x,i}({\bf u}_{2,2})\sin(2\omega t) \big),
 \end{aligned}
 \ee
 \be{lift_cos}
 \begin{aligned}
-F_{y,WNL} =2\big(|A|_r F_{x,r}({\bf \hat{q}})\cos(\omega t)-
-|A|_i F_{x,i}({\bf \hat{q}})\sin(\omega t) \big),\\
+F_{y,WNL} =2\big(|A|_r F_{x,r}({\bf \hat{u}})\cos(\omega t)-
+|A|_i F_{x,i}({\bf \hat{u}})\sin(\omega t) \big),\\
 \end{aligned}
 \ee
-where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift}, respectively. All terms in these equations can be matched with the interesting ones in \ref{drag_lift_def}: $F_{x,0}$ is the first 4 terms of \ref{drag_cos}; $F_{x,2,c}$, $F_{x,2,s}$ are the fifth and sixth terms of \ref{drag_cos}; $F_{y,1,c}$, $F_{y,1,s}$ are the first and second terms of \ref{lift_cos}. We note that the \textit{sine} term is associated to the phase of the forces in a physical way. }
+where $F_{x}$ and $F_{y}$ are given by \ref{drag} and \ref{lift} (with the associated pressure field implicit), respectively . All terms in these equations can be matched with the interesting ones in \ref{drag_lift_def}: $F_{x,0}$ is the first 4 terms of \ref{drag_cos}; $F_{x,2,c}$, $F_{x,2,s}$ are the fifth and sixth terms of \ref{drag_cos}; $F_{y,1,c}$, $F_{y,1,s}$ are the first and second terms of \ref{lift_cos}. We note that the \textit{sin} term is associated to the phase of the forces in a physical way. }
 
 \iffalse
 \begin{eqnarray}
@@ -742,7 +760,7 @@ A key issue in the weakly nonlinear expansion is that the definition of the ampl
 \begin{itemize}
 \item First, \cite{SippLebedev} normalized the eigenmode by assuming a specified value to the $y$-component of the velocity at one point, namely:
 \be{normsipp}
-\hat{u_y}(1,0) = 0.4612.
+{\color{red}\hat{u}}_y(1,0) = 0.4612.
 \ee
 The advantage of this choice is that the amplitude ${\color{red}|A|}$ is then a measure of the energy of the perturbation: 
 ${\color{red}|A|} \approx A_E$. {\color{red}However the lift phase its not fixed.}
@@ -751,12 +769,12 @@ ${\color{red}|A|} \approx A_E$. {\color{red}However the lift phase its not fixed
 \be{normFDR}
 \int_\Omega |\hat{\bf u}|^2 d {\bf x}  = \frac{1}{2}.
 \ee
-This directly leads to ${\color{red}|A|} = A_E$.{\color{red} The lift phase is not specified in \cite{FDR2016} and can be set to nil before the normalization.}
+This directly leads to ${\color{red}|A|} = A_E$. {\color{red} The lift phase is not specified in \cite{FDR2016} and can be set to nil before the normalization.}
 
 \item Thirdly, following \cite{Fabre2012}, another convenient choice is to normalize the eigenmode with its lift 
 force: 
 \be{normfabre}
-{\color{red}F_y(\hat{\bf q}) }={\color{red} \frac{1}{2}}.
+{\color{red}F_y(\hat{\bf u}) }={\color{red} \frac{1}{2}}.
 \ee
 The advantage of this choice is that the amplitude ${\color{red}|A|}$ is directly related to the fundamental lift:
 \be{lift_explanation}
@@ -812,9 +830,9 @@ $$
 \end{table*}
 
 {\color{red} 
-The forces coefficients given by $F_x({\bf q})$ and $F_y({\bf q})$ are then converted in a more traditional form, $C_x=2F_x({\bf q})$ and $C_y=2F_y({\bf q})$.
+The forces coefficients given by $F_x({\bf u})$ and $F_y({\bf u})$ are then converted in a more traditional form, $C_x=2F_x({\bf u})$ and $C_y=2F_y({\bf u})$.
 }
-As can be seen on figure \ref{fig:Comp2},  the approach gives good prediction in the immediate vicinity of $Re_c$, but deviation appears very rapidly and disagreement is already large at $Re=48$ (although, as discussed by Gallaire et al.? and also observed by Tchoufag et al. \cite{Tchoufag2015}, a convenient definition of the $\epsilon$ improves the results). {\color{red} These aspects are justified by the pertubative nature of the WNL approach. The description of the limit cycle can be extended to larger $Re$ with the approach presented next.  }
+As can be seen on figure \ref{fig:HB_SC_DATA_COMP},  the approach gives good prediction in the immediate vicinity of $Re_c$, but deviation appears very rapidly and disagreement is already large at $Re=48$ (although, as discussed by Gallaire et al.? and also observed by Tchoufag et al. \cite{Tchoufag2015}, a convenient definition of the $\epsilon$ improves the results). {\color{red} These aspects are justified by the pertubative nature of the WNL approach. The description of the limit cycle can be extended to larger $Re$ with the approach presented next.  }
 
 \begin{figure}
 \begin{center}
@@ -823,18 +841,14 @@ As can be seen on figure \ref{fig:Comp2},  the approach gives good prediction in
 \includegraphics[width=.9 \linewidth]{Cylinder_Cy_Re_SC.png}
 \includegraphics[width=.9 \linewidth]{Cylinder_Energy_Re_SC.png}
 \end{center}
-\caption{Comparison between the weakly nonlinear results (WNL) and the harmonic 
-balance data (HB). We report also the Strouhal number computed by using the 
-classical linear stability theory (Linear) and the base flow (BF) $C_x$.
+\caption{Comparison between the weakly nonlinear results (WNL) and the harmonic balance data (HB). We report also the Strouhal number computed by using the classical {\color{red} linear stability theory (Linear) (see figure \ref{fig:SigmaOmega})} and the base flow (BF) $C_x$.
 %c_x should be consistent with the drag definition given at beginning
 }
-\label{fig:Comp2}
+\label{fig:HB_SC_DATA_COMP}
 \end{figure}
 
 
-\paragraph{Self-Consistent approach}
-
-TO BE SHORTENED
+\paragraph{ {\color{red} Self-Consistent model}}
 
 %\begin{figure}
 %\begin{center}
@@ -855,36 +869,36 @@ TO BE SHORTENED
 \end{figure}
 
 
-We now briefly review the self-consistent approach as introduced by Manti\v{c}-Lugo et 
+We now briefly review the self-consistent {\color{red} model} as introduced by Manti\v{c}-Lugo et 
 al \cite{MLugo2014}. The authors adopted a pseudo-eigenmode expansion of the flow 
 as follows: 
 \be{SC}
-{\bf u } = {\bf u }_m + A_{sc} \left[ \tilde{{\bf u }}_1 e^{\sigma_{sc} t + i \omega_{sc} t} +   \tilde{\bf u }_{-1} e^{\sigma_{sc} t  -i \omega_{sc} t} \right],
+{\bf u } = {\bf u }_m + A_{sc} \left[ \tilde{{\bf u }}_1 e^{\sigma_{sc} t + i \omega_{sc} t} +   {\color{red} \overline{\tilde{\bf u }_1}} e^{\sigma_{sc} t  -i \omega_{sc} t} \right],
 \ee  
-where ${\bf u }_m$ is the {\em mean flow} defined by phase-averaging over the cycle, $\tilde{{\bf u }}_1$ is a pseudo-eigenvector which is normalized by the condition  $||\tilde{{\bf u }}_1|| = 1/\sqrt{2}$, 
+where ${\bf u }_m$ is the {\em mean flow} defined by phase-averaging over the cycle, $\tilde{{\bf u }}_1$ is a pseudo-eigenvector which is normalized by the condition  $||\tilde{{\bf u }}_1|| = 1/\sqrt{2}$, {\color{red}$\overline{\tilde{{\bf u }}_1}$ is its complex conjugate,}
 $A_{sc}$ is an amplitude parameter directly related to the energy of the oscillating flow, and $\lambda_{sc} = \sigma_{sc} + i \omega_{sc}$ is a pseudo-eigenvalue which depends upon the parameter $A_{sc}$. 
 Introducing the decomposition (\ref{SC}) into the Navier-Stokes equations we are left 
 with the following problem:
 
 \begin{subequations}\label{sc12}
 \begin{eqnarray}
-{\cal NS}(  {\bf u }_m ) - A_{sc}^2 {\cal C}( \tilde{{\bf u }}, \overline{\tilde{\bf u }}) = 0, 
+{\cal NS}(  {\bf u }_m ) - A_{sc}^2 {\cal C}{\color{red}( \tilde{{\bf u }}_1, \overline{\tilde{\bf u }_1})} = 0, 
 \label{sis1}
 \\
-(\sigma_{sc} + i \omega_{sc}) \tilde{{\bf u }} =  {\cal L}_{{\bf u }_m}(  \tilde{{\bf u }} ).
+(\sigma_{sc} + i \omega_{sc}) {\color{red}\tilde{{\bf u }}_1} =  {\cal L}_{{\bf u }_m}( {\color{red} \tilde{{\bf u }}_1} ).
 \label{sis2}
 \end{eqnarray}
 \end{subequations}
 
 Equation (\ref{sis1}) provides the mean flow field ${\bf u }_m$ while the 
-pseudo-eigenpairs $(\lambda_{sc}, \tilde{{\bf u }})$ can be computed by solving the eigenvalue problem (\ref{sis2}).
+pseudo-eigenpairs $(\lambda_{sc},{\color{red}  \tilde{{\bf u }}_1})$ can be computed by solving the eigenvalue problem (\ref{sis2}).
 %The computed mode is normalized as $ || \tilde{{\bf u }}|| = 1/{\sqrt{2}}$
 %is of the same form as  (\ref{HBEq1}) except that $i \omega$ is 
 %replaced by $\sigma_{SC} + i \omega_{SC}$. 
 % The mean flow is then governed by the same equation
 %\ref{HBEq0}) written above, while $\tilde{{\bf u }}_1$ is the solution of an eigenvalue problem with the same form as  (\ref{HBEq1}) except that $i \omega$ is replaced by $\sigma_{SC} + i \omega_{SC}$.
 
-The self-consistent model has the following properties :
+The self-consistent model has the following properties:
 \begin{itemize}
 \item[-] For $A \ll 1$ it is equivalent to the linear eigenvalue problem (\ref{LEP}), and the generalized eigenvalue coincides with the one predicted by linear stability : $\sigma_{SC} + i \omega_{SC} = \sigma_{lin} + i \omega_{lin}$.
 \item[-] For $\sigma_{SC}=0$ (corresponding to a specific choice of the amplitude $A=A_c$),  the expansion (\ref{SC}) is equivalent to a Fourier decomposition of the limit cycle with only two term retained.
@@ -893,11 +907,9 @@ such that $0< \sigma_{SC}(A) < \sigma_{lin}$.
  Although in this case the expansion ({\ref{SC}}) cannot represent the flow for all $t$, Manti\v{c}-Lugo et al \cite{MLugo2014} argued that the relation between $\sigma_{SC}$ and $A$ can be used to build an amplitude equation which captures the transient approach to the limit cycle. 
 \end{itemize}
 
-Figure \ref{fig:SC100} shows the results of the self-consistent model at Re=100.
+%Figure \ref{fig:SC100} shows the results of the self-consistent model at Re=100.
 
-\paragraph{Harmonic balance : equations and procedure }
-
-TO BE SIMPLIFIED...
+\paragraph{{\color{red}First Order Harmonic balance: equations and procedure} }
 
 \begin{figure}
 \begin{center}
@@ -905,63 +917,87 @@ TO BE SIMPLIFIED...
 \end{center}
 \caption{Flow past a circular cylinder: length of the wake bubble (measured from the 
 rear stagnation point) for different Reynolds number. Comparison between the base flow bubble and the mean flow bubble computed by using the harmonic balance.}
-\label{fig:Comp1}
+\label{fig:recirculation_lengh}
 \end{figure}
+
+
 As discussed above, the Self-Consistent model was initially presented by the authors as a rational way to explain the dynamics in terms of a stability analysis of the {\em mean flow}. Furthermore, the resolution method presented by the authors, which involves a double iteration loop, is not easy to implement and not particularly efficient.
 
 If one is only interested by the properties of the limit cycle and not the transient, the model is actually equivalent to a Fourier series, and amenable to a more direct resolution method. 
-We thus start with a Fourier decomposition of the limit cycle under the form :
+We thus start with a Fourier decomposition of the limit cycle under the form:
 \be{HB}
-{\bf u } = {\bf u }_m + {\bf u }_{1,c} \cos( \omega t ) +   {\bf u }_{1,s} \sin( \omega t )
-\ee  
-
-The connection with the definition of Mantic-Lugo is as follows :
+{\bf u } = {\bf u }_m + {\bf u }_{1,c} \cos( \omega t ) +   {\bf u }_{1,s} \sin( \omega t ),
+\ee
+{\color{red} where ${\bf u }_1$ is the mode (Fourier component at the fundamental frequency) and $\omega$ is the (real) oscillation frequency of the limit cycle (which is not known a priori).}   
+The connection with the definition of {\color{red} Manti\v{c}-Lugo} is as follows :
 \be{HBtoSC}
-\left( {\bf u }_{1,c} - i {\bf u }_{1,s} \right) = 2 A_{sc} \tilde{{\bf u }}_1
+\left( {\bf u }_{1,c} - i {\bf u }_{1,s} \right) = 2 A_{sc} \tilde{{\bf u }}_1.
 \ee  
-
-
-
-Here ${\bf u }_0$ is the mean flow (averaged over time),  ${\bf u }_1$ is the mode
-(Fourier component at the fundamental frequency), ${\bf u }_{-1} = \overline{{\bf u }_1}$ is its complex conjugate, and $\omega$ is the (real) oscillation frequency of the limit cycle (which is not known a priori). Injecting this ansartz into the Navier-Stokes equations and taking the mean value and the first Fourier component leads to the following coupled equations :
-
-CHECK !!!
-
-\be{HBEq0}
-{\cal NS}(  {\bf u }_0 ) - \frac{{\cal C}( {\bf u }_{1,c}, {\bf u }_{1,c}) +{\cal C}( {\bf u }_{1,s}, {\bf u }_{1,s})}{2}  = 0,
-\ee
-\be{HBEq1}
- \omega {\bf u }_{1,s} =  {\cal L}_{{\bf u }_0}(  {\bf u }_{1,c} ).
-\ee
-
-
-\be{HBEq1b}
+Injecting this ansartz into the Navier-Stokes equations and taking the mean value and the first Fourier component leads to the following coupled equations:
+\begin{subequations}\label{eq_principal}
+\begin{eqnarray}
+{\cal NS}(  {\color{red}{\bf u }_m }) = \frac{{\cal C}( {\bf u }_{1,c}, {\bf u }_{1,c}) +{\cal C}( {\bf u }_{1,s}, {\bf u }_{1,s})}{{\color{red}4}}, 
+\label{HBEq0}
+\\
+ \omega {\bf u }_{1,s} =  {\cal L}_{{\bf u }_0}(  {\bf u }_{1,c} ),
+\label{HBEq1}
+\\
  -\omega {\bf u }_{1,c} =  {\cal L}_{{\bf u }_0}(  {\bf u }_{1,s} ).
-\ee
+\label{HBEq1b}
+\end{eqnarray}
+\end{subequations}
 
-
-Note that contrary to the SC model, the ${\bf u }_1$ component is not normalized. The amplitude $A$ can easily be computed a posteriori as $A = \sqrt{2 ||{\bf u }_1||}$. On the other hand, the Fourier description of the limit cycle is invariant with respect to the phase $\phi$ (i.e. the equations are unchanged when replacing $[ {\bf u }_1,  {\bf u }_{-1}] $ by  $[ {\bf u }_1 e^{i\varphi},  {\bf u }_{-1}  e^{-i\varphi}] $). 
-To allow resolution we thus need an extra equation to fix this phase. Several choices are possible, but a convenient one is to set the lift associated with the imaginary part of ${\bf u }_1$ to lift. Physically, this means that the instant $t=0$ will correspond to a maximum of lift. This condition reads :
+Note {\color{red} that,} contrary to the SC model, the ${\bf u }_1$ component is not normalized. {\color{red}The amplitude $A_{HB}$ of the oscillation} can easily be computed a posteriori as ${\color{red}A_{HB}} = \sqrt{2 ||{\bf u }_1||}$. On the other hand, the Fourier description of the limit cycle is invariant with respect to the phase $\phi$ (i.e. the equations are unchanged when replacing ${\color{red} {\bf u }_1 }$ by  ${\color{red} {\bf u }_1 e^{i\phi}}$). 
+To allow resolution we thus need an extra equation to fix this phase. Several choices are possible, but a convenient one is to set the lift associated with the imaginary part of ${\bf u }_1$ to {\color{red}zero}. Physically, this means that the instant $t=0$ will correspond to a maximum of lift. This condition reads:
 \be{HBphase}
 \Im \{F_y({\bf u}_1) \} =0.
 \ee
 
-Mathematically, the system (\ref{HBEq0},\ref{HBEq1},\ref{HBphase}) for the unknown $[{\bf u }_0, {\bf u }_{1}, \omega]$ is well posed, and can be solved using a Newton iteration just as explained for the base flow in section 2. To allow resolution, we separate the mode into real and imaginary part, by writing ${\bf u }_1 = {\bf u }_{1,r} +  i {\bf u }_{1,i} $.
-We then assume that we know a 'guess' 
+Mathematically, the system (\ref{HBEq0},\ref{HBEq1},\ref{HBEq1b},\ref{HBphase}) for the unknown {\color{red}$[{\bf u }_m, {\bf u }_{1,c}, {\bf u }_{1,s}, \omega]$} is well posed, and can be solved using a Newton iteration just as explained for the base flow in section 2. 
+%To allow resolution, we separate the mode into real and imaginary part, by writing ${\bf u }_1 = {\bf u }_{1,r} +  i {\bf u }_{1,i} $.
+We then assume that we know a {\color{red}``guess'':
 $$
-[{\bf u }_0, {\bf u }_{1,r}, {\bf u }_{1,i}, \omega] = 
- [{\bf u }_0^g, {\bf u }_{1,r}^g, {\bf u }_{1,i}^g, \omega^g]
-+ [\delta {\bf u }_0, \delta {\bf u }_{1,r}, \delta {\bf u }_{1,i}, \delta \omega].
+[{\bf u }_m, {\bf u }_{1,c}, {\bf u }_{1,s}, \omega] = 
+ [{\bf u }_m^g, {\bf u }_{1,c}^g, {\bf u }_{1,s}^g, \omega^g]
++ [\delta {\bf u }_m, \delta {\bf u }_{1,c}, \delta {\bf u }_{1,s}, \delta \omega].
 $$
+} Injecting and developing up to linear order leads to the following equations:{\color{red}
+\begin{subequations}\label{eq:harmonic_total}
+\begin{eqnarray}
+\begin{split}
+&{\cal NS}(  {\bf u }_m^g ) - \frac{1}{4} \big[ {\cal C}( {\bf u }_{1,c}^g,{\bf u }_{1,c}^g) +  {\cal C}( {\bf u }_{1,s}^g,{\bf u }_{1,s}^g) \big]+ {\cal L}_{{\bf u }_m^g}(\delta {\bf u }_m)
+\\
+&-\frac{1}{2} \big[ {\cal C}( {\bf u }_{1,c}^g,\delta {\bf u }_{1,c}) +  {\cal C}( {\bf u }_{1,s}^g,\delta {\bf u }_{1,s}) \big] = 0,
+\end{split}
+\label{HB_1}
+\\
+\begin{split}
+{\cal L}_{{\bf u }_m^g}( {\bf u }_{1,c}^g) - \omega^g {\bf u }_{1,s}^g& -  {\cal C}( \delta {\bf u }_{m}, {\bf u }_{1,c}^g)
+\\
+&+{\cal L}_{{\bf u }_m^g}( \delta {\bf u }_{1,c})  - \omega^g \delta {\bf u }_{1,s}  
+ - \delta \omega {\bf u }_{1,s}^g = 0 ,
+ \end{split}
+\label{HB_2}
+\\
+\begin{split}
+{\cal L}_{{\bf u }_m^g}({\bf u }_{1,s}^g) + \omega^g {\bf u }_{1,c}^g& -  {\cal C}( \delta {\bf u }_{m}, {\bf u }_{1,s}^g)
+\\
+&+{\cal L}_{{\bf u }_m^g}( \delta {\bf u }_{1,s}) + \omega^g \delta {\bf u }_{1,c} +  \delta \omega {\bf u }_{1,c}^g= 0 ,
+\end{split}
+\label{HB_3}
+\\
+\begin{split}
+ F_y({\bf u }_{1,s}^g) + F_y(\delta {\bf u }_{1,s}) = 0. \qquad \qquad \qquad \qquad \qquad \qquad \quad
+\end{split}
+\end{eqnarray}
+\end{subequations}
+}
 
-Injecting and developing up to linear order leads to the following 
-
-TO BE CORRECTED !
-
+\iffalse
 \begin{equation}
 \begin{array}{ll}
 \displaystyle
-& {\cal NS}(  {\bf u }_0^g ) - [ {\cal C}( {\bf u }_{1,r}^g,{\bf u }_{1,r}^g) +  {\cal C}( {\bf u }_{1,i}^g,{\bf u }_{1,i}^g) ]
+& {\cal NS}(  {\bf u }_m^g ) - [ {\cal C}( {\bf u }_{1,r}^g,{\bf u }_{1,r}^g) +  {\cal C}( {\bf u }_{1,i}^g,{\bf u }_{1,i}^g) ]
 \\
 +& {\cal L}_{{\bf u }_0^g}(\delta {\bf u }_0) - 2 [ {\cal C}( {\bf u }_{1,r}^g,\delta {\bf u }_{1,r}) +  {\cal C}( {\bf u }_{1,i}^g,\delta {\bf u }_{1,i}) ] = 0;
 \\
@@ -985,15 +1021,15 @@ TO BE CORRECTED !
 & F_y({\bf u }_{1,i}^g) + F_y(\delta {\bf u }_{1,i}) = 0.
  \end{array}
 \end{equation}
+\fi
 
-After discretization, this leads to a linear problem of the form $A X = Y$ where $X$ is the discretized version of the unknowns  $[\delta {\bf u }_0, \delta {\bf u }_{1,r}, \delta {\bf u }_{1,i}, \delta \omega]$, and $A$ is a matrix of dimension $3 N_{dof} +1$. 
+
+After discretization, this leads to a linear problem of the form $A X = Y$ where $X$ is the discretized version of the unknowns  $[\delta {\bf u }_m, \delta {\bf u }_{1,c}, \delta {\bf u }_{1,s}, \delta \omega]$, and $A$ is a matrix of dimension $3 N_{dof} +1${\color{red}, where $N_{dof}$ is the number of variables associated to ${\bf u}$ taken into account in \ref{HB}, i.e. 3.} 
  
 %\ref{HBEq0,HBEq1,HBphase}
 
-As mentioned before, figure \ref{fig:Comp2} shows the comparison between the 
-weakly non linear approach and the harmonic balance data.  
-Figure \ref{fig:Comp1} compares the length of the cylinder bubble computed by using 
-the harmonic balance with the base flow length. 
+As mentioned before, figure \ref{fig:HB_SC_DATA_COMP} shows the comparison between the weakly non linear approach and the harmonic balance data.  
+Figure \ref{fig:recirculation_lengh} compares the length of the cylinder bubble computed by using the harmonic balance with the base flow length. 
 
 %Barkley [] and Leontini [] have 
 
@@ -1009,7 +1045,7 @@ in this paper by just running the Matlab code available in the StabFem repositor
 \section*{Acknowledgements}
 bla bla
 
-\section*{Appendix A : details on mesh convergence}
+\section*{Appendix A: Details on mesh convergence}
 
 
 TO BE FINISHED
@@ -1112,7 +1148,7 @@ $$
 \caption{Results for mesh adaptation strategy ($Re = 60$)}
 \end{table*}
 
-\section{Details of the weakly nonlinear approach}
+\section*{{\color{red}Appendix B: }Details of the weakly nonlinear approach}
 
 Substituting the expansion \ref{WNL1} into the Navier-Stokes equations \ref{NSprimitive} and grouping terms multiplied by the same power of $\epsilon$, a hierarchy of equations is obtained. {\color{red} The order $\epsilon^0$ gives directly the base flow at $Re_c$. The order $\epsilon^1$ describes the linear perturbation behavior at a frequency $\omega_{WNL}=\omega_c+\epsilon\omega_\epsilon$ whose solution is computed as explained in the first part of this article.}
 The order $\epsilon^2$ contains three terms respectively computed as the solutions of the following linear problems:
@@ -1123,7 +1159,7 @@ The order $\epsilon^2$ contains three terms respectively computed as the solutio
  \end{eqnarray}
 
 Finally, compatibility conditions, {\color{red}given by the Fredholm's alternative, are imposed at order $\epsilon^3$ to remove the secular terms, leading to an amplitude equation, known as Stuart-Landau equation:
-\be{WNL3}
+\be{WNL3_2}
 \frac{\partial A_{wnl}}{\partial \tau} = \Lambda A_{wnl} - (\nu_0+\nu_2)  |A_{wnl}|^2 A_{wnl},
 \ee
 }
@@ -1140,7 +1176,7 @@ where coefficients $\Lambda$, $\nu_0$ and $\nu_2$ are given by
  \end{eqnarray}
 }
 
-\section{Detail of the weak formulation}
+\section*{{\color{red}Appendix C: } Details of the weak formulation}
 %The problem can be set into weak form by multiplying by multiplying Eq. \ref{Newton2} by a test function ${\bf v}$ and the associated divergence constraint by a test function $q$. After a few integration by parts we are led to :
 
 SECTION TO BE COMPLETED.

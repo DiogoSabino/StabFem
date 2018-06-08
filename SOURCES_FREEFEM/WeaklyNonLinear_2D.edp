@@ -327,7 +327,7 @@ cout << endl << "########################################################" << en
 		<< real(Lambda) << " " << imag(Lambda) << endl 
 		<< real(Nu0) << " " << imag(Nu0) << endl 
 		<< real(Nu2) << " " << imag(Nu2) <<  endl 
-		<< AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl //O numero dois vem do complexo conjugado
+		<< AAA*sqrt(2*int2d(th)(abs(u1x)^2+abs(u1y)^2)) << endl
 		<< real(AAA*FyA1) << " " << imag(AAA*FyA1) << endl
 		<< Fx0 << endl ///////////////////////////////////////////////////////////////////////////
 		<< Fxeps2 << endl
