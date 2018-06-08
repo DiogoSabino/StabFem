@@ -37,14 +37,15 @@
 //					"iter" parameter in Eigenmode.ff2m is -1.
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
+real cpuINIT,cpuEND, cpu1, cpu2, cpu3,cpu4;
+cpuINIT=clock();
+
 //load "UMFPACK64"
 load "MUMPS_seq"
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
 string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
 real TGV=1.e20;
-real cpuINIT,cpuEND;
-cpuINIT=clock();
 /////////////////////////////////////////////////////////////////////////////////
 /// Reading Mesh   //////////////////////////////////////////////////////////////
 mesh th=readmesh(ffdatadir+"mesh.msh");
@@ -104,8 +105,8 @@ macro NSL(nu,U,u,v)
 //EOM
         
 macro Boundaryconditions(u1,u2,v1,v2,symmetry)
-	on(bcinlet,u1=0.0,u2=0.0) 
-	+ on(bcwall,u1=0.0,u2=0.0)
+	/*on(bcinlet,u1=0.0,u2=0.0) + on(bcwall,u1=0.0,u2=0.0)*/
+          int1d(th,bcinlet,bcwall)(u1*v1*1e30+u2*v2*1e30)
 	+ int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
 //EOM 
 
@@ -131,7 +132,7 @@ macro EnergyNormCS(uc,us) sqrt( 2*.5* int2d(th)(abs(uc#x)^2+abs(uc#y)^2+abs(us#x
 
 /////////////////////////////////////////////////////////////////////////////////
 /// Display Menu   //////////////////////////////////////////////////////////////
-real eps=1.e-25;      
+//real eps=1.e-25;      
 real sigma1; // parameter sigma1 from Mantic-lugo et al ; should be zero for harmonic balance
 //real A,dA ; // amplitude 
 
@@ -304,6 +305,12 @@ varf LinOpLine4([v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p],[duuu0x,duuu0y,duuu0p,duuu
 	// bloc 4-3 : to fix the phase by imposing Lift(u1s) = 0
 	Lift(1/Re,duuu1sx,duuu1sy,duuu1sp);
 cout << "Constructing Linear Line part done. " << endl;
+cout << "Dimension of the BIGSPACE : "  <<  uuu0x[].n << endl;
+
+
+cpu1=clock();
+cout << endl << "Time consumed in declarations : " << cpu1-cpuINIT << " seconds" <<  endl << endl;
+
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -318,6 +325,7 @@ real dddXX = 1;
 int iterBIGSPACE=1;
 while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 { 
+	cpu1=clock();
 	//Construct the RHS
 	cout << "1-Constructing the RHS..." << endl;
 	real[int] RHSBIGSPACE(uuu0x[].n);
@@ -328,6 +336,7 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 	cout <<  " max RHS: " << RHSBIGSPACE.l2 << endl;
 
 	//Assembling Matrix
+
 	cout << "3-Constructing Blocks of Matrix..." << endl;
 	matrix matLinOp = LinOpBIGSPACE(BIGSPACE,BIGSPACE);
 	real[int] matLinOpColumn4=LinOpColumn4(0,BIGSPACE);
@@ -338,12 +347,17 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 						[	matLinOp	,	matLinOpColumn4 ],
 						[	matLinOpLine4'	,		0  	]   //A VOIR SI ON A BESOIN D'UN EPS
 					];
-	cout << "5-Matrix Done" << endl;	
-	//LU-ing matrix
-	cout << "6-LU-ing matrix..." << endl;
+	cpu2=clock();
+	cout << endl << "Time consumed to assembling matrix: " << cpu2-cpu1 << " seconds" <<  endl << endl;
+        cout << "5-Matrix Done" << endl;
+	
+	//SETING solver matrix
+	cout << "6-SETING solver matrix..." << endl;
 	set(LinOpMATRIXBIGSPACE,solver=sparsesolver); 		
-
-	//Solving BIG problem...
+	cpu3=clock();
+	cout << endl << "Time consumed to SETING solver matrix: " << cpu3-cpu2 << " seconds" <<  endl << endl;
+	
+        //Solving BIG problem...
 	cout << "7-Solving BIG problem..." << endl;
 	real[int] dddX(LinOpMATRIXBIGSPACE.n);
 	cout << "8-SOLVE_2" << endl;
@@ -351,7 +365,8 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 	cout << "9-SOLVE_3" << endl;
 	[duuu0x[], domega] = dddX;
 	cout << "10-SOLVED" << endl;
-	
+        cpu4=clock();
+	cout << endl << "Time consumed to solve thr linear problem : " << cpu4-cpu3 << " seconds" <<  endl << endl;
 	uuu0x[] -= duuu0x[];
 	omega -= domega;
 
@@ -368,7 +383,9 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
 
 	iterBIGSPACE++;
-	//if(uuu1cx[].l2<1e-6){dddXX = 1e30; }; // REFAIRE CA
+	//The solution can converge to the unstably equilibrium point where u1cx[].l2=0. 
+	//See Supercritical Hoft Bifurcation. We dont want this solution, so:
+	//if(uuu1cx[].l2<1e-6){dddXX = 1e30; }; // REFAIRE CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 }; // END NEWTON LOOP
 
 
@@ -392,7 +409,10 @@ else
 	/// GENERATES OUTPUT FILES //////////////////////////////////////////////////////
 	//Champs  sert seulement à garder les 3 champs du vecteur BIGSPACE uuu0x[] separament pour apres aller l'ecrire sur le file
 	XXMh [u0x,u0y,u0p],[u1cx,u1cy,u1cp],[u1sx,u1sy,u1sp];
-	[u0x[],u1cx[],u1sx[]]= uuu0x[];
+//	[u0x[],u1cx[],u1sx[]]= uuu0x[];
+	[u0x,u0y,u0p] = [uuu0x,uuu0y,uuu0p];
+	[u1x,u1y,u1p] = [uuu1cx-1i*uuu1sx,uuu1cy-1i*uuu1sy,uuu1cp-1i*uuu1sp]; 
+
 
 	{
 		ofstream file(ffdatadir+"MeanFlow.txt");
@@ -402,7 +422,7 @@ else
 
 	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iterBIGSPACE);
 
-	[u1x,u1y,u1p] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp]; 
+//	[u1x,u1y,u1p] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp]; 
 
 	{
  		ofstream file(ffdatadir+"SelfConsistentMode.txt");
@@ -434,6 +454,6 @@ else
 
 
 cpuEND=clock();
-cout << "Time consumed by the all program: " <<cpuINIT-cpuEND << endl;
+cout << endl << "Time consumed by the all program run: " << cpuINIT-cpuEND << " seconds" <<  endl << endl;
 // END PROGRAM
 

@@ -46,6 +46,7 @@ end
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
 
 [wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','L');
+
 % Starting point generated for next chapter with 'Retest'
 % Norm chosen with 'Normalization': 'L' (lift) (ops:E,L,V)
 
@@ -89,6 +90,8 @@ xlabel('Re');ylabel('AE')
 
 %% CHAPTER 5 : SELF CONSISTENT
 
+t_cpu_init=clock();
+
 if(exist('HB_completed')==1)
     disp('SC quasilinear model on the range [Rec , 100] already computed');
 else
@@ -97,7 +100,7 @@ else
     
     %%% THE STARTING POINT HAS BEEN GENERATED ABOVE, WHEN PERFORMING THE WNL
     %%% ANALYSIS
-    Res = 47. ;
+    %Res = 47. ;
     
     Lx_HB = [Lxc]; Fx_HB = [Fxc]; omega_HB = [Omegac]; Aenergy_HB  = [0]; Fy_HB = [0];
     %bf=SF_BaseFlow(bf,'Re',Res);
@@ -115,6 +118,8 @@ else
     end
     HB_completed = 1;
 end
+
+t_cpu_end=clock()-t_cpu_init %DIOGO: ca va servir à comparer les performaces du avec et sans BIGSPACE
 
 %%% chapter 5b : figures
 

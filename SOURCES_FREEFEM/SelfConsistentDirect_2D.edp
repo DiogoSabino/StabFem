@@ -37,6 +37,9 @@
 //					"iter" parameter in Eigenmode.ff2m is -1.
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
+real cpuINIT,cpuEND, cpu1, cpu2, cpu3,cpu4;
+cpuINIT=clock();
+
 load "MUMPS_seq"
 include "SF_Geom.edp";
 include "Macros_StabFem.edp";
@@ -308,6 +311,8 @@ varf LinOp43([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
 
 cout << " Defining operators for linear term... DONE" << endl << endl;
 
+cpu1=clock();
+cout << endl << "Time consumed in declarations : " << cpu1-cpuINIT << " seconds" <<  endl << endl;
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -319,6 +324,8 @@ int iter=1;
 while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 { 
 	cout << endl << "Newton loop step " << iter << endl;
+	cpu1=clock();
+	//Construct the RHS
 	cout << "Constructing rhs... " << endl;
 
 	real[int] RHSF1(u0x[].n), RHSF2(u0x[].n), RHSF3(u0x[].n); 
@@ -353,18 +360,24 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 					[	matLinOp31,	matLinOp32,	matLinOp33,	matLinOp34 ],
 					[		0,		0,	matLinOp43',		0  ]
 				];
-				
-		cout << " Assembling matrix... done" << endl;
+	cpu2=clock();
+	cout << endl << "Time consumed to assembling matrix: " << cpu2-cpu1 << " seconds" <<  endl << endl;		
+	cout << " Assembling matrix... done" << endl;
 
-	cout << " LU-ing matrix..." << endl;
+	cout << " SETING solver matrix..." << endl;
 	set(LinOp,solver=sparsesolver);
-	cout << " LU-ing matrix... done" << endl;
+	cpu3=clock();
+	cout << endl << "Time consumed to SETING solver matrix: " << cpu3-cpu2 << " seconds" <<  endl << endl;
+	cout << " SETING solver matrix... done" << endl;
 	
 	cout << " solving BIG problem..." << endl;
 	real[int] dX(LinOp.n);
 	dX = LinOp^-1*RHS;
 	[du0x[], du1cx[], du1sx[], domega] = dX;
-	
+        cpu4=clock();
+	cout << endl << "Time consumed to solve thr linear problem : " << cpu4-cpu3 << " seconds" <<  endl << endl;	
+
+
 	u0x[] -= du0x[];
 	u1cx[] -= du1cx[];
 	u1sx[] -= du1sx[];
@@ -386,10 +399,12 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
 
 	iter++;
+	//The solution can converge to the unstably equilibrium point where u1cx[].l2=0. 
+	//See Supercritical Hoft Bifurcation. We dont want this solution, so:
 	if(u1cx[].l2<1e-6){dXX = 1e30; };
 }; // END NEWTON LOOP
 	
-if(abs(dXX)>1000) 
+if(abs(dXX)>1000) //or iter>100; add this case... normally it converges/diverges fast enough, but we never know
 {
 	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",ub,"MeanFlow",-1);
 	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
@@ -445,5 +460,7 @@ else
 
 };
 	
+cpuEND=clock();
+cout << endl << "Time consumed by the all program run: " << cpuINIT-cpuEND << " seconds" <<  endl << endl;
 // END PROGRAM
 
