@@ -218,9 +218,19 @@ plot(Navrose_Re40_mstar10.data(:,1),Navrose_Re40_mstar10.data(:,2),'--*'); %ver 
 %title('Amplification Rate: Mass variation for Re=40 (*: Mode FLUID ; °: Mode STRUCTURE)')
 legend('without ADAPTMESH40x80x40','without ADAPTMESH50x50x50','with ADAPT40x80x40 at each 10it','with ADAPT40x80x40 at each 4it','with ADAPT50x50x50 at each 4it','Navrose')
 
+%% Day when I understand the terms associated to C_F
 
+v20_Re60_mstar20_FLUID=load('./Final_results_v20/Re60/mstar20/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+v21_Re60_mstar20_FLUID=load('./Final_results_v21/Re60/mstar20/03modeFLUI_spectrum.mat','sigma_tab','U_star');
+Navrose_Re60_mstar20 = importdata('./Navrose_Data/RE60_M20_real.csv'); %meter os bons nomes
 
+figure; hold on
 
+plot(v20_Re60_mstar20_FLUID.U_star,real(v20_Re60_mstar20_FLUID.sigma_tab));
+plot(v21_Re60_mstar20_FLUID.U_star,real(v21_Re60_mstar20_FLUID.sigma_tab));
+%Navrose data
+plot(Navrose_Re60_mstar20.data(:,1),Navrose_Re60_mstar20.data(:,2),'--*'); %ver qual é que é o certo
 
+legend('Dabre et Diogo','essay','Navrose');
 
 

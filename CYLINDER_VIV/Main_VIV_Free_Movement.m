@@ -24,6 +24,7 @@ disp_info=[' GENERATING  MESH :[' num2str(mesh_parameters(1)) ':' num2str(mesh_p
 disp(' ');  disp(disp_info); disp(' ');
 verbosity=10;
 baseflow=SF_Init('Mesh_Cylinder.edp', mesh_parameters);
+baseflow.mesh.problemtype='2D';
 baseflow=SF_BaseFlow(baseflow,'Re',1);
 baseflow=SF_BaseFlow(baseflow,'Re',10);
 baseflow=SF_BaseFlow(baseflow,'Re',60);
@@ -35,13 +36,13 @@ disp(' ');disp('ADAPTING MESH FOR RE=60 ');disp(' ');
 baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
 
 %plotFF(baseflow,'mesh');%pause(0.1);
-%baseflow=SF_BaseFlow(baseflow,'Re',60); not needed
+baseflow=SF_BaseFlow(baseflow,'Re',60); % not needed
 
 % 
 disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 % adaptation du maillage sur un mode propre
-%%%[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-%%%[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
+[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
+[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
 %plotFF(baseflow,'mesh');%pause(0.1);
 %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
 %plotFF(baseflow,'mesh');%pause(0.1);
@@ -53,13 +54,13 @@ plotFF(baseflow,'mesh');%pause(0.1);
 
 %% Validation Phase: Parameters' Definition
 %CHOOSE the Re to test:
-Re=40; verbosity=10;
-
+Re=60; verbosity=10;
+baseflow.mesh.problemtype='2D';
 baseflow = SF_BaseFlow(baseflow,'Re',Re);
-
+baseflow.mesh.problemtype='2D_VIV';
 
 %CHOOSE the m_star to test:
-m_star=10;
+m_star=20;
 mass=m_star*pi/4;
 %U_star=[11:-0.2:9.5 9.5:-0.05:6.5 6.5:-0.2:3];
 U_star=[3:0.2:6.5 6.5:0.05:11 ];%11:0.1:15
@@ -69,7 +70,7 @@ Stiffness_table=pi^3*m_star./((U_star).^2);
 %sigma_tab = []; mode_tab=[];
 
 %CHOOSE save data version:
-savedata_dir_version='vm50x50x50_ADAPT_4_L5_err_0.01';
+savedata_dir_version='v21';
 %savedata_dir_version='vm40x80x40ADAPT_1';
 %verbosity=10;
 
@@ -104,7 +105,7 @@ Save_Data(Re,m_star,Stiffness_table,U_star,filename,sigma_tab,mode_tab,savedata_
 %close all
 
 %CHOOSE shift:
-RealShift=-0.03; ImagShift=0.75;  
+RealShift=0.05; ImagShift=0.75;  
 %CHOOSE the one for save data w/ a good name:
 modename='FLUI'; % Options normally used: STRU, FEM2, FLUI or FEM1
 numbermode='03'; %02 for STRU,FEM2; 03 for FLUI,FEM1;

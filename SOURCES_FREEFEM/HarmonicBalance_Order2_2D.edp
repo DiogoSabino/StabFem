@@ -305,23 +305,27 @@ varf LinOp21([du0x,du0y,du0p],[vx,vy,vp]) =
              
 // block 2-2 : effect of du1c on u1c            
 varf LinOp22([du1cx,du1cy,du1cp],[vx,vy,vp]) =
-             int2d(th)( NSL(nu,u0,du1c,v) )
-            + int2d(th)( - Conv(du1c,u2c,v) )
-            - int2d(th)( sigma1*(du1cx*vx+du1cy*vy) )
- 			+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
+	int2d(th)( NSL(nu,u0,du1c,v) )
+	//+ int2d(th)( - Conv(du1c,u2c,v) ) DIOGO has corrected this///////////////////////////////////////////////////////
+	+ int2d(th)( -.5*Conv(du1c,u2c,v) )
+	- int2d(th)( sigma1*(du1cx*vx+du1cy*vy) )
+	+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
  			
 // block 2-3 : effect of du1s on u1c
 varf LinOp23([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-			 int2d(th)( - Conv(du1s,u2s,v)  )
-			+ int2d(th)(-omega*(du1sx*vx+du1sy*vy));
+	//int2d(th)( - Conv(du1s,u2s,v)  ) DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(du1s,u2s,v)  )
+	+ int2d(th)(-omega*(du1sx*vx+du1sy*vy));
 
 // block 2-4 : effect of du2c on u1c             
 varf LinOp24([du2cx,du2cy,du2cp],[vx,vy,vp]) =
-             int2d(th)( - Conv(u1c,du2c,v)  );
-           
+	//int2d(th)( - Conv(u1c,du2c,v)  );DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(u1c,du2c,v)  );
+          
 // block 2-5 : effect of du2s on u1c
 varf LinOp25([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-			 int2d(th)( - Conv(u1s,du2s,v)  );
+	//int2d(th)( - Conv(u1s,du2s,v)  );DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(u1s,du2s,v)  );
 
 // block 2-6 : effect of domega on eigenmode-real equations
 varf LinOp26([du0x,du0y,du0p],[vx,vy,vp]) =  
@@ -333,27 +337,31 @@ varf LinOp26([du0x,du0y,du0p],[vx,vy,vp]) =
 
 // block 3-1 : effect of du0 on u1s		
 varf LinOp31([du0x,du0y,du0p],[vx,vy,vp]) =
-	 int2d(th)( - Conv(du0,u1s,v) );  
+	 int2d(th)( - Conv(du0,u1s,v) );
 	             
 // block 3-2 : effect of du1c on u1s
 varf LinOp32([du1cx,du1cy,du1cp],[vx,vy,vp]) =
- 			 int2d(th)( - Conv(du1c,u2s,v)  )
-		   + int2d(th)(omega*(du1cx*vx+du1cy*vy));
+	//int2d(th)( - Conv(du1c,u2s,v)  ) DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(du1c,u2s,v)  )
+	+ int2d(th)(omega*(du1cx*vx+du1cy*vy));
 			 			
 // block 3-3 : effect of du1s on u1s         
 varf LinOp33([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-             int2d(th)( NSL(nu,u0,du1s,v) )
-           + int2d(th)( Conv(du1s,u2c,v)  )
-           - int2d(th) ( sigma1*(du1sx*vx+du1sy*vy) )
- 		   + Boundaryconditions(du1sx,du1sy,vx,vy,"A");
+	int2d(th)( NSL(nu,u0,du1s,v) )
+	//+ int2d(th)( Conv(du1s,u2c,v)  ) DIOGO has corrected this///////////////////////////////////////////////////////
+	+ int2d(th)( .5*Conv(du1s,u2c,v)  )	
+	- int2d(th) ( sigma1*(du1sx*vx+du1sy*vy) )
+	+ Boundaryconditions(du1sx,du1sy,vx,vy,"A");
 
 // block 3-4 : effect of du2c on u1s             
 varf LinOp34([du2cx,du2cy,du2cp],[vx,vy,vp]) =
-             int2d(th)( Conv(u1s,du2c,v)  );
+	//int2d(th)( Conv(u1s,du2c,v)  ); DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( .5*Conv(u1s,du2c,v)  );
            
 // block 3-5 : effect of du2s on u1s
 varf LinOp35([du1sx,du1sy,du1sp],[vx,vy,vp]) =
-			 int2d(th)( - Conv(u1c,du2s,v)  );
+	//int2d(th)( -Conv(u1c,du2s,v)  ); DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( -.5*Conv(u1c,du2s,v)  ); 
 
 // block 3-6 : effect of domega on eigenmode-real equations
 varf LinOp36([du0x,du0y,du0p],[vx,vy,vp])
@@ -397,11 +405,13 @@ varf LinOp51([du0x,du0y,du0p],[vx,vy,vp]) =
  	
 // block 5-2 : effect of du1c on u2s
 varf LinOp52([du1cx,du1cy,du1cp],[vx,vy,vp]) =
- 			 int2d(th)( - Conv(du1c,u1s,v)  );
+	//int2d(th)( - .5*Conv(du1c,u1s,v)  ); DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(du1c,u1s,v)  );
  			
 // block 5-3 : effect of du1s on u2s
 varf LinOp53([du1sx,du1sy,du1sp],[vx,vy,vp]) =
- 			 int2d(th)( - Conv(u1c,du1s,v)  );
+	//int2d(th)( - Conv(u1c,du1s,v)  );  DIOGO has corrected this///////////////////////////////////////////////////////
+	int2d(th)( - .5*Conv(u1c,du1s,v)  );
 
 // block 5-4 : effect of du2c on u2s
 varf LinOp54([du2cx,du2cy,du2cp],[vx,vy,vp]) =

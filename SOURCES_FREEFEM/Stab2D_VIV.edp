@@ -140,6 +140,14 @@ macro Diffusion(nu,ux,uy,vx,vy)  (-nu*( dx(ux)*dx(vx)+dy(ux)*dy(vx)+dx(uy)*dx(vy
 //+ on(bcaxis,ux=1*(symmetry=="S"),uy=1*(symmetry~="A")) alternative way
 // 
 
+
+macro PortanceNAVROSE(u,symmetry)
+	int1d(th,2,21,22,23)(
+	( 1*(symmetry=="N") + 2*(symmetry=="A") )
+	*u#p*N.y
+	)
+//EOM
+
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 ///////////  Load baseflow   ////////////////////////////////////////////////////
@@ -205,7 +213,7 @@ OPff=LNSE(XXMh,XXMh,solver=sparsesolver);
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix Afv for VIV cylinder
 
-varf afv([vx,vy,q],[ux,uy,up]) =Portance(u,"A"); //We seek just the A modes, for the linear analysis
+varf afv([vx,vy,q],[ux,uy,up]) =Portance(u,"A");//+PortanceNAVROSE(u,"A"); //We seek just the A modes, for the linear analysis
 	// effet du fluide sur la vitesse v ; correspond à la force verticale
 	// WARNING : c'est un vecteur LIGNE, il faut intervertir les inconnues et les fcns tests !
 

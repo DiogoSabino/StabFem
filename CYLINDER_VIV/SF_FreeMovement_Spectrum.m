@@ -26,25 +26,25 @@ switch stability_analysis
        
         [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
         set(gcf, 'Position', get(0, 'Screensize'));%img in fullscream during compute
-        disp('TOTO1');
-        [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
-        plotFF(baseflow,'mesh');
-        disp('TOTO2');
-        i=1;
+        %disp('TOTO1');
+        %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
+        %plotFF(baseflow,'mesh');
+        %disp('TOTO2');
+        %i=1;
         
         for STIFFNESS=STIFFNESS_to_search
-            disp('TOTO3');
+            %disp('TOTO3');
             [ev,em] = SF_Stability(baseflow,'shift','cont','nev',nev,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
-            disp('TOTO4');
-            if(mod(i,4)==0)
-                disp('TOTO4a');
-                [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
+            %disp('TOTO4');
+            %if(mod(i,4)==0)
+             %   disp('TOTO4a');
+             %   [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
                 %plotFF(baseflow,'mesh');
-            end
-            disp('TOTO5');
+            %end
+            %disp('TOTO5');
             sigma_tab = [sigma_tab ev];
             mode_tab=[mode_tab em];
-            i=i+1;
+            %i=i+1;
         end
 end
 
