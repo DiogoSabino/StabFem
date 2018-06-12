@@ -1,4 +1,4 @@
-function [baseflow,sigma_tab,mode_tab] = SF_FreeMovement_Spectrum(baseflow,sigma_tab,mode_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev,stability_analysis)
+function [baseflow,sigma_tab] = SF_FreeMovement_Spectrum(stability_analysis,baseflow,sigma_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev)
 %%
 switch stability_analysis
     case 'search' %For search "randomly" in the spectrum
@@ -11,7 +11,7 @@ switch stability_analysis
                 for jj=ImagShift
                     [ev,em] = SF_Stability(baseflow,'shift',ii+jj*1i,'nev',nev,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
                     sigma_tab = [sigma_tab ev];
-                    mode_tab=[mode_tab em];
+                    %mode_tab=[mode_tab em];It's too heavy in terms of memory
                     set(gcf, 'Position', get(0, 'Screensize'));
                 end
             end
@@ -43,7 +43,7 @@ switch stability_analysis
             %end
             %disp('TOTO5');
             sigma_tab = [sigma_tab ev];
-            mode_tab=[mode_tab em];
+            %mode_tab=[mode_tab em];It's too heavy in terms of memory
             %i=i+1;
         end
 end

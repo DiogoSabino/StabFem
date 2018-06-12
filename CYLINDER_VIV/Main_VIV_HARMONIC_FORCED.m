@@ -43,12 +43,6 @@ disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005); %j'ai
 %changé ca!!!!
 plotFF(baseflow,'mesh');%pause(0.1);
-% 
-% what is this ?
-% %disp(' ');
-% %disp(' THRESHOLD : ')
-% %[baseflowC,emC]=SF_FindThreshold(baseflow,em);
-
 
 %% Erase previous data if mesh have change (do it manually!!)
 % Delete the data concerning the solution of the problem

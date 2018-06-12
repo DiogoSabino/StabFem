@@ -1,24 +1,24 @@
-///
-///
+///////////////////////////////////////////////////////////////////////////////////////////
 ///
 ///		SCRIPT TO COMPUTE THE LINEAR FORCED PROBLEM OF AN OSCILLATING 2D BODY
-/// 
-///	Contributors: Ndong Fall, David Fabre, Diogo Sabino
-///	Last modification: Diogo Sabino 18 April 2018
+///		Oscilations are in a transverse direction 
+///		Contributors: Ndong Fall, David Fabre, Diogo Sabino
+///		Last modification: Diogo Sabino 18 April 2018
 ///
-///	Programe fait dans repere relatif
-include "SF_Geom.edp"; //Values for nondimensionalization
+///		Reference Frame: Relative Frame, Relative Velocity  										// To be confirmed
+///////////////////////////////////////////////////////////////////////////////////////////
+include "SF_Geom.edp"; //Values for nondimensionalization 											//why?
 include "Macros_StabFem.edp";
 
-cout << "_________________________________________________" << endl;		
-cout << "| Objet en mouvement harmonique impose (selon U)|"<< endl;
+cout << "__________________________________________________" << endl;		
+cout << "| Cylinder in a harmonic imposed motion (selon U)|"<< endl;
 
-////////////////////////////////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////////////////////////////
-//	Mesh loading
+///////////////////////////////////////////////////////////////////////////////////////////
+/// Mesh loading  /////////////////////////////////////////////////////////////////////////
 	mesh th=readmesh(ffdatadir+"mesh.msh");
 
-//	FEM space and variables definitions
+///////////////////////////////////////////////////////////////////////////////////////////
+///	FEM space and variables definitions     ///////////////////////////////////////////////
 	fespace Xh(th,P2);             ////// f.e. space for vel.
 	fespace Mh(th,P1);            ////// f.e. space for pressure
 	fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
@@ -35,21 +35,19 @@ cout << "| Objet en mouvement harmonique impose (selon U)|"<< endl;
 	real OMEGA, OMEGAstep, OMEGAlast ;	
 		
 ////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////	        
-// lecture du fichier champ de base (DEMI-ESPACE)	   
+///   Base flow lecture (semi-space)   /////////////////////////////////////////////////////	        	   
 	XXMh [u0x,u0y,u0p];
 
 	XXMh<complex> [vx,vy,qr],[ux,uy,up];
 	XXMh [uxR,uyR,prR],[uxI,uyI,prI];
-
-		{
- 		ifstream cbin(ffdatadir+"BaseFlow.txt");
-		 cbin >> u0x[];
-		 cbin >> Re;	/*Reynolds number defined*/
-		};
+	{
+ 	ifstream cbin(ffdatadir+"BaseFlow.txt");
+	cbin >> u0x[];
+	cbin >> Re;	/*Reynolds number defined*/
+	};
 
 cout << "_________________________________________________" << endl;
-cout << "| Lecture du champ de base      : Re = " << Re << "       |"<< endl;
+cout << "| Basefow corresponding to a Re = " << Re << "       |"<< endl;
 cout << "|_______________________________________________|" << endl;
 real nu=1./Re;
 
@@ -91,7 +89,7 @@ varf FyT([vx,vy,q],[ux,uy,up]) = Portance(u,"S");
 	cout << "|      Base Flow Lift:          : " << Lift0 << "      "<<endl;
 	cout << "|_______________________________________________" << endl;
 
-// Il faut faire les moments aussi, avec des macros
+// Il faut faire les moments aussi, avec des macros à REFAIRE
     // Moment	
 	varf MomentT([vx,vy,q],[ux,uy,up])  = int1d(th,2)( 
 	          2*x * (up*N.y -nu * ( (dx(uy)+dy(ux)) * N.x + 2*dy(uy) * N.y ) )
@@ -103,9 +101,9 @@ varf FyT([vx,vy,q],[ux,uy,up]) = Portance(u,"S");
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////	
-// calcul du champ [ux,uy,up] correspondant a une vitesse harmonique
+// Computation of the field [ux,uy,up] corresponding to the harmonic a velocity
 
-real U0=-1.; // vecteur d'osciallation latérale
+real U0=-1.; // Lateral oscilation vector
 // Oscillation laterale sans changement d'inclinaison  (alpha=-gamma,theta=0)
 problem vfStokes([ux,uy,up],[vx,vy,qr]) =
 	int2d(th)(
@@ -145,7 +143,6 @@ problem vfStokes([ux,uy,up],[vx,vy,qr]) =
        
 complex L2,M2;
 
-
 //The matlab script automaticly puts a -1 in final echo statement
 real inputvalue=-1;
 //uncomment next line, when running manually
@@ -167,7 +164,4 @@ while (inputvalue !=-1)
 
 cin >> inputvalue;
 }
-
-
 //END EDP FILE
-	

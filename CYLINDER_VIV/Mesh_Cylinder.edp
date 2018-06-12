@@ -19,13 +19,7 @@ include "Macros_StabFem.edp";
 // load "BinaryIO"                 ////load libary to write the solution in binary form
 // load "BinaryIO_64"
 
-
-
-
 real RADIUS=0.5;         /////// Cylinder Radius
- 
-
-
 real n=.5;                 
 int ns=50; 
 
@@ -55,8 +49,6 @@ border axis2(t=0,1){ x=RADIUS+(xoutlet-RADIUS)*t;y=0;label=bcaxis;}
 border outlet(t=0,1){ x=xoutlet;y=yside*t;label=bcoutflow;}
 border latsup(t=0,1){ x=xoutlet-(xoutlet-xinlet)*t;y=yside;label=bclat;}
 
-
-
 /////////////////////////////////////////////////////////////////////////////////
 // plot(inlet(10)+latinf(10)+outlet(10)+latsup(10)+cylref(10)+cylinder(10)+a1(10)+a2(10)+a3(10)+a4(10));
                          /////// Just to check the borders
@@ -69,10 +61,8 @@ mesh th=buildmesh(inlet(yside*n)+axis1((-RADIUS-xinlet)*n)+axis2((xoutlet-RADIUS
 
 plot(th,wait=0);
 
-
 // SAVE THE MESH in mesh.msh file 
 savemesh(th,ffdatadir+"mesh.msh");
-
 
 // FIRST AUXILIARY FILE for Stabfem : SF_Init.ff2m
 {
@@ -84,11 +74,8 @@ savemesh(th,ffdatadir+"mesh.msh");
 			file <<  RADIUS  << endl << xinlet << endl << xoutlet << endl << yside  << endl;
 }
 
-
 // SECOND AUXILIARY FILE  for Stabfem : mesh.ff2m
 	SFWriteMesh(ffdatadir+"mesh.ff2m",th)
-
-
 
 // THIRD AUXILIARY FILE for Stabfem : SF_Geom.edp
 {
@@ -97,10 +84,6 @@ savemesh(th,ffdatadir+"mesh.msh");
             file2 << " real SFGeomLengthscale = 1 ; // length scale for nondimensionalization" << endl ;
             file2 << " real SFGeomVelocityscale = 1 ; // velocity scale for nondimensionalization " << endl ;
 }
-
-
-
-
 
 // CREATE A guess for the base flow (here starting from zero works very well)
  		fespace femp1(th,P1);
@@ -117,12 +100,3 @@ savemesh(th,ffdatadir+"mesh.msh");
       	
 // Save in ff2m format (for StabFem)	    
 	     SFWriteBaseFlow(ffdatadir+"BaseFlow.ff2m",u,"BaseFlow",0);
-	     
-
-
-
-
-
-
-
-

@@ -35,7 +35,7 @@ int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 real TGVCL = 1e30;
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-//GENERAL MACROS apres avoir faire proprement le Stab2D_VIV
+//Macros for forced problem   //////////////////////////////////////////////////////////////
 macro divbis(u) (dx(u#x)+dy(u#y))// macro for divergence
 //EOM
  
@@ -46,7 +46,6 @@ macro Convbis(ua,ub,v) (
 //EOM
 
 macro Dbis(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] // macro for rate-of-deformation tensor
-
 //EOM
 
 macro Diffusionbis(nu,ux,uy,vx,vy)  (-nu*( dx(ux)*dx(vx)+dy(ux)*dy(vx)+dx(uy)*dx(vy)+dy(uy)*dy(vy))) // integration by parts of nu (v.Delta u)

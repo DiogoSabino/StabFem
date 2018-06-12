@@ -213,7 +213,7 @@ OPff=LNSE(XXMh,XXMh,solver=sparsesolver);
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix Afv for VIV cylinder
 
-varf afv([vx,vy,q],[ux,uy,up]) =Portance(u,"A");//+PortanceNAVROSE(u,"A"); //We seek just the A modes, for the linear analysis
+varf afv([vx,vy,q],[ux,uy,up]) = PortanceNAVROSE(u,"A"); //We seek just the A modes, for the linear analysis
 	// effet du fluide sur la vitesse v ; correspond à la force verticale
 	// WARNING : c'est un vecteur LIGNE, il faut intervertir les inconnues et les fcns tests !
 
@@ -248,13 +248,17 @@ Aaf = afbfluid(0,XXMh);
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix A for VIV cylinder
 
+
+real coefNAVROSE = 0*0.56027; // this is the expected value of d(Cf)/d(Ub) in navrose assuming he made a mistake
+
+
 //matrix<complex> A; 
 matrix<complex> OP;// mat OP = A - shift B
 OP = 	[
 	[OPff,		 0,			Avf,			Aaf],
 	[0,		 -SHIFT,		1,			0],
 	[0,		 0,			-SHIFT,			1],
-	[Afv',		-STIFFNESS,		-DAMPING,		-MASS-SHIFT*eps]
+	[Afv',		-STIFFNESS,		-DAMPING-coefNAVROSE,		-MASS-SHIFT*eps]
 	];
 
 set(OP,solver=sparsesolver);
