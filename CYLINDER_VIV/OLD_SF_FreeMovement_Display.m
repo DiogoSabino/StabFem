@@ -57,7 +57,7 @@ switch which_plot
         end
         subplot(2,1,1);legend(modename); subplot(2,1,2);legend(modename);
         % save data outside this function
-    case 'Ustar_LSA_VS_sigma_i'
+    case 'Ustar_LSA_VS_sigma_i' %SNAKE A feito
         i=1;
         while(i<=size(sigma_tab,1))
             plot((2*pi)./imag(sigma_tab(i,:)),real(sigma_tab(i,:)),color_grafic(i,:),'MarkerSize',2);

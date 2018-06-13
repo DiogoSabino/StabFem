@@ -1,0 +1,54 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ARTICLE_ASME_V4.aux
+The style file: asmems4.bst
+Database file #1: ARTICLE_ASME.bib
+Warning--I didn't find a database entry for "Navrose"
+Warning--I didn't find a database entry for "Tchoufag16"
+Warning--I didn't find a database entry for "FabreASME"
+Warning--I didn't find a database entry for "Fani18"
+Warning--I didn't find a database entry for "Chireux"
+Warning--I didn't find a database entry for "Fabre2012"
+Warning--I didn't find a database entry for "ManticLugo14"
+You've used 13 entries,
+            1984 wiz_defined-function locations,
+            589 strings with 5415 characters,
+and the built_in function-call counts, 3556 in all, are:
+= -- 341
+> -- 100
+< -- 0
++ -- 42
+- -- 29
+* -- 217
+:= -- 475
+add.period$ -- 39
+call.type$ -- 13
+change.case$ -- 11
+chr.to.int$ -- 0
+cite$ -- 13
+duplicate$ -- 198
+empty$ -- 337
+format.name$ -- 29
+if$ -- 878
+int.to.chr$ -- 0
+int.to.str$ -- 13
+missing$ -- 15
+newline$ -- 68
+num.names$ -- 13
+pop$ -- 41
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 157
+stack$ -- 0
+substring$ -- 224
+swap$ -- 114
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 30
+width$ -- 15
+write$ -- 143
+(There were 7 warnings)

@@ -46,8 +46,7 @@ switch save_option
     case 'graphic'
         %If we treat just one case:
         if (size(path,2)==1) %which means that only one patth is to be considered
-            disp('Saving image for the selected data');
-            disp(filename{1})
+            disp(['Saving image for the selected data with the following name: ' filename{1}]);
             saveas(gcf,[path{1} filename{1} '.fig']);
             saveas(gcf,[path{1} filename{1} '.png']);
         else
@@ -57,6 +56,7 @@ switch save_option
             saveas(gcf,[General_data_dir filename{1} '.png']);
 
         end
-end%option save mesh
+    %case('mesh')%option save mesh
+end
 
 end

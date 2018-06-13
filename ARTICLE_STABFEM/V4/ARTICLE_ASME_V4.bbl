@@ -1,0 +1,76 @@
+\begin{thebibliography}{10}
+
+\bibitem{MLugo2014}
+Mantic-Lugo, V., Arratia, C., and Gallaire, F., 2014.
+\newblock ``Self-consistent mean flow description of the nonlinear saturation
+  of the vortex shedding in the cylinder wake''.
+\newblock {\em Phys. Rev. Lett., {\bf 113}}, p.~084501.
+
+\bibitem{Dreid2004}
+Drazin, P., and Reid, W., 2004.
+\newblock {\em Hydrodynamic Stability}.
+\newblock Cambridge University Press.
+
+\bibitem{GiannettiLuchini}
+Giannetti, F., and Luchini, P., 2007.
+\newblock ``Structural sensitivity of the first instability of the cylinder
+  wake''.
+\newblock {\em J. Fluid Mech., {\bf 581}}, pp.~167--197.
+
+\bibitem{Marquet}
+Marquet, O., Sipp, D., and Jacquin, L., 2008.
+\newblock ``Sensitivity analysis and passive control of cylinder flow''.
+\newblock {\em J. Fluid Mech., {\bf 615}}, pp.~221--252.
+
+\bibitem{SippLebedev}
+Sipp, D., and Lebedev, A., 2007.
+\newblock ``Global stability of base and mean-flows: a general approach and its
+  applications to cylinder and open cavity flows''.
+\newblock {\em J. Fluid Mech., {\bf 593}}, pp.~333--358.
+
+\bibitem{LucBott2014}
+Luchini, P., and Bottaro, A., 2014.
+\newblock ``Adjoint equations in stability analysis''.
+\newblock {\em Annu. Rev. Fluid Mech., {\bf 46}}, pp.~493--517.
+
+\bibitem{SchmidHenningson2001}
+Schmid, P.~J., and Henningson, D.~S., 2001.
+\newblock {\em Stability and Transition in Shear Flows}.
+\newblock Springer-Verlag, New York.
+
+\bibitem{Jmc2005}
+Chomaz, J.-M., 2005.
+\newblock ``Global instabilities in spatially developing flows: Non-normality
+  and nonlinearity''.
+\newblock {\em Annu. Rev. Fluid Mech., {\bf 37}}, pp.~357--392.
+
+\bibitem{Ps2007}
+Schmid, P.~J., 2007.
+\newblock ``Nonmodal stability theory''.
+\newblock {\em Annu. Rev. Fluid Mech., {\bf 39}}, pp.~129--162.
+
+\bibitem{Arnoldi51}
+Arnoldi, W.~E., 1951.
+\newblock ``The principle of minimized iterations in the solution of the matrix
+  eigenvalue problem''.
+\newblock {\em Quart. Appl. Math., {\bf 9}}, pp.~17--29.
+
+\bibitem{adapt}
+Hecht, F., 1998.
+\newblock ``The mesh adapting software: bamg''.
+\newblock {\em INRIA report}.
+
+\bibitem{FDR2016}
+Gallaire, F., Boujo, E., Mantic-Lugo, V., Arratia, C., Thiria, B., and Meliga,
+  P., 2016.
+\newblock ``Pushing amplitude equations far from threshold: application to the
+  supercritical hopf bifurcation in the cylinder wake''.
+\newblock {\em Fluid. Dyn. Res., {\bf 48}}, p.~061401.
+
+\bibitem{Tchoufag2015}
+Tch{\"{o}}ufag, J., Fabre, D., and Magnaudet, J., 2015.
+\newblock ``Weakly nonlinear model with exact coefficients for the fluttering
+  and spiraling motion of buoyancy-driven bodies''.
+\newblock {\em Phys. Rev. Lett., {\bf 115}}, p.~114501.
+
+\end{thebibliography}

@@ -286,7 +286,8 @@ cout << endl << endl << "######### Values for table in article: ##############" 
 cout << "Fx0= "<< Fx0 << " + " << (Fxeps2 + FxA20*AAA^2) << " * eps^2" << endl;
 cout << "|Fx2|= " << sqrt((real(2*FxA22)*AAA^2)^2+(imag(2*FxA22)*AAA^2)^2) <<  " * eps^2" << endl;
 cout << "|Fy1|= " << sqrt( real(AAA*FyA1*2)^2+imag(AAA*FyA1*2)^2 ) << " * eps" <<  endl;
-
+cout << "|Fy1c|= " << real(AAA*FyA1*2) << " * eps" <<  endl;
+cout << "|Fy1s|= " << -imag(AAA*FyA1*2) << " * eps" <<  endl;
 
 
 real omegaNL;

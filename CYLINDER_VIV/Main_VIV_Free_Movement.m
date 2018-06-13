@@ -13,7 +13,7 @@
 %   To give a good use of this script, run each section at a time
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Mesh creation and convergence using adapt mesh
+%% Mesh: creation and convergence using adapt mesh
 %clear all
 close all
 global ffdataharmonicdir verbosity
@@ -53,7 +53,7 @@ baseflow.problemtype='2D_VIV';
 plotFF(baseflow,'mesh');%pause(0.1);
 
 %CHOOSE folder for saving data:
-General_data_dir='./FOLDER_TOTO/'; %a array of char
+General_data_dir='./Final_Results_v20/'; %a array of char
 
 domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
 %CHOOSE the name of the folder mesh: (It's good to choose the name because we can adapt mesh during)
@@ -61,13 +61,13 @@ mesh_identity={'Adapt_mode_Hmax10_InterError_0.02/'};
 savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 %savedata_dir=[General_data_folder domain_identity mesh_identity];
 
-%% Validation Phase: Parameters' Definition
+%% Parameters' Definition
 %CHOOSE the Re to test:
-Re=60; verbosity=10;
+Re=25; verbosity=10;
 baseflow = SF_BaseFlow(baseflow,'Re',Re);
 
 %CHOOSE the m_star to test:
-m_star=20;
+m_star=1000;
 mass=m_star*pi/4;
 %U_star=[11:-0.2:9.5 9.5:-0.05:6.5 6.5:-0.2:3];
 U_star=[3:0.2:6.5 6.5:0.05:11 ];%11:0.1:15
@@ -75,8 +75,7 @@ U_star=[3:0.2:6.5 6.5:0.05:11 ];%11:0.1:15
 
 Stiffness_table=pi^3*m_star./((U_star).^2);
 
-
-%% Validation Phase: See spectrum if wanted, for discover the shift
+%% Spectrum search: See spectrum if wanted, for discover the shift
 sigma_tab=[];
 %Re and mass are already defined above. Define numbers or tables for:
 STIFFNESS_to_search=Stiffness_table(1); %Use whatever we want 
@@ -88,29 +87,29 @@ nev=5; %Normally here we don't use just one
 filename={'01spectrum_search'};
 SF_Save_Data('spectrum',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
 
-%% Validation Phase: Follow a mode along the Stiffness_table to reproduze Navrose's images
+%% Mode Follow: Follow a mode along the Stiffness_table/U_star
 
-%Manually put the right shift, acordding to the above spectrum
+%Manually put the right shift, acordding to the above spectrum(
 %For the pair (Re;[m_star])
-%For the STRUCTURE Mode:
+%For the STRUCTURE Mode:(starting at U_star(1)=3 )
     %shift=0+2.1i: (50;[100])
-    %shift=0+2i: (60;[20,10]),(40;[100,20,15,10]),(21;[100,30,10]),(19;[100]),(15;[100])
+    %shift=0+2i: (60;[20,10]),(40;[300-10]),(25;[1000-20]),(21;[100-10]),(19;[100]),(15;[100])
     %shift=0+1.8i: (60;[5]),(40;[5])
     %shift=0+1i: (40;[0.7])
     
 %For the FLUID Mode :
     %shift=0.05+0.75i: (60;[20,10,5])
-    %shift=-0.03+0.75i: (40,[100,20,15,10,5])
+    %shift=-0.03+0.75i: (40,[300-5])
     %shift=-0.07+0.62i:(21;[10])
 %close all
 
 %CHOOSE shift:
-RealShift=0.05; ImagShift=0.75;
-%RealShift=0.05; ImagShift=0.75;
+RealShift=0; ImagShift=2; %Normally, for Structure
+%RealShift=-0.03; ImagShift=0.75; %Normally, for Fluid
 
 %CHOOSE the one for save data w/ a good name:
-%modename={'02modeSTRUCTURE'};
-modename={'03modeFLUID'};
+modename={'02modeSTRUCTURE'};
+%modename={'03modeFLUID'};
 
 
 sigma_tab=[];
@@ -120,28 +119,36 @@ nev=1; %Normally if's just one, but if shift is wrong, it helps put more
 filename={[modename{1} '_data']}; %For the saved data (it's a cell)
 SF_Save_Data('data',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
 
-
-%% Validation Phase: EigenValue Data Treatement
+%% Data Treatement: EigenValue 
 
 %CHOOSE Data to plot: %Vary just 1 parameter at time (Be sure that data exists)
 %(you can choose save it in an array to compare different data)
 %General_data_dir='./FOLDER_TOTO/';
-folder_plot=savedata_dir; %savedata_dir for the previous; for an array: {'totodir1','totodir2'}
+%Criar aqui o save dir para se poder comercar logo daqui assim que se abre
+%o matlab
+ %savedata_dir for the previous; for an array: {'totodir1','totodir2'}
+General_data_dir_folder=General_data_dir;
+domian_plot=domain_identity;
+mesh_plot=mesh_identity;
+%folder_plot={[General_data_dir_folder 'Post-Treatement/' domian_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs pe?? 
+folder_plot={[General_data_dir_folder  domian_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs pe?? 
+
 Re_plot=Re; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=m_star; % m_star for previous calculation
+m_star_plot=[20 40 100 300 1000]; % m_star for previous calculation
 
 %The different data treatment options:
 %Mode:Fluid, Structure or Both
-%Axis:sigma_VS_Ustar, F_LSA_VS_Ustar, f_LSA_VS_Ustar
+%Axis:sigma_VS_Ustar, F_LSA_VS_Ustar, f_star_LSA_VS_Ustar, sigma_r_VS_Ustar_LSA,
+%NavroseMittal2016LockInRe60M20, NavroseMittal2016LockInRe60M5,
+%NavroseMittal2016LockInRe40M10
 
-%Opt#1:Mode:-;Axis:-
+%How to do:'Mode:-', 'Axis:-'
 
-
-SF_Data_Treatement('Mode:Both','Axis:f_LSA_VS_Ustar',General_data_dir,folder_plot,Re_plot,m_star_plot);
+SF_Data_Treatement('Mode:Structure','Axis:sigma_VS_Ustar',General_data_dir,folder_plot,Re_plot,m_star_plot);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %If multiple data is ploted, RUN these lines for saving:
-filename={'IMAGE_TOTO4'};%Name of the figure if it's a comparing data figure:
+filename={'IMAGE_TOTO5'};%Name of the figure if it's a comparing data figure:
 SF_Save_Data('graphic',General_data_dir,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
 
 %% EigenMode Plot a faire
@@ -190,30 +197,30 @@ SF_Save_Data('graphic',General_data_dir,folder_plot,Re_plot,m_star_plot,filename
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %For Navrose page578 (eg:Re40) same units:
-SF_FreeMovement_Display(U_star,sigma_tab,'f_LSA_VS_Ustar',modename);
-filename=[ numbermode 'mode' modename '_Navrosep578'];
+%SF_FreeMovement_Display(U_star,sigma_tab,'f_LSA_VS_Ustar',modename);
+%filename=[ numbermode 'mode' modename '_Navrosep578'];
 %Save_Data(Re,m_star,Stiffness_table,U_star,filename,sigma_tab,savedata_dir_version,'grafic');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %After have done the two modes, we can continue to the next code part:
 %CHOOSE the same modenames as saved in the folder:
-modename1='STRU'; % Options normally used: STRU, FEM2
-modename2='FLUI';% Options normally used: FLUI, FEM1
-modename=[modename1 ; modename2];
-sigma_tab_both=[];
- 
-
-sigma_dir=['./Final_results_' savedata_dir_version '/Re' num2str(Re) '/' 'mstar' num2str(m_star) '/'];
-numbermode='02'; load([sigma_dir numbermode 'mode' modename1 '_spectrum.mat']);
-sigma_tab_both(1,:)=sigma_tab;
-numbermode='03'; load([sigma_dir numbermode 'mode' modename2 '_spectrum.mat']);
-sigma_tab_both(2,:)=sigma_tab;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% modename1='STRU'; % Options normally used: STRU, FEM2
+% modename2='FLUI';% Options normally used: FLUI, FEM1
+% modename=[modename1 ; modename2];
+% sigma_tab_both=[];
+%  
+% 
+% sigma_dir=['./Final_results_' savedata_dir_version '/Re' num2str(Re) '/' 'mstar' num2str(m_star) '/'];
+% numbermode='02'; load([sigma_dir numbermode 'mode' modename1 '_spectrum.mat']);
+% sigma_tab_both(1,:)=sigma_tab;
+% numbermode='03'; load([sigma_dir numbermode 'mode' modename2 '_spectrum.mat']);
+% sigma_tab_both(2,:)=sigma_tab;
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %One image iqual to Navrose p.572:
-SF_FreeMovement_Display(U_star,sigma_tab_both,'F_LSA_VS_Ustar',modename);
-filename='04mode_both';
+%SF_FreeMovement_Display(U_star,sigma_tab_both,'F_LSA_VS_Ustar',modename);
+%filename='04mode_both';
 %Save_Data(Re,m_star,Stiffness_table,U_star,filename,sigma_tab,savedata_dir_version,'grafic');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
