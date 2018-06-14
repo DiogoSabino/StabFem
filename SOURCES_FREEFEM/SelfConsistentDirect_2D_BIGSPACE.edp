@@ -68,7 +68,7 @@ XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)
 //BIGSPACE [uuubx,uuuby,uuubp,uuu1rx,uuu1ry,uuu1rp,uuu1ix,uuu1iy,uuu1ip]; // THE BIG VARIABLE for the initial guess value
 BIGSPACE [uuu0x,uuu0y,uuu0p,uuu1cx,uuu1cy,uuu1cp,uuu1sx,uuu1sy,uuu1sp]; // THE BIG VARIABLE for the state vector
 BIGSPACE [duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp]; // THE BIG VARIABLE for the Newton increments
-BIGSPACE [v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p]; //test functions
+BIGSPACE [vmx,vmy,vmp,v1cx,v1cy,v1cp,v1sx,v1sy,v1sp]; //test functions
 
 
 real Re, ReM;
@@ -108,7 +108,7 @@ macro Boundaryconditions(u1,u2,v1,v2,symmetry)
 	/*on(bcinlet,u1=0.0,u2=0.0) + on(bcwall,u1=0.0,u2=0.0)*/
           int1d(th,bcinlet,bcwall)(u1*v1*1e30+u2*v2*1e30)
 	+ int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
-//EOM 
+//EOM
 
 macro Lift(nu,u1,u2,p)   
 	(
@@ -230,87 +230,67 @@ cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS
 /////////////////////////////////////////////////////////////////////////////////
 //////// varf for BIGSPACE RHS    ///////////////////////////////////////////////
 cout << "Constructing RHS: " << endl;
-varf NLOpFBIGSPACE ([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p])=
-	/////////////////////////////////////////////////////////////////////////
-	// block 1 : NS for base flow        ////////////////////////////////////	
-	int2d(th)( NS(nu,uuu0,v1) )
- 	+ Boundaryconditions(duuu0x,duuu0y,v1x,v1y,"S")
-	+int2d(th)( - .25*Conv(uuu1c,uuu1c,v1) - .25*Conv(uuu1s,uuu1s,v1) )
-	/////////////////////////////////////////////////////////////////////////
-	// block 2 : base-flow effect on real part of eigenmode	   //////////////
-	//+int2d(th)((uuu0x*v2x+uuu0y*v2y+uuu0p*v2p)*eps) 
-	+int2d(th)( NSL(nu,uuu0,uuu1c,v2) )
-	- int2d(th) ( sigma1 * (uuu1cx*v2x+uuu1cy*v2y) )
-	- int2d(th) ( omega * (uuu1sx*v2x+uuu1sy*v2y ) ) 
-	+ Boundaryconditions(duuu1cx,duuu1cy,v2x,v2y,"A")
-	/////////////////////////////////////////////////////////////////////////
-	// block 3 : base-flow effect on imag part of eigenmode	   //////////////
-	//+int2d(th)((uuu0x*v3x+uuu0y*v3y+uuu0p*v3p)*eps) 
-	+int2d(th)( NSL(nu,uuu0,uuu1s,v3)  )              
-	+ Boundaryconditions(duuu1sx,duuu1sy,v3x,v3y,"A")			
-	- int2d(th) ( sigma1 * (uuu1sx*v3x+uuu1sy*v3y) )
-	+ int2d(th) ( omega * (uuu1cx*v3x+uuu1cy*v3y ) );
-	/////////////////////////////////////////////////////////////////////////
-	// blocks 4 : fix the phase with imag(lift)
-	// this is constructed directly when assemblying the matrix
+varf NLOpFBIGSPACE ([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[vmx,vmy,vmp,v1cx,v1cy,v1cp,v1sx,v1sy,v1sp])=
+	int2d(th)(
+		NS(nu,uuu0,vm)				// block 1: NS for base flow 
+		-.25*Conv(uuu1c,uuu1c,vm)		// block 1: NS for base flow 
+		-.25*Conv(uuu1s,uuu1s,vm)		// block 1: NS for base flow 
+		+NSL(nu,uuu0,uuu1c,v1c)			// block 2: base-flow effect on real part of eigenmode
+		-sigma1 * (uuu1cx*v1cx+uuu1cy*v1cy)	// block 2: base-flow effect on real part of eigenmode
+		- omega * (uuu1sx*v1cx+uuu1sy*v1cy )	// block 2: base-flow effect on real part of eigenmode
+		+NSL(nu,uuu0,uuu1s,v1s)			// block 3: base-flow effect on imag part of eigenmode
+		-sigma1 * (uuu1sx*v1sx+uuu1sy*v1sy)	// block 3: base-flow effect on imag part of eigenmode
+		+omega * (uuu1cx*v1sx+uuu1cy*v1sy )	// block 3: base-flow effect on imag part of eigenmode
+		);
+ 	//+ Boundaryconditions(duuu0x,duuu0y,vmx,vmy,"S")		// block 1 
+	//+ Boundaryconditions(duuu1cx,duuu1cy,v1cx,v1cy,"A")	// block 3 
+	//+ Boundaryconditions(duuu1sx,duuu1sy,v1sx,v1sy,"A");	// block 3 not needed
 cout << "RHS construction done. " << endl;
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 //////// varf BIG SPACE Linear part     /////////////////////////////////////////
 cout << "Constructing Linear part: " << endl;
-varf LinOpBIGSPACE ([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p])=
-	// Block 1-1////////////////////////////////////////////////////////
-	int2d(th)( NSL(nu,uuu0,duuu0,v1) )        
- 	+ Boundaryconditions(duuu0x,duuu0y,v1x,v1y,"S")
-	// Block 1-2/////////////////////////////////////////////////////////////
-	+int2d(th)( -.5*Conv(uuu1c,duuu1c,v1) )
-	// Block 1-3/////////////////////////////////////////////////////////////
-	+int2d(th)( -.5*Conv(uuu1s,duuu1s,v1) )
-	/////////////////////////////////////////////////////////////////////////
-	// Block 2-1/////////////////////////////////////////////////////////////
-	+int2d(th)( - Conv(duuu0,uuu1c,v2) )
-	// Block 2-2/////////////////////////////////////////////////////////////
-	+int2d(th)( NSL(nu,uuu0,duuu1c,v2) )
-	- int2d(th)( sigma1*(duuu1cx*v2x+duuu1cy*v2y) )
-	+ Boundaryconditions(duuu1cx,duuu1cy,v2x,v2y,"A")
-	// Block 2-3/////////////////////////////////////////////////////////////
-	+int2d(th)(-omega*(duuu1sx*v2x+duuu1sy*v2y))
-	/////////////////////////////////////////////////////////////////////////
-	// Block 3-1/////////////////////////////////////////////////////////////
-	+int2d(th)( - Conv(duuu0,uuu1s,v3) )
-	// Block 3-2/////////////////////////////////////////////////////////////
-	+int2d(th)(omega*(duuu1cx*v3x+duuu1cy*v3y))
-	// Block 3-3/////////////////////////////////////////////////////////////
-	+int2d(th)( NSL(nu,uuu0,duuu1s,v3) )
-	- int2d(th) ( sigma1*(duuu1sx*v3x+duuu1sy*v3y) )
-//	+int2d(th)((/*duuu0x*v1x+duuu0y*v1y+*/duuu0p*v1p+duuu1cx*v2x+duuu1cy*v2y+duuu1cp*v2p+duuu1sx*v3x+duuu1sy*v3y+duuu1sp*v3p)*1e-7) Pour assurer avoir tout les termes sur la diagonale
-	+ Boundaryconditions(duuu1sx,duuu1sy,v3x,v3y,"A");
+varf LinOpBIGSPACE ([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[vmx,vmy,vmp,v1cx,v1cy,v1cp,v1sx,v1sy,v1sp])=
+	int2d(th)(
+		NSL(nu,uuu0,duuu0,vm) 			// Block 1-1
+		-.5*Conv(uuu1c,duuu1c,vm) 		// Block 1-2
+		-.5*Conv(uuu1s,duuu1s,vm) 		// Block 1-3
+		- Conv(duuu0,uuu1c,v1c) 			// Block 2-1
+		+NSL(nu,uuu0,duuu1c,v1c) 		// Block 2-2
+		-sigma1*(duuu1cx*v1cx+duuu1cy*v1cy)	// Block 2-2
+		-omega*(duuu1sx*v1cx+duuu1sy*v1cy)	// Block 2-3
+		- Conv(duuu0,uuu1s,v1s)  		// Block 3-1
+		+omega*(duuu1cx*v1sx+duuu1cy*v1sy)	// Block 3-2
+		+NSL(nu,uuu0,duuu1s,v1s)
+		-sigma1*(duuu1sx*v1sx+duuu1sy*v1sy)
+		)
+	+ Boundaryconditions(duuu0x,duuu0y,vmx,vmy,"S")		// Block 1-1
+	+ Boundaryconditions(duuu1cx,duuu1cy,v1cx,v1cy,"A")	// Block 2-2
+	+ Boundaryconditions(duuu1sx,duuu1sy,v1sx,v1sy,"A"); 	// Block 3-3
 cout << "Constructing Linear Main part done. " << endl;
 
-varf LinOpColumn4([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p])=
-	/////////////////////////////////////////////////////////////////////////
-	// block 2-4 : effect of domega on eigenmode-real equations /////////////
-	int2d(th)(-(uuu1sx*v2x+uuu1sy*v2y)) //Pas sur des fonctions tests// this is to be multiplied by domega
-	/////////////////////////////////////////////////////////////////////////
-	// block 3-4 : effect of domega on eigenmode-imag equations /////////////
-	//+int2d(th)(eps*(duuu0x*v1x+duuu0y*v1y+duuu0p*v1p))//Pas sur des fonctions tests //DIOGO qui essaye des choses...
-	+int2d(th)(uuu1cx*v3x+uuu1cy*v3y);//Pas sur des fonctions tests
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf BIG SPACE Column part     /////////////////////////////////////////
+varf LinOpColumn4([duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp],[vmx,vmy,vmp,v1cx,v1cy,v1cp,v1sx,v1sy,v1sp])=
+	//block 2-4: effect of domega on eigenmode-real equations
+	//block 3-4: effect of domega on eigenmode-imag equations	
+	int2d(th)(-(uuu1sx*v1c+uuu1sy*v1cy)+uuu1cx*v1sx+uuu1cy*v1sy); 
 cout << "Constructing Linear Colum part done. " << endl;
 
-varf LinOpLine4([v1x,v1y,v1p,v2x,v2y,v2p,v3x,v3y,v3p],[duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp])= 	//ATTENTION inversion
-	/////////////////////////////////////////////////////////////////////////
-	//int2d(th)(eps*(duuu0x*v1x+duuu0y*v1y+duuu0p*v1p+duuu1cx*v2x+duuu1cy*v2y+duuu1cp*v2p))+
-	//int2d(th)(eps*(duuu0x+duuu0y+duuu0p+duuu1cx+duuu1cy+duuu1cp))+
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf BIG SPACE Line part       /////////////////////////////////////////
+varf LinOpLine4([vmx,vmy,vmp,v1cx,v1cy,v1cp,v1sx,v1sy,v1sp],[duuu0x,duuu0y,duuu0p,duuu1cx,duuu1cy,duuu1cp,duuu1sx,duuu1sy,duuu1sp])= 	//ATTENTION inversion
 	// bloc 4-3 : to fix the phase by imposing Lift(u1s) = 0
 	Lift(1/Re,duuu1sx,duuu1sy,duuu1sp);
 cout << "Constructing Linear Line part done. " << endl;
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//////// Informations       /////////////////////////////////////////////////////
 cout << "Dimension of the BIGSPACE : "  <<  uuu0x[].n << endl;
-
-
 cpu1=clock();
 cout << endl << "Time consumed in declarations : " << cpu1-cpuINIT << " seconds" <<  endl << endl;
-
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -326,6 +306,7 @@ int iterBIGSPACE=1;
 while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 { 
 	cpu1=clock();
+
 	//Construct the RHS
 	cout << "1-Constructing the RHS..." << endl;
 	real[int] RHSBIGSPACE(uuu0x[].n);
@@ -336,7 +317,6 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 	cout <<  " max RHS: " << RHSBIGSPACE.l2 << endl;
 
 	//Assembling Matrix
-
 	cout << "3-Constructing Blocks of Matrix..." << endl;
 	matrix matLinOp = LinOpBIGSPACE(BIGSPACE,BIGSPACE);
 	real[int] matLinOpColumn4=LinOpColumn4(0,BIGSPACE);
@@ -351,7 +331,7 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
 	cout << endl << "Time consumed to assembling matrix: " << cpu2-cpu1 << " seconds" <<  endl << endl;
         cout << "5-Matrix Done" << endl;
 	
-	//SETING solver matrix
+	//SETING solver matrix: LU-ing
 	cout << "6-SETING solver matrix..." << endl;
 	set(LinOpMATRIXBIGSPACE,solver=sparsesolver); 		
 	cpu3=clock();
@@ -360,23 +340,18 @@ while(abs(dddXX)>tolBIGSPACE&&abs(dddXX)<100000&&iterBIGSPACE<100)
         //Solving BIG problem...
 	cout << "7-Solving BIG problem..." << endl;
 	real[int] dddX(LinOpMATRIXBIGSPACE.n);
-	cout << "8-SOLVE_2" << endl;
 	dddX = LinOpMATRIXBIGSPACE^(-1)*RHS; 
-	cout << "9-SOLVE_3" << endl;
 	[duuu0x[], domega] = dddX;
-	cout << "10-SOLVED" << endl;
+	cout << "8-SOLVED" << endl;
         cpu4=clock();
 	cout << endl << "Time consumed to solve thr linear problem : " << cpu4-cpu3 << " seconds" <<  endl << endl;
 	uuu0x[] -= duuu0x[];
 	omega -= domega;
 
-
-
+	//Informations
 	cout << endl << "   ### ||delta state vector||, domega: " << duuu0x[].l2 << " " << -domega<< endl;
 	dddXX = duuu0x[].l2+abs(domega);
-	
 	cout << "   ### ||state vector|| (without omega): " << uuu0x[].l2 << endl;
-
 	cout <<  "   ### omega = " << omega << endl;
 	cout << "   ### Energy-norm of perturbation A = " << EnergyNormCS(uuu1c,uuu1s)  << endl;	
 	cout << " 	### Fy = " << Lift(1/Re,uuu1cx,uuu1cy,uuu1cp) << endl ; 
@@ -409,7 +384,7 @@ else
 	/// GENERATES OUTPUT FILES //////////////////////////////////////////////////////
 	//Champs  sert seulement à garder les 3 champs du vecteur BIGSPACE uuu0x[] separament pour apres aller l'ecrire sur le file
 	XXMh [u0x,u0y,u0p],[u1cx,u1cy,u1cp],[u1sx,u1sy,u1sp];
-//	[u0x[],u1cx[],u1sx[]]= uuu0x[];
+//	[u0x[],u1cx[],u1sx[]]= uuu0x[]; //This line does not work because FF does not store uuu0x[] with the 3 parts independently
 	[u0x,u0y,u0p] = [uuu0x,uuu0y,uuu0p];
 	[u1x,u1y,u1p] = [uuu1cx-1i*uuu1sx,uuu1cy-1i*uuu1sy,uuu1cp-1i*uuu1sp]; 
 

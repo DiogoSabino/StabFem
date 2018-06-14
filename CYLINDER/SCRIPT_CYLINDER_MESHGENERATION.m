@@ -27,7 +27,7 @@ disp('mesh adaptation to SENSITIVITY : ')
 [bf,em]=SF_Adapt(bf,em,'Hmax',5);
 bf.xlim = [-2 4]; bf.ylim=[0,3];
 plotFF(bf,'ux'); plotFF(bf,'mesh');
-%[bf]=SF_Split(bf);
+[bf]=SF_Split(bf);
 %plotFF(bf,'ux'); plotFF(bf,'mesh');
 
 end
