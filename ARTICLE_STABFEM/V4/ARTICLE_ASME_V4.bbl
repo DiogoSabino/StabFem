@@ -1,7 +1,7 @@
 \begin{thebibliography}{10}
 
 \bibitem{MLugo2014}
-Mantic-Lugo, V., Arratia, C., and Gallaire, F., 2014.
+Manti\v{c}-Lugo, V., Arratia, C., and Gallaire, F., 2014.
 \newblock ``Self-consistent mean flow description of the nonlinear saturation
   of the vortex shedding in the cylinder wake''.
 \newblock {\em Phys. Rev. Lett., {\bf 113}}, p.~084501.
@@ -61,8 +61,8 @@ Hecht, F., 1998.
 \newblock {\em INRIA report}.
 
 \bibitem{FDR2016}
-Gallaire, F., Boujo, E., Mantic-Lugo, V., Arratia, C., Thiria, B., and Meliga,
-  P., 2016.
+Gallaire, F., Boujo, E., Manti\v{c}-Lugo, V., Arratia, C., Thiria, B., and
+  Meliga, P., 2016.
 \newblock ``Pushing amplitude equations far from threshold: application to the
   supercritical hopf bifurcation in the cylinder wake''.
 \newblock {\em Fluid. Dyn. Res., {\bf 48}}, p.~061401.

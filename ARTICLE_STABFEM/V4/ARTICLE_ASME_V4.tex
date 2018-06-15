@@ -231,7 +231,7 @@ Suppose that we have a ``guess''  for the base flow $[{\bf u}_b^g,p_b^g]$  which
 [{\bf u}_b,p_b]  = [{\bf u}_b^g,p_b^g] + [\delta {\bf u}_b, \delta p_b].
 \ee
 Injecting (\ref{Newton1}) into the weak form (\ref{NSweak}) of the Navier-Stokes equations and developing up to linear terms in terms of the perturbation lead to  
-${\cal NS}  ({\bf u}_b^g,p_b^g) +  {\cal LNS} _{{\bf u}_b^g}(\delta {\bf u}_b,\delta p_b)$, which can also be written in weak form as :
+${\cal NS}  ({\bf u}_b^g,p_b^g) +  {\cal LNS} _{{\bf u}_b^g}(\delta {\bf u}_b,\delta p_b)$, which can also be written in weak form as:
 \bes{Newton2}
 &\left< {\bf v}, {\cal NS} ({\bf u}_b^g,p_b^g)\right> + \left<q, \nabla \cdot {\bf u}_b^g\right>  
 \\
@@ -264,7 +264,7 @@ The eigenmodes and the eigenvalues are the solution of the following eigenproble
  \be{LEP}
 \lambda \hat{{\bf u}} = {\cal LNS}_{{\bf u}_b}( \hat{\bf u},\hat{p}),
 \ee
-or, in weak form : 
+or, in weak form: 
 \be{eigenvalueproblem}
 \lambda \left< {\bf v} , \hat{{\bf u}} \right> = \left< {\bf v}, {\cal LNS}_{{\bf u}_b} ( \hat{\bf u},\hat{p})\right> + \left< q, \nabla \cdot \hat{\bf u} \right>.
 \ee
@@ -290,7 +290,7 @@ We can then define the adjoint eigenvalues and eigenmodes as the solutions of th
 \ee
 It can be shown \cite{SchmidHenningson2001} that the adjoint eigenvalues $\lambda^\dag_k$ are the complex conjugates of the direct eigenvalues $\lambda_k$. 
 
-Although the concept of adjoint operator may sound complicate, the resolution of the adjoint problem using finite elements methods is actually extremely easy. In effect, the scalar product used in the definition of the weak formulation and that appearing in the definition of adjoint being the same, the weak formulations of both problems are thus identical when exchanging the test functions and the unknown functions. Thus the matricial form of the discretized version of (\ref{EigenAdj}) is deduced from the one of the direct problem by a simple (Hermitian) transpose of the matrix :
+Although the concept of adjoint operator may sound complicate, the resolution of the adjoint problem using finite elements methods is actually extremely easy. In effect, the scalar product used in the definition of the weak formulation and that appearing in the definition of adjoint being the same, the weak formulations of both problems are thus identical when exchanging the test functions and the unknown functions. Thus the matricial form of the discretized version of (\ref{EigenAdj}) is deduced from the one of the direct problem by a simple (Hermitian) transpose of the matrix:
 \be{Eigen_Adj_matricial}
 \overline{\lambda}^\dag B \hat{X}^\dag = A^T \hat{X}^\dag.
 \ee
@@ -531,7 +531,7 @@ In the past decade, efforts have been devoted to extend the range of validity of
 
 
 In the nonlinear regime, the {\em base flow} introduced in the linear theory is not directly accessible and no longer relevant, especially when the oscillation amplitudes become large. 
-Instead, one may define a {\em mean flow} by time-averaging : 
+Instead, one may define a {\em mean flow} by time-averaging: 
 %{\color{red} we taken the Reynolds decomposition ${\bf u}={\bf u}_m({\bf x})+{\bf u}'({\bf x},t)$, with ${\bf u}'$ the nonlinear perturbation and ${\bf u}_m$ the {\em mean flow} defined as the time-average  of the flow:}
 
 \be{defumean}
@@ -643,7 +643,7 @@ interaction of $\hat{\bf u}$ with itself. These three terms are computed as solu
 (see eqs. \ref{eq:LL1}, \ref{eq:LL2}, \ref{eq:LL3} in appendix B).
 
 At ${\cal O}( \epsilon ^3)$, compatibility conditions have to be imposed to ensure that the problem is correctly posed. These conditions lead to an ``amplitude equation" which relates the amplitude $ A_{wnl}$ to three parameters $\Lambda, \nu_{0}$ and $\nu_{2}$ which depend
-uniquely on ${\bf u}_\epsilon$, ${\bf u}_{2,0}$ and ${\bf u}_{2,2}$, respectively (see equations \ref{LAMBDA}, \ref{NU0} and \ref{NU2} in appendix B). Restricting to the description of the limit cycle, the ``amplitude equation" takes the form :
+uniquely on ${\bf u}_\epsilon$, ${\bf u}_{2,0}$ and ${\bf u}_{2,2}$, respectively (see equations \ref{LAMBDA}, \ref{NU0} and \ref{NU2} in appendix B). Restricting to the description of the limit cycle, the ``amplitude equation" takes the form:
 
 \be{WNL3}
 i \omega_\epsilon A_{wnl} = \Lambda A_{wnl} - (\nu_0+\nu_2)  |A_{wnl}|^2 A_{wnl}.
@@ -679,7 +679,7 @@ which corresponds to the time-average of expansion  \ref{WNL1}, namely :
 $
 [{\bf u}_m,p_m] = [{\bf u}_{bc},p_{bc}] +\epsilon^2 \left( [{\bf u}_\epsilon,p_\epsilon] + A_{wnl}^2 [{\bf u}_{2,0}, p_{2,0} ] \right).
 $
-Developing the terms as an asymptotic expansion leads to :
+Developing the terms as an asymptotic expansion leads to:
 \be{drag_cos}
  F_{x,0}(Re) \approx F_{x,0,{Re_c}} +  F_{x,0,\epsilon} \left(\frac{1}{Re_c}-\frac{1}{Re}\right)
 \ee 
@@ -699,7 +699,7 @@ Developing the terms as an asymptotic expansion leads to :
 %-F_{x,i}({\bf u}_{2,2})\sin(2\omega t) \big),
 
 Similarly the required components of the lift force are obtained by applying the lift operator ${\cal L}$ defined in \ref{lift} 
-to the order-one component of the expansion, leading to :
+to the order-one component of the expansion, leading to:
 \be{lift_cos}
 F_{y,1,c} - i F_{y,1,s} = 2 |A_{wnl}| {\cal{L}}_{Re_c}( {\bf \hat{u}},\hat{p} ) \sqrt{\frac{1}{Re_c}-\frac{1}{Re}}.
 %|A|_i F_{x,i}({\bf \hat{u}})\sin(\omega t) \big),\\
@@ -823,7 +823,7 @@ We thus start with a truncated Fourier decomposition of the limit cycle under th
 {\bf u } = {\bf u }_m + {\bf u }_{1,c} \cos( \omega t ) +   {\bf u }_{1,s} \sin( \omega t ),
 \ee
 where ${\bf u }_{1,c}$ and ${\bf u }_{1,s}$ are two {\em real} fields describing the cycle at two instants separated by a quater-period of oscillation, and $\omega$ is the (real) oscillation frequency of the limit cycle (which is not known a priori).  
-The connection with the definition of Manti\v{c}-Lugo is as follows :
+The connection with the definition of Manti\v{c}-Lugo is as follows:
 \be{HBtoSC}
 \left( {\bf u }_{1,c} - i {\bf u }_{1,s} \right) = 2 A_{sc} \tilde{{\bf u }}_1.
 \ee 
@@ -1147,10 +1147,34 @@ $$
 \end{array}
 }
 $$
-\caption{Results of the WNL approach for three different choices of eigenmode normalization.}
+\caption{Results of the WNL approach for three different choices of eigenmode normalization.{\color{red}(WITH M3)}}
 \label{tab:WNL_coefs}
 \end{table*}
 
+\begin{table*}[!h]
+\centering
+$$
+{\small
+\begin{array}{|c||c|c|c|c|c|c|c|c|}
+\hline
+\mbox{Norm.} & \lambda & \nu_{0} & \nu_{2} &\omega_{\epsilon}& F_{x,0,\epsilon} & F_{y,1,c}/\epsilon & F_{y,1,s}/\epsilon &  |F_{y,1}| /\epsilon \\
+\hline
+\mbox{\cite{SippLebedev}} & 9.14368+3.332i & 9.32573-29.9599i & -0.305145-0.88662i & 34.5995 
+& 3.68992 & 0.0338776 & -0.53823 & 0.539295
+\\
+\mbox{\cite{FDR2016}} &  9.14368+3.332i  & (2.2543 -7.2422 i) \times 10^{-3} & (-7.37624 - 21.4322i )\times 10^{-5} &34.5995
+& 3.68992 & 0.539295 & 0 & 0.539295
+\\
+\mbox{\cite{Fabre2012}} & 9.14368+3.332i & 32.5025-104.418i & -1.0635-3.09009i & 34.5995
+& 3.68992 & 0.539295 & 0 & 0.539295
+\\
+\hline
+\end{array}
+}
+$$
+\caption{Results of the WNL approach for three different choices of eigenmode normalization.{\color{red}(WITH M2)}}
+\label{tab:WNL_coefs}
+\end{table*}
 
 %\be{lift_explanation}
 
