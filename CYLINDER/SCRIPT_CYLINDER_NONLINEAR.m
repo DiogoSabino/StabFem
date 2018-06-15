@@ -45,7 +45,7 @@ end
 
 [ev,em] = SF_Stability(bf,'shift',1i*Omegac,'nev',1,'type','S'); % type "S" because we require both direct and adjoint
 
-[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','V');
+[wnl,meanflow,mode] = SF_WNL(bf,em,'Retest',47.,'Normalization','E');
 
 % Starting point generated for next chapter with 'Retest'
 % Norm chosen with 'Normalization': 'L' (lift) (ops:E,L,V)

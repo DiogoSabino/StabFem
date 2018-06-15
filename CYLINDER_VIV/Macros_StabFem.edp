@@ -5,24 +5,19 @@
 ///
 /// This file can be customized according to requirements but it must contain the following macros :
 ///
-/// General Macros to put a posteriori in a commum Freefem file (Diogo)
 ///
 /// boundary conditions : 
 /// macro BoundaryconditionsBaseFlow(du,u,v) 
 /// macro BoundaryconditionsStability(u,v,symmetry)
-///
+///...
 ///
 /// For post-processsing purposes :
 /// macro SFWriteBaseFlow(filename,ux,uy,p,type,iter)
 /// macro SFWriteMode(namefile,ux,uy,p,ev,shift,type,iter)
-/// 
-/// The following case is for the 2D cylinder and include the additional macros
-/// required to compute lift and drag forces : Trainee(ux,uy,p,symmetry) and Portance(ux,uy,p,symmetry)
+/// ...
+///
 /// NB: Never do in the middle of a macro a comment using //, it will end the macro. use /* */ instead
 
-//IFMACRO(!problemtype)
-//macro problemtype "2D"//EOM Change to 2D_VIV
-//ENDIFMACRO
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 //Directories
@@ -30,7 +25,7 @@ string ffdatadir = "./WORK/";
 string ffdataharmonicdir=ffdatadir+"DATA_SF_CYLINDER/"; 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-string symmetryBaseFlow = "S"; // symmetry propery of base flow :; set "S" if domain is hzalf domain and "N" if it is full domain
+string symmetryBaseFlow = "S"; // symmetry propery of base flow :; set "S" if domain is half domain and "N" if it is full domain
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
 real TGVCL = 1e30;
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,12 +252,12 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
     	file << typeFlow << endl;
     	file << "Format :" << endl;
     	string descriptionFF;
-	if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
-    	 	{  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Cy"; }
-	if(typeFlow=="VIVModeD")  
+	/*if(typeFlow=="EigenModeD"||typeFlow=="HarmonicMode")
+    	 	{  descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Fy"; }*/ /*IL MANQUE LES OUTRES, VOIR STAB2D*/
+	if(typeFlow=="VIVModeD")  /*fazer um viv adjoint*/
 		{ descriptionFF="real Re complex lambda complex shift int iter P1c ux1 P1c uy1 P1c p1 P1c vort1 real AEnergy complex Cy complex Y complex V complex A"; }
-	else 
-    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj complex CyAdj"; }
+	else if(typeFlow=="VIVModeA")
+    	    {  descriptionFF="real Re complex lambda complex shift int iter P1c ux1Adj P1c uy1Adj P1c p1Adj P1c vort1Adj real AEnergyAdj complex CyAdj complex YAdj complex VAdj complex AAdj"; }
 	file << descriptionFF << endl << endl ; 
 	file << Re  << endl << real(ev) << " " << imag(ev) << " " << real(shift) << " " << imag(shift) << " " << iter << endl << endl;
 	ux1=u#x;
@@ -285,10 +280,6 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 	complex LiftMode = Portance(u,"A"); 
 	cout << "#   Cy = " << 2*LiftMode << endl;
 	file << 2*real(LiftMode) << " " << 2*imag(LiftMode) << endl;
-
-	/*cout <<  " real(Y) : "<< real(mode#Y) << " imag(Y) : " << imag(mode#Y) << endl;
-	cout <<  " real(V) : "<< real(mode#V) << " imag(V) : " << imag(mode#V) << endl;
-	cout <<  " real(A) : "<< real(mode#A) << " imag(A) : " << imag(mode#A) << endl;*/
 };
 //EOM	
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -302,14 +293,14 @@ macro SFWriteModeVIV(namefile,mode,ev,shift,typeFlow,iter)
 	file << real(mode#V) << " " << imag(mode#V) << endl;
 	file << real(mode#A) << " " << imag(mode#A) << endl;
 	/*debug style: */
-	cout <<  " real(Y) : "<< real(mode#Y) << " imag(Y) : " << imag(mode#Y) << endl;
-	cout <<  " real(V) : "<< real(mode#V) << " imag(V) : " << imag(mode#V) << endl;
-	cout <<  " real(A) : "<< real(mode#A) << " imag(A) : " << imag(mode#A) << endl;
+	cout <<  " real(Y): "<< real(mode#Y) << " imag(Y): " << imag(mode#Y) << endl;
+	cout <<  " real(V): "<< real(mode#V) << " imag(V): " << imag(mode#V) << endl;
+	cout <<  " real(A): "<< real(mode#A) << " imag(A): " << imag(mode#A) << endl;
 };
 //EOM	
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,iadjoint,nev)
+macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,iadjoint,nev,iter)
 {
 	string namefile;
 	namefile=ffdatadir+"Spectrum.txt";
@@ -318,22 +309,23 @@ macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,iadjoint,nev)
 	for (int i=0;i<nev;i++)
 	{
 		fileVP1 << real(EVCalculated[i]) << " " << imag(EVCalculated[i]) << " " << Re << " " << real(shift) << " " << imag(shift) << endl;
-		/*fileVP1 << real(EVCalculated[i]) << " " << imag(EVCalculated[i]) << " " << Re << " " << 0 << " " << real(shift) << " " << imag(shift) << endl;*/
-		cout << " valeur propre : " << i+1 << "  : " << EVCalculated[i] << endl;
+		cout << "Eigenvalue: " << i+1 << "  : " << EVCalculated[i] << endl;
 	
 		[mode#x[],mode#Y,mode#V,mode#A] = EMCalculated(:,i);
 		/*Two files: a txt file and a ff2m file*/
 
 		if(iadjoint=="D"&&nev>1){namefile=ffdatadir+"Eigenmode"+(i+1);}
 		if(iadjoint=="D"&&nev==1){namefile=ffdatadir+"Eigenmode";}
-		/*else{namefile=ffdatadir+"EigenmodeA"+(i+1);};*/
+		if( (iadjoint=="A"||iadjoint=="cA") &&nev>1){namefile=ffdatadir+"EigenmodeA"+(i+1);}
+		if( (iadjoint=="A"||iadjoint=="cA"||iadjoint=="S"||iadjoint=="cS") &&nev==1){namefile=ffdatadir+"EigenmodeA";}
 		{ofstream fileMode(namefile+".txt");
  		 fileMode << mode#x[];  
 		 fileMode << endl << mode#Y << " " << mode#V << " " << mode#A << endl; 
  		 fileMode << endl << endl << Re << endl << endl << real(EVCalculated[i]) << "   " << imag(EVCalculated[i])  << endl;
  		}
 		cout << "Writing eigenmode in .ff2m file: " << namefile << endl;
-		SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeD",1);
+		if(iadjoint=="D"){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeD",iter);}/*porque um, nao sei???*/
+		if( (iadjoint=="A"||iadjoint=="cA"||iadjoint=="S"||iadjoint=="cS") ){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeA",iter);}
 	};
 	cout << "Writing Output Files Done" << endl;
 }

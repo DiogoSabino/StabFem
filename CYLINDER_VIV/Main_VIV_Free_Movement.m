@@ -63,68 +63,71 @@ savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 
 %% Parameters' Definition
 %CHOOSE the Re to test:
-Re=23; verbosity=10;
-baseflow = SF_BaseFlow(baseflow,'Re',Re);
-
-%CHOOSE the m_star to test:
-m_star_tab=[10 20 40 100 1000]
-%m_star=10;
-for m_star=m_star_tab
-    mass=m_star*pi/4;
-    %U_star=[11:-0.2:9.5 9.5:-0.05:6.5 6.5:-0.2:3];
-    U_star=[3:0.2:6.5 6.5:0.05:11 ];%11:0.1:15
-    %U_star=[3:0.2:4.5];% TOTO efacer
+Re_tab=[27 30 33 35]; verbosity=10;
+for Re=Re_tab
+    baseflow = SF_BaseFlow(baseflow,'Re',Re);
     
-    Stiffness_table=pi^3*m_star./((U_star).^2);
-    
-    % Spectrum search: See spectrum if wanted, for discover the shift
-    if(1==0)
-        sigma_tab=[];
-        %Re and mass are already defined above. Define numbers or tables for:
-        STIFFNESS_to_search=Stiffness_table(1); %Use whatever we want
-        RealShift=[0.05 0 -0.03];
-        ImagShift=[0.75];
+    %CHOOSE the m_star to test:
+    m_star_tab=[5];
+    %m_star=10;
+    for m_star=m_star_tab
+        mass=m_star*pi/4;
+        %U_star=[11:-0.2:9.5 9.5:-0.05:6.5 6.5:-0.2:3];
+        U_star=[3:0.2:6.5 6.5:0.05:11 ];%11:0.1:15
+        %U_star=[3:0.2:4.5];% TOTO efacer
         
-        nev=5; %Normally here we don't use just one
-        [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('search',baseflow,sigma_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev);
-        filename={'01spectrum_search'};
-        SF_Save_Data('spectrum',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
+        Stiffness_table=pi^3*m_star./((U_star).^2);
+        
+        % Spectrum search: See spectrum if wanted, for discover the shift
+        if(1==0)
+            sigma_tab=[];
+            %Re and mass are already defined above. Define numbers or tables for:
+            STIFFNESS_to_search=Stiffness_table(1); %Use whatever we want
+            RealShift=[0.05 0 -0.03];
+            ImagShift=[0.75];
+            
+            nev=5; %Normally here we don't use just one
+            [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('search',baseflow,sigma_tab,RealShift,ImagShift,STIFFNESS_to_search,mass,nev);
+            filename={'01spectrum_search'};
+            SF_Save_Data('spectrum',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
+        end
+        
+        % Mode Follow: Follow a mode along the Stiffness_table/U_star
+        
+        %Manually put the right shift, acordding to the above spectrum(
+        %For the pair (Re;[m_star])(starting at U_star(1)=3 )
+        %For the STRUCTURE Mode:
+        %shift=0+2.1i:                                                                    
+        %shift=0+2i:	([60-19];[1000-5])                                                   %%(15;[100])
+        %shift=0+1.8i:                (40;[4.73])
+        %shift=0+1i:                                                                         %%(40;[0.7])
+        
+        %For the FLUID Mode :
+        %shift=0.05+0.75i:	(60;[20,10,5])
+        %shift=-0.03+0.75i:               (40,[300-5])
+        %shift=-0.07+0.62i:                                                                 %%%%(21;[10])
+        %close all
+        
+        %CHOOSE shift:
+        RealShift=0; ImagShift=2; %Normally, for Structure
+        %RealShift=-0.03; ImagShift=0.75; %Normally, for Fluid
+        
+        %CHOOSE the one for save data w/ a good name:
+        modename={'02modeSTRUCTURE'};
+        %modename={'03modeFLUID'};
+        
+        
+        sigma_tab=[];
+        nev=1; %Normally if's just one, but if shift is wrong, it helps put more
+        
+        [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('modefollow',baseflow,sigma_tab,RealShift,ImagShift,Stiffness_table,mass,nev);
+        filename={[modename{1} '_data']}; %For the saved data (it's a cell)
+        SF_Save_Data('data',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
+        close all
     end
-    % Mode Follow: Follow a mode along the Stiffness_table/U_star
-    
-    %Manually put the right shift, acordding to the above spectrum(
-    %For the pair (Re;[m_star])(starting at U_star(1)=3 )
-    %For the STRUCTURE Mode:
-    %shift=0+2.1i:                                                                      %%50;[100])
-    %shift=0+2i:	([60];[20,10])   ([40-19];[1000-10])                       %%(15;[100])
-    %shift=0+1.8i:  (60;[5])              (40;[4.73])
-    %shift=0+1i:                                                                         %%(40;[0.7])
-    
-    %For the FLUID Mode :
-    %shift=0.05+0.75i:	(60;[20,10,5])
-    %shift=-0.03+0.75i:               (40,[300-5])
-    %shift=-0.07+0.62i:                                                                 %%%%(21;[10])
-    %close all
-    
-    %CHOOSE shift:
-    RealShift=0; ImagShift=2; %Normally, for Structure
-    %RealShift=-0.03; ImagShift=0.75; %Normally, for Fluid
-    
-    %CHOOSE the one for save data w/ a good name:
-    modename={'02modeSTRUCTURE'};
-    %modename={'03modeFLUID'};
-    
-    
-    sigma_tab=[];
-    nev=1; %Normally if's just one, but if shift is wrong, it helps put more
-    
-    [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('modefollow',baseflow,sigma_tab,RealShift,ImagShift,Stiffness_table,mass,nev);
-    filename={[modename{1} '_data']}; %For the saved data (it's a cell)
-    SF_Save_Data('data',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
-    close all
 end
 
-%% Data Treatement: EigenValue 
+%% Data Treatement: EigenValue
 
 
 %CHOOSE Data to plot: (Be sure that data exists)
@@ -132,11 +135,11 @@ end
 General_data_dir_folder=General_data_dir; % e.g.: './FOLDER_TOTO/'
 domian_plot=domain_identity;        %e.g.:{'totodir1','totodir2'}
 mesh_plot=mesh_identity;
-%folder_plot={[General_data_dir_folder 'Post-Treatement/' domian_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs pe?? 
-folder_plot={[General_data_dir_folder  domian_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs pe?? 
+%folder_plot={[General_data_dir_folder 'Post-Treatement/' domian_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs pe??
+folder_plot={[General_data_dir_folder  domian_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs pe??
 
-Re_plot=[19 19.8 19.9 20 23] ; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=[20]; % m_star for previous calculation
+Re_plot=[40] ; % Re for previous calculation; for an array: [Re1 Re2]
+m_star_plot=[4.73 10 20 40 50]; % m_star for previous calculation
 
 %The different data treatment options:
 %Mode:Fluid, Structure or Both
