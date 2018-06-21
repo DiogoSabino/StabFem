@@ -5,13 +5,14 @@
 ///		Contributors: Ndong Fall, David Fabre, Diogo Sabino
 ///		Last modification: Diogo Sabino 18 April 2018
 ///
-///		Reference Frame: Relative Frame, Relative Velocity  										// To be confirmed
+///		Reference Frame: Relative Frame, Relative Velocity
 ///////////////////////////////////////////////////////////////////////////////////////////
 include "SF_Geom.edp"; //Values for nondimensionalization 											//why?
 include "Macros_StabFem.edp";
 
 cout << "__________________________________________________" << endl;		
 cout << "| Cylinder in a harmonic imposed motion (selon U)|"<< endl;
+cout << "|________________________________________________|" << endl;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// Mesh loading  /////////////////////////////////////////////////////////////////////////
@@ -29,10 +30,9 @@ cout << "| Cylinder in a harmonic imposed motion (selon U)|"<< endl;
 	XXMh[UX,UY,PP];
 		
 	int Nt = UX[].n;
-	real Re;
+	real Re,OMEGA, OMEGAstep, OMEGAlast;
 	string nomfile;
 	int m;
-	real OMEGA, OMEGAstep, OMEGAlast ;	
 		
 ////////////////////////////////////////////////////////////////////////////////////////////
 ///   Base flow lecture (semi-space)   /////////////////////////////////////////////////////	        	   
@@ -47,47 +47,28 @@ cout << "| Cylinder in a harmonic imposed motion (selon U)|"<< endl;
 	};
 
 cout << "_________________________________________________" << endl;
-cout << "| Basefow corresponding to a Re = " << Re << "       |"<< endl;
+cout << "| Basefow corresponding to a Re = " << Re << "            |"<< endl;
 cout << "|_______________________________________________|" << endl;
 real nu=1./Re;
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-///création d'une structure de vecteur permettant de calculer les différents efforts
+/// BaseFlow Efforts
 //Pressure Drag
-varf DragP([vx,vy,q],[ux,uy,up])=TraineeP(u,"S");
-	real[int] VdragPR(Nt);
-	VdragPR(:) = DragP(0,XXMh);
-	complex[int] VdragPC(Nt);   
-	VdragPC(:) = DragP(0,XXMh);
+real Drag0P = TraineeP(u0,"S");  //Don't forget the complex part if needed
 //Viscous Drag
-varf DragV([vx,vy,q],[ux,uy,up])=TraineeV(u,"S");
-	real[int] VdragVR(Nt);
-	VdragVR(:) = DragV(0,XXMh);
-	complex[int] VdragVC(Nt);
-	VdragVC(:) = DragV(0,XXMh);
-
-//Lift
-varf FyT([vx,vy,q],[ux,uy,up]) = Portance(u,"S");
-	real[int] VFyT(Nt);
-	VFyT(:) = FyT(0,XXMh);
-	complex[int] VFyC(Nt);
-	VFyC(:) = FyT(0,XXMh);
-	
-///Base flow Computation
-	real DragP0 = VdragPR'*u0x[];
-	real DragV0 = VdragVR'*u0x[];
-	real DragT0= DragP0+DragV0;
-	real Lift0 = VFyT'*u0y[];
+real Drag0V = TraineeV(u0,"S"); //Don't forget the complex part if needed	
+//Base flow Computation
+real DragT0= Drag0P+Drag0V;
 ///Display
 	cout << "________________________________________________" << endl;
-	cout << "| Drag Values:                    " << "              "<< endl;
-	cout << "|      Pressure Base Flow Drag  : " << DragP0 << "       "<<endl;
-	cout << "|      Viscous Base Flow Drag   : " << DragV0 << "      "<<endl;
-	cout << "|      Total Base Flow Drag     : " << DragT0 << "      "<<endl;
-	cout << "| Lift Value:                     " << "              "<< endl;
-	cout << "|      Base Flow Lift:          : " << Lift0 << "      "<<endl;
-	cout << "|_______________________________________________" << endl;
+	cout << "| Drag Values:                    " << "              |"<< endl;
+	cout << "|      Pressure Base Flow Drag  : " << Drag0P << "      |"<<endl;
+	cout << "|      Viscous Base Flow Drag   : " << Drag0V << "      |"<<endl;
+	cout << "|      Total Base Flow Drag     : " << DragT0 << "      |"<<endl;
+	cout << "| Lift Value:                     " << "              |"<< endl;
+	cout << "|      Base Flow Lift:          : " << "0" << "             |"<<endl;
+	cout << "|_______________________________________________|" << endl;
 
 // Il faut faire les moments aussi, avec des macros à REFAIRE
     // Moment	
@@ -109,59 +90,57 @@ problem vfStokes([ux,uy,up],[vx,vy,qr]) =
 	int2d(th)(
 		- 1i*OMEGA*ux*vx
 		- 1i*OMEGA*uy*vy // Terme 1: Temporel
-
 		- Convbis(u,u0,v) // Terme 2
-
 		+ up*divbis(v) //Terme 3: multiplie la pression
-
 		-2*nu*(Dbis(u):Dbis(v)) //Terme 4
-
 		-divbis(u)*qr // Terme 5: From continuous equation 
-
-		+ up*qr*(1e-12) // ? Terme 6: C'est le terme de stabilisation ? on multiplie pour eps ?	
+		+ up*qr*(1e-12) // Terme 6: C'est le terme de stabilisation	
 		)
-	+int2d(th)(
-		- 1i*OMEGA*vy*U0
-		)
-
+	+int2d(th)(- 1i*OMEGA*vy*U0 )
 	+BoundaryconditionsForced(u,v,"A",U0);
-	
-	//+ on(2,ux=0)
-	//+ on(2,uy=0)
-	//+ on(1,4,ux=0,uy=-U0)          // 1= entree et 4 = paroi (3 = sortie)
-	//+ on(6,ux=0,up=0);         		   // axe (mode antisym)
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-//Loop for different OMEGA values
-//Save results in txt file
+//The number of Omega that is desired to be computed
+real Nomega=0;
+cout << "How many Omega values have to be computed?"<<endl;
+cin>> Nomega;
 
-//This txt file is not created here, it's the matlab script that creates that file
-//If this script is ran in terminal alone, creation of the file first is advised
-//To create the file: uncomment if script.edp is ran in command line manually     
-//ofstream resout(ffdataharmonicdir+"HARMONIC_2D_LateralOscillations_Re"+Re+".txt");
-       
-complex L2,M2;
+if(Nomega==0){cout <<  "All values of Omega have been calculated" << endl;}
 
-//The matlab script automaticly puts a -1 in final echo statement
-real inputvalue=-1;
-//uncomment next line, when running manually
-cout << "Omega values to comute (type -1 to exit): " << endl; 
-cin >> inputvalue;
-while (inputvalue !=-1)
+else//Loop for different OMEGA values
 {
-	OMEGA=inputvalue;
-	cout << "OMEGA = " << OMEGA << endl;
-	vfStokes;
+	real[int] OMEGAtab(Nomega);
+	complex[int] Lift(Nomega), Momentum(Nomega);
 
-	L2 = VFyC'*ux[];
-	M2 = VmomentC'*ux[];
+	cout << "Write the values of Omega, please:" << endl;
+	for(int i=0; i<Nomega; i++) {cin >> OMEGAtab(i);}
+
+	for(int i=0; i<Nomega; i++)
+	{
+		OMEGA=OMEGAtab(i);
+		cout << "OMEGA = " << OMEGA << endl;
+		vfStokes;
+
+		Lift(i) = Portance(u,"A");
+		cout << "The lift is:" << Lift << endl;
+		Momentum(i) = VmomentC'*ux[]; //A refaire proprement
+	}
 	
-	ofstream resout( ffdataharmonicdir+"HARMONIC_2D_LateralOscillations_Re"+Re+".txt",append);
-	resout << OMEGA << " " << Re << " " << real(L2) << " " << imag(L2) << "  " << real(M2) << " " << imag(M2) <<endl;
-	//NB: If output layout file is changed, the matlab treatement have to change
-	//6 columns table: | OMEGA | Re | real(L2) | imag(L2)| real(M2)| imag(M2) |
+	/////////////////////////////////////////////////////////////
+	//Write output files ////////////////////////////////////////
+	ofstream file(ffdataharmonicdir+"Forced_Harmonic2D_Re"+Re+".ff2m");
+	{
+		file<<"###Data Generated by FF++ (Diogo test);" << endl;
+		file<< "FileTOTOdiogo" <<endl;
+		file << "Format : " << endl;
+		file << "real." << Nomega << " OMEGAtab"<< " complex." << Nomega << " Lift" <<" complex." << Nomega << " Momentum" <<endl<<endl;
+		for(int i=0; i<Nomega; i++){file << OMEGAtab(i)<<endl;};
+		for(int i=0; i<Nomega; i++){file << real(Lift(i) )<<" "<< imag(Lift(i))  <<endl;};
+		for(int i=0; i<Nomega; i++){file << real(Momentum(i))<<" "<< imag(Momentum(i)) <<endl;};
+		file<<endl;
+	}
+}//If NOmega !=0
 
-cin >> inputvalue;
-}
+
 //END EDP FILE

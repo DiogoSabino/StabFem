@@ -1,0 +1,583 @@
+/////////////////////////////////////////////////////////////////////////////////
+//  PROGRAM HB_O1_VIV.edp   ///////////////////////////////////////
+//	
+//  ...
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+real cpuINIT,cpuEND, cpu1, cpu2, cpu3,cpu4;
+cpuINIT=clock();
+
+load "MUMPS_seq"
+include "SF_Geom.edp";
+include "Macros_StabFem.edp";
+string copyfile = "yes"; // set to "yes" to copy the output files into the "guess". Better to disable when using in Matlbab driver mode.
+
+/////////////////////////////////////////////////////////////////////////////////
+/// Reading Mesh   //////////////////////////////////////////////////////////////
+mesh th=readmesh(ffdatadir+"mesh.msh");
+//int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6;
+
+/////////////////////////////////////////////////////////////////////////////////
+/// Problem Variables   /////////////////////////////////////////////////////////
+fespace Xh(th,P2);             ////// f.e. space for vel.
+fespace Mh(th,P1);            ////// f.e. space for pressure
+fespace XXMh(th,[P2,P2,P1]); ////// f.e. space for triplet [u,v,p]
+
+XXMh [ubx,uby,ubp]; // base flow (start) 
+XXMh<complex> [u1x,u1y,u1p];    //eigenmode (start)
+
+XXMh [u0x,u0y,u0p],[u1cx,u1cy,u1cp],[u1sx,u1sy,u1sp]; // components 0 (mean flow) and 1 (fundamental, re and im) of HB  
+XXMh [du0x,du0y,du0p],[du1cx,du1cy,du1cp],[du1sx,du1sy,du1sp]; // Increments in Newton
+XXMh [vx,vy,vp]; // test functions
+
+real y1c,y1s,yy1c,yy1s; // Cylinder dispacement and velocity
+real dy1c, dy1s, dyy1c, dyy1s;
+
+real Re, ReM;
+real omega, omegaM, sigmaM, domega;
+     
+////////////////////////////////////////////////////////////////////////////////
+/// MACROS /////////////////////////////////////////////////////////////////////
+macro div(u) (dx(u#x)+dy(u#y))//EOM macro for divergence
+
+macro Conv(ua,ub,v) ( 
+	((ua#x*dx(ub#x)+ua#y*dy(ub#x))+(ub#x*dx(ua#x)+ub#y*dy(ua#x)))*v#x 
+	+ ((ua#x*dx(ub#y)+ua#y*dy(ub#y))+(ub#x*dx(ua#y)+ub#y*dy(ua#y)))*v#y 
+                    ) //EOM macro for mutual convection operator
+
+macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] 
+//EOM macro for rate-of-deformation tensor
+
+macro NS(nu,u,v) 
+	(
+	-2*nu*(D(u):D(v))
+        + u#p*div(v)
+        + v#p*div(u)
+        - .5*Conv(u,u,v)
+        )
+//EOM
+     
+macro NSL(nu,U,u,v) 
+	(
+	-2*nu*(D(u):D(v))
+        + u#p*div(v)
+        + div(u)*v#p
+        - Conv(U,u,v)
+        )
+//EOM
+        
+macro Boundaryconditions(u1,u2,v1,v2,symmetry)
+	/* on(bcinlet,u1=0.0,u2=0.0) + on(bcwall,u1=0.0,u2=0.0) */
+          int1d(th,bcinlet,bcwall)(u1*v1*1e30+u2*v2*1e30)
+	+ int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
+//EOM 
+
+macro Lift(nu,u1,u2,p)   
+	(
+	int1d(th,2,21,22,23)(2*p*N.y)
+	+int1d(th,2,21,22,23)( -nu*2*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
+	)
+// WARNING : HERE IT IS Lift FORCE
+
+macro Drag(nu,u1,u2,p)   
+	(
+	int1d(th,2,21,22,23)(2*p*N.x)
+	+int1d(th,2,21,22,23)( -nu*2*(2*dx(u1)*N.x+(dx(u2)+dy(u1))*N.y))
+	)
+// Drag FORCE
+
+macro EnergyNorm(u) sqrt( 2* int2d(th)(abs(u#x)^2+abs(u#y)^2) )
+// "Energy" norm for a real or complex field (factor 2 is because the whole domain is two halves)
+
+macro EnergyNormCS(uc,us) sqrt( 2*.5* int2d(th)(abs(uc#x)^2+abs(uc#y)^2+abs(us#x)^2+abs(us#y)^2) )    								///DIOGO doute
+// "Energy" norm for a field defined by "cos" and "sin" components (factor 2 because half-domain ; factor .5 because of time-average)
+
+/////////////////////////////////////////////////////////////////////////////////
+/// Display Menu   //////////////////////////////////////////////////////////////
+//real eps=1.e-7;      
+real sigma1; // parameter sigma1 from Mantic-lugo et al ; should be zero for harmonic balance
+//real A,dA ; // amplitude 
+
+cout << " Choice of Re : " << endl;
+cin >> Re; 
+cout << " --> Re = " << Re << endl;
+real nu=1/Re;
+
+{
+real Relu;
+cout << "Starting from mean flow in file MeanFlow_guess.txt" << endl;
+ifstream cbin(ffdatadir+"MeanFlow_guess.txt");
+cbin >> ubx[] >> Relu;
+if(Relu!=Re){ cout << "WARNING : Re not equal to that of the guess mean flow" << endl;};
+cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
+}
+
+//int check=exec("head -1 "+ffdatadir+"SelfConsistentMode_guess.txt");
+//cout << "Check :"<<  check<< endl;
+
+{
+cout << "Starting from mode in file SelfConsistentMode_guess.txt" << endl;
+ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
+cbin >> u1x[] >> ReM >> sigmaM >> omegaM; 
+cout << " 			omega of the starting field = " << omegaM<< endl;
+cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u1)/sqrt(2) << endl;	
+[u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
+[u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)];  
+cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s) << endl << endl;
+}
+
+cout << " Guess for omega ? [-1 -> the one read in the guess file] " << endl; 
+cin >> omega ;
+if(omega==-1){omega = omegaM;};
+cout << " -->  omegaguess = " << omega << endl;
+
+
+cout << " Choice of sigma1 : [0 for Harmonic balance ; not zero for self-consistent] " << endl; 
+cin >> sigma1 ;
+cout << " --> sigma1 = " << sigma1 << endl;
+
+string normalisation;
+cout << " Normalisation choice ?  [none, L or E]" << endl;
+cin >> normalisation ;
+cout << " --> " << normalisation << endl;
+
+
+if(normalisation=="none")
+	{ cout << " -> No normalization for the mode " << endl;}
+	
+else if(normalisation=="L")
+	{
+		real Liftguess;
+		cout << "Value of Lift force Fy for renormalisation ?"<< endl;
+		cin >> Liftguess;
+		cout << "  -> Fy = " << Liftguess  << endl;
+
+		cout << "Fy before renormalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5 and Cy 1
+		cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		cout << "   ### Energy-norm A = " << EnergyNorm(u1)/sqrt(2) << endl << endl;
+	}	
+else if(normalisation=="E")
+	{
+		real Eguess;
+		cout << "Value of ENERGY for renormalisation ?"<< endl;
+		cin >> Eguess;
+		cout << "  -> Energy = " << Eguess << endl;
+
+		cout << "Energy-norm before renormalisation : " << EnergyNorm(u1)/sqrt(2) << endl;
+		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
+		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
+		modenorm = EnergyNorm(u1)/sqrt(2);
+		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that Energy-norm is specified value
+		cout << "Energy-norm after renarmalisation : " << EnergyNorm(u1)/sqrt(2) << endl;	
+		cout << "Cy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+	};
+
+
+[u0x,u0y,u0p] = [ubx,uby,ubp];
+[u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
+[u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)]; 
+cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s) << endl << endl;
+
+int StateVectorSize=u0x[].n+5;
+
+//READ AMPLITUDES !!!!!!!!!!!!
+y1c=0.;
+y1s=0.;
+yy1c=0.;
+yy1s=0.;
+
+//READ STIFFNESS!!!!!!!!!!!
+real STIFFNESS=5.;
+//READ DAMPING!!!!!!!!!!!!!!!!
+real DAMPING=0.;
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// In description, the blocks are called NxM, where N is the numering of the equation and M that of the unknown
+// N = 1 steady NS for MEAN flow ; N=2 real part of linear equation for eigenmode ; N = 3 imaginary part; N = 4 phase 
+// M = 1 MEAN-flow, M=2 eigenmode-real ; M = 3 eigenmode-imag ; M = 4 domega 
+//
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf for RHS    ////////////////////////////////////////////////////////
+cout << " Defining operators for nonlinear term..." << endl;
+
+// block 1 : NS for base flow
+varf NLOpF1([du0x,du0y,du0p],[vx,vy,vp]) =
+	int2d(th)( NS(nu,u0,v) )
+ 	+ Boundaryconditions(du0x,du0y,vx,vy,"S")				
+	+int2d(th)( - .25*Conv(u1c,u1c,v) - .25*Conv(u1s,u1s,v) ); 						
+			
+// block 2 : base-flow effect on real part of eigenmode			
+varf NLOpF2([du1cx,du1cy,du1cp],[vx,vy,vp]) =
+	int2d(th)( NSL(nu,u0,u1c,v) )
+	- int2d(th) ( omega * (u1sx*vx+u1sy*vy ) )
+ 	- int2d(th) ( omega * (yy1s*vy ) )			//DiogoVIV metre des eps sur vx et vp	..........		
+	+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
+	
+// block 3 : base-flow effect on imag part of eigenmode			
+varf NLOpF3([du1sx,du1sy,du1sp],[vx,vy,vp]) =
+	int2d(th)( NSL(nu,u0,u1s,v)  )              
+	+ Boundaryconditions(du1sx,du1sy,vx,vy,"A")
+	+ int2d(th) ( omega * (u1cx*vx+u1cy*vy ) )
+	+ int2d(th) ( omega * (yy1c*vy) ); 			//DiogoVIV metre des eps sur vx et vp .........
+
+// All the other blocks are constructed directly in the assembly phase, namely fix the phase with imag(lift)
+
+cout << " Defining operators for nonlinear term... DONE" << endl;
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+//////// varf for Linear part   /////////////////////////////////////////////////
+cout << " defining operators for linear term..." << endl;
+
+// block 1-1: NS for base flow
+varf LinOp11([du0x,du0y,du0p],[vx,vy,vp]) =
+	int2d(th)( NSL(nu,u0,du0,v) )        
+ 	+ Boundaryconditions(du0x,du0y,vx,vy,"S");
+
+// block 1-2: nonlinear term (real parts)
+varf LinOp12([du1cx,du1cy,du1cp],[vx,vy,vp]) = 
+	int2d(th)( -.5*Conv(u1c,du1c,v) ); 
+
+// block 1-3: nonlinear term (real parts)
+varf LinOp13([du1sx,du1sy,du1sp],[vx,vy,vp]) =
+	int2d(th)( -.5*Conv(u1s,du1s,v) );
+
+// block 1-4: 0
+// block 1-5: 0
+// block 1-6: 0
+// block 1-7: 0
+// block 1-8: 0
+
+/////////////////////////////////////////////////////////////////////////////////	
+// block 2-1: base-flow effect on real part of eigenmode			
+varf LinOp21([du0x,du0y,du0p],[vx,vy,vp]) =
+	int2d(th)( - Conv(du0,u1c,v) );
+             
+// block 2-2: Stokes operator on real part of eigenmode             
+varf LinOp22([du1cx,du1cy,du1cp],[vx,vy,vp]) =
+	int2d(th)( NSL(nu,u0,du1c,v) )
+	+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
+ 			
+// block 2-3: effect of omega on real part of equation for eigenmode
+varf LinOp23([du1sx,du1sy,du1sp],[vx,vy,vp]) =
+	int2d(th)(-omega*(du1sx*vx+du1sy*vy));
+
+// block 2-4: 0
+// block 2-5: 0
+// block 2-6: 0
+// block 2-7: -omega
+
+// block 2-8: effect of domega on eigenmode-real equations
+varf LinOp28([du0x,du0y,du0p],[vx,vy,vp])=	// this is to be multiplied by domega						
+	int2d(th)(-(u1sx*vx+u1sy*vy) )
+	+int2d(th)(-yy1s*vy);  		//eps por vx ????
+
+/////////////////////////////////////////////////////////////////////////////////
+// block 3-1: base-flow effect on imag part of eigenmode			
+varf LinOp31([du0x,du0y,du0p],[vx,vy,vp]) =
+	int2d(th)( - Conv(du0,u1s,v) );  
+	             
+// block 3-2: effect of omega on imag part of equation for eigenmode
+varf LinOp32([du1cx,du1cy,du1cp],[vx,vy,vp]) =
+	int2d(th)(omega*(du1cx*vx+du1cy*vy));
+			 			
+// block 3-3: Stokes operator on real part of eigenmode             
+varf LinOp33([du1sx,du1sy,du1sp],[vx,vy,vp]) =
+	int2d(th)( NSL(nu,u0,du1s,v) )
+	+ Boundaryconditions(du1sx,du1sy,vx,vy,"A");
+
+// block 3-4: 0
+// block 3-5: 0
+// block 3-6: omega
+
+// block 3-7: 0
+
+// block 3-8 : effect of domega on eigenmode-imag equations
+varf LinOp38([du0x,du0y,du0p],[vx,vy,vp])						 		
+	= int2d(th)((u1cx*vx+u1cy*vy))
+	+int2d(th)(yy1c*vy);
+
+/////////////////////////////////////////////////////////////////////////////////
+// bloc 4-1:0
+// bloc 4-2:
+varf LinOp42([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
+	= -Lift(1/Re,du1cx,du1cy,du1cp);
+
+// bloc 4-3:0
+// bloc 4-4: STIFFNESS
+// bloc 4-5:0
+// bloc 4-6: DAMPING
+// bloc 4-7: MASS*omega
+// bloc 4-8:
+varf LinOp48([du1sx,du1sy,du1sp],[vx,vy,vp])								
+	= int2d(th)(MASS*yy1s*vy); //mettre un eps pour les autres fonctions test ??
+
+/////////////////////////////////////////////////////////////////////////////////
+// bloc 5-1: 0
+// bloc 5-2: 0
+// bloc 5-3:
+varf LinOp53([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
+	= -Lift(1/Re,du1sx,du1sy,du1sp);
+
+// bloc 5-4: 0
+// bloc 5-5: STIFFNESS
+// bloc 5-6:MASS*omega
+// bloc 5-7: DAMPING
+// bloc 5-8:
+varf LinOp58([du1sx,du1sy,du1sp],[vx,vy,vp])								
+	= int2d(th)(-MASS*yy1c*vy); //mettre un eps pour les autres fonctions test ??
+
+/////////////////////////////////////////////////////////////////////////////////
+// bloc 6-1: 0
+// bloc 6-2: 0
+// bloc 6-3: 0
+// bloc 6-4: omega
+// bloc 6-5: 0
+// bloc 6-6:0
+// bloc 6-7: 1
+// bloc 6-8:
+//varf LinOp68([du1sx,du1sy,du1sp],[vx,vy,vp])								
+//	= int2d(th)(y1c*vy); //mettre un eps pour les autres fonctions test ??
+
+/////////////////////////////////////////////////////////////////////////////////
+// bloc 7-1: 0
+// bloc 7-2: 0
+// bloc 7-3: 0
+// bloc 7-4: 0
+// bloc 7-5: -omega
+// bloc 7-6:1
+// bloc 7-7: 0
+// bloc 7-8:
+//varf LinOp78([du1sx,du1sy,du1sp],[vx,vy,vp])								
+//	= int2d(th)(-y1s*vy); //mettre un eps pour les autres fonctions test ??
+
+/////////////////////////////////////////////////////////////////////////////////
+// All blocks are zero; except:
+// bloc 8-3: to fix the phase by imposing Lift(u1s) = 0
+varf LinOp83([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
+	= Lift(1/Re,du1sx,du1sy,du1sp);
+
+/////////////////////////////////////////////////////////////////////////////////
+cout << " Defining operators for linear term... DONE" << endl << endl;
+
+cpu1=clock();
+cout << endl << "Time consumed in declarations : " << cpu1-cpuINIT << " seconds" <<  endl << endl;
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+///// BEGINING OF NEWTON LOOP   /////////////////////////////////////////////////
+real tol = 1e-6;
+real dXX = 1;
+int iter=1;
+while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
+{ 
+	cout << endl << "Newton loop step " << iter << endl;
+	cpu1=clock();
+	//Construct the RHS
+	cout << "Constructing rhs... " << endl;
+
+	real[int] RHSF1(StateVectorSize), RHSF2(StateVectorSize), RHSF3(StateVectorSize); 
+	RHSF1 = NLOpF1(0,XXMh);
+	RHSF2 = NLOpF2(0,XXMh);
+	RHSF3 = NLOpF3(0,XXMh);
+	real[int] RHSF4 (StateVectorSize);	
+	real RHSF4 = [-Lift(1/Re,u1cx,u1cy,u1cp),STIFFNESS,0,DAMPING,MASS*omega,0]; //Line cossine of cylinder equation
+	real[int] RHSF5 (StateVectorSize);
+	real RHSF5 = [-Lift(1/Re,u1sx,u1sy,u1sp),0,STIFFNESS,-MASS*omega,DAMPING,0]; //Line sinus of cylinder equation
+	real[int] RHSF6 (StateVectorSize);
+	real RHSF6 = [0,0,0,omega,0,0,1,0]; //Line cos of dispacement/velocity relation
+	real[int] RHSF7 (StateVectorSize);
+	real RHSF7 = [0,0,0,0,-omega,1,0,0]; //Line sin of dispacement/velocity relation
+	real[int] RHSF8 (StateVectorSize);
+	real RHSF8 = [Lift(1/Re,u1sx,u1sy,u1sp),0,0,0,0,0,0,0]; //Line phase correction
+	
+	real[int] RHS = [RHSF1, RHSF2, RHSF3, RHSF4, RHSF5, RHSF6, RHSF7, RHSF8];		
+	cout <<  " max RHS : " << RHSF1.l2 <<  ", " << RHSF2.l2 <<  ", " << RHSF3.l2 <<  ", " << RHSF4 << ", " << RHSF5 <<", " << RHSF6 <<", " << RHSF7 <<", " << RHSF8 <<endl;
+
+	cout << " Assembling matrix..." << endl;
+		////////////////////////////////Line 1:
+		matrix matLinOp11 = LinOp11(XXMh,XXMh);
+		matrix matLinOp12 = LinOp12(XXMh,XXMh);
+		matrix matLinOp13 = LinOp13(XXMh,XXMh);
+		//Zero for the rest
+
+		////////////////////////////////Line 2:
+		matrix matLinOp21 = LinOp21(XXMh,XXMh);
+		matrix matLinOp22 = LinOp22(XXMh,XXMh);
+		matrix matLinOp23 = LinOp23(XXMh,XXMh);
+		//Zero for 24 to 26
+		//27: -omega
+		real[int] matLinOp28 = LinOp28(0,XXMh);
+
+		////////////////////////////////Line 3:
+		matrix matLinOp31 = LinOp31(XXMh,XXMh);
+		matrix matLinOp32 = LinOp32(XXMh,XXMh);
+		matrix matLinOp33 = LinOp33(XXMh,XXMh);
+		//Zero for 34 and 35 and 37
+		//36: omega
+		real[int] matLinOp38 = LinOp38(0,XXMh);
+
+		////////////////////////////////Line 4:
+		//41: 0
+		real[int] matLinOp42 = LinOp42(0,XXMh);
+		//44: STIFFNESS
+		//45: 0
+		//46: DAMPING
+		//47: MASS*omega
+		real[int] matLinOp48 = LinOp48(0,XXMh);		
+
+		////////////////////////////////Line 5:
+		//51: 0
+		//52: 0
+		real[int] matLinOp53 = LinOp53(0,XXMh);
+		//54: 0
+		//55: STIFFNESS
+		//56: MASS*omega
+		//57: DAMPING
+		real[int] matLinOp58 = LinOp58(0,XXMh);
+
+		////////////////////////////////Line 6:
+		//61,62,63:0
+		//64:omega
+		//65:0
+		//66:0
+		//67:1
+		//real[int] matLinOp68 = LinOp68(0,XXMh);
+
+		////////////////////////////////Line 7:
+		//71,72,73,74:0
+		//75:-omega
+		//76:1
+		//77:0
+		//real[int] matLinOp78 = LinOp78(0,XXMh);
+
+		////////////////////////////////Line 8:	
+		real[int] matLinOp83 = LinOp83(0,XXMh);
+
+		////////////////////////////////MATRIX:
+		matrix LinOp =	[	[	matLinOp11,	 matLinOp12,	 matLinOp13,		0,		0,	          0,	         0,		0 ],
+					[	matLinOp21,	 matLinOp22,	 matLinOp23,		0,		0,	          0,	    -omega,	matLinOp28],
+					[	matLinOp31,	 matLinOp32,	 matLinOp33,		0,		0,	      omega,	         0,  	matLinOp38],
+					[		 0,	matLinOp42',		  0,	STIFFNESS,		0,	    DAMPING,	MASS*omega,  	matLinOp48],
+					[		 0,		  0,	matLinOp53',		0,	STIFFNESS,	-MASS*omega,	   DAMPING,  	matLinOp58],
+					[		 0,		  0,		  0,	    omega,		0,		  0,	   	 1,  	       y1c],
+					[		 0,		  0,		  0,	        0,	   -omega,		  1,	   	 0,  	      -y1s],
+					[		 0,		  0,	matLinOp83',	        0,	  	0,		  0,	   	 0,  	       	 0],
+				];
+	cpu2=clock();
+	cout << endl << "Time consumed to assembling matrix: " << cpu2-cpu1 << " seconds" <<  endl << endl;		
+	cout << " Assembling matrix... done" << endl;
+
+	cout << " SETING solver matrix..." << endl; //Put LinOp in a LU form
+	set(LinOp,solver=sparsesolver);
+	cpu3=clock();
+	cout << endl << "Time consumed to SETING solver matrix: " << cpu3-cpu2 << " seconds" <<  endl << endl;
+	cout << " SETING solver matrix... done" << endl;
+	
+	cout << " solving BIG problem..." << endl;
+	real[int] dX(LinOp.n);
+	dX = LinOp^-1*RHS;
+	[du0x[], du1cx[], du1sx[], dy1c, dy1s, dyy1c, dyy1s, domega] = dX;
+        cpu4=clock();
+	cout << endl << "Time consumed to solve thr linear problem : " << cpu4-cpu3 << " seconds" <<  endl << endl;	
+
+
+	u0x[] -= du0x[];
+	u1cx[] -= du1cx[];
+	u1sx[] -= du1sx[];
+	y1c-=dy1c;
+	y1s-=dy1s;
+	yy1c-=dyy1c;
+	yy1s-=dyy1s;
+	omega -= domega;
+
+
+
+	cout << endl << "   ### ||du0||, ||du1,r||, ||du1,i||, dy1c, dy1s, ddy1c, ddy1s, domega : " << du0x[].l2 
+			<< " " << du1cx[].l2 << " " << du1sx[].l2 << " " << dy1c <<" " <<  dy1s << " " <<  ddy1c << " " <<  ddy1s << " " <<  -domega << endl;
+	dXX = du0x[].l2+du1cx[].l2+du1sx[].l2+abs(dy1c+ dy1s+ dyy1c+ dyy1s+domega);
+	
+	cout << "   ### ||u0||, ||u1,r||, ||u1,i|| : " << u0x[].l2 
+			<< " " << u1cx[].l2 << " " << u1sx[].l2  << endl;
+
+	
+	cout <<  "   ### omega = " << omega << endl;
+	cout << "   ### Energy-norm of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
+	cout << " 	### Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
+	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
+
+	iter++;
+	//The solution can converge to the unstably equilibrium point where u1cx[].l2=0. 
+	//See Supercritical Hoft Bifurcation. We dont want this solution, so:
+	if(u1cx[].l2<1e-6){dXX = 1e30; };
+}; // END NEWTON LOOP
+	
+cout <<  "  ICI!!!!!!!!!!!!!!!!!!!!!! " << endl;
+
+
+if(abs(dXX)>1000) //or iter>100; add this case... normally it converges/diverges fast enough, but we never know
+{
+	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",ub,"MeanFlow",-1);
+	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omegaM+sigma1,"HarmonicMode",-1);
+	cout << endl << endl << "#####################################################################@" << endl << endl;
+	cout << " Newton Loop DIVERGED " << endl;	
+}
+	
+else
+{
+	cout << endl << endl << "#####################################################################@" << endl << endl
+	     << "HB MODEL : Newton Loop converged in " << iter << " iterations " << endl;
+	cout << " >>> Omegac = " << omega << endl;	
+	cout << " >>> Energy of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
+	cout << " >>> Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
+
+	/////////////////////////////////////////////////////////////////////////////////
+	/// GENERATES OUTPUT FILES //////////////////////////////////////////////////////
+	{
+		ofstream file(ffdatadir+"MeanFlow.txt");
+		file << u0x[]; 
+		file << endl << endl << Re;
+	}; 
+
+	SFWriteBaseFlow(ffdatadir+"MeanFlow.ff2m",u0,"MeanFlow",iter);
+
+	[u1x,u1y,u1p] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp]; 
+
+	{
+ 		ofstream file(ffdatadir+"SelfConsistentMode.txt");
+ 	  	file << u1x[] ;	
+ 	  	file << endl << endl << Re << endl
+ 		  	<< endl << sigma1 << "   " << omega  << endl;
+	};
+
+
+	SFWriteMode(ffdatadir+"SelfConsistentMode.ff2m",u1,1i*omega+sigma1,1i*omega+sigma1,"HarmonicMode",iter);
+
+	if(copyfile=="yes")
+	{
+	cout << " COPYING Output into guess for next calculation..." << endl; 
+	{
+		ofstream file(ffdatadir+"MeanFlow_guess.txt");
+		file << u0x[]; 
+		file << endl << endl << Re;
+	};
+	{
+ 		ofstream file(ffdatadir+"SelfConsistentMode_guess.txt");
+   		file << u1x[] ;	
+   		file << endl << endl << Re << endl
+   			<< endl << sigma1 << "   " << omega  << endl;
+	};
+	};
+
+};
+	
+cpuEND=clock();
+cout << endl << "Time consumed by the all program run: " << cpuINIT-cpuEND << " seconds" <<  endl << endl;
+// END PROGRAM
+

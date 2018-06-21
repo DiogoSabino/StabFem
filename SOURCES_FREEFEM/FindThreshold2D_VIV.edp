@@ -177,6 +177,11 @@ varf NLOpF3([du1mi,du2mi,dpbmi],[v1mi,v2mi,qmi]) =
 // these have to be defined later, when assemblying the matrix		
 cout << " defining operators for nonlinear term... done" << endl;
 
+	
+
+
+
+
 
 
 

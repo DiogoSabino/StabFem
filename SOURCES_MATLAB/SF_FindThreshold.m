@@ -7,8 +7,19 @@ global ff ffdir ffdatadir sfdir verbosity
 
 system(['cp ' ffdatadir 'Eigenmode.txt ' ffdatadir 'Eigenmode_guess.txt']);
 
- solvercommand = [ff ' ' ffdir 'FindThreshold2D.edp'];
+switch baseflow.mesh.problemtype
+    case('2D') %For CILINDER
+        disp('Executing FindThreshold2D.edp.');
+        solvercommand = [ff ' ' ffdir 'FindThreshold2D.edp'];
         status = mysystem(solvercommand);
+        disp('Execution of FindThreshold2D.edp done.');
+    case('2D_VIV') %For CILINDER_VIV
+        disp('Executing FindThreshold2D_VIV.edp.');
+        solvercommand = [ff ' ' ffdir 'FindThreshold2D_VIV.edp'];
+        status = mysystem(solvercommand);
+        disp('Execution of FindThreshold2D_VIV.edp done.');  
+end
+
         
 disp(['#### Direct computation of instability threshold ']);
 

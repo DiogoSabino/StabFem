@@ -25,6 +25,7 @@ for element= 1: size(savedata_dir,2)
         for m_sta=m_star
             path{end+1}=strcat(savedata_dir{element},'Re',num2str(R),'/mstar',num2str(m_sta),'/');
             if(exist(path{end})~=7&&exist(path{end})~=5) %je n'est pas compris tres bien cette commande; a voir ensemble apres
+                disp('toto');
                 %I read in internet that the '-p'(stands for parent) not always work in every shell...
                 mysystem(['mkdir -p ' path{end}]);
                 disp('Creating new directory for saving data');
@@ -47,11 +48,26 @@ switch save_option
         %If we treat just one case:
         if (size(path,2)==1) %which means that only one patth is to be considered
             disp(['Saving image for the selected data with the following name: ' filename{1}]);
+            k = strfind(path{1},'/');
+            path{1}=insertAfter(path{1},k(2),'Post_Treatement/');
+            if(exist(path{1})~=7&&exist(path{1})~=5) %je n'est pas compris tres bien cette commande; a voir ensemble apres  %I read in internet that the '-p'(stands for parent) not always work in every shell...
+                %system(['mkdir -p ' path{1}]); %In linux
+                path{1} = strrep(path{1},'/','\'); %In windows
+                system(['mkdir ' path{1}]); %In windows
+            end
+            H=findobj(gcf, 'type', 'line');
+            x_data=get(H,'xdata');
+            y_data=get(H,'ydata');
+            save([path{1} filename{1} '_dataf.mat'],'x_data','y_data');
             saveas(gcf,[path{1} filename{1} '.fig']);
             saveas(gcf,[path{1} filename{1} '.png']);
         else
             disp('Saving a comparing image of different data');
             %if we compare several cases
+            H=findobj(gcf, 'type', 'line');
+            x_data=get(H,'xdata');
+            y_data=get(H,'ydata');
+            save([General_data_dir filename{1} '_dataf.mat'],'x_data','y_data');
             saveas(gcf,[General_data_dir filename{1} '.fig']);
             saveas(gcf,[General_data_dir filename{1} '.png']);
 

@@ -1,11 +1,13 @@
-function SF_Data_Treatement(MODE,AXIS,General_data_dir,folder_plot,Re_plot,m_star_plot)
+function filename=SF_Data_Treatement(MODE,AXIS,folder_plot,Re_plot,m_star_plot)
 %%
-%General_data_folder is passed, with the purpose of being passed to
-%SF_Save_Data
-%all_paths=[];
-
+%For the text in the spectrum: go tho line 133 and uncomment
 all_paths={};
 Legend={};
+curve_zone_unstable1=[];%For Fluid
+curve_zone_unstable2=[];%For Structure
+curve_zone_unstable3=[];%For the conclusion of both
+value_discovered=0;
+
 for element= 1: size(folder_plot,2)
     for R=Re_plot
         for m=m_star_plot
@@ -14,26 +16,10 @@ for element= 1: size(folder_plot,2)
     end
 end
 
-%If so pedires pedires dois, mete colres bem. senao, deixao escolher
-%color_grafic={'-ob','-or','-og','-oy'};%PUT MORE COLORs
-%%%%%%%%%%color_grafic=['-ob';'-or';'-og';'-oy'];  % por a azul sempre em primeiro lugar depois a vermelha...
-%tem de ter no minimo o mesmo numero que o maximo que se pode pedir
-
-
-% % % % % for line= 1: size(folder_plot,1)
-% % % % % for Re=Re_plot
-% % % % %         for m_star=m_star_plot
-% % % % %             all_paths=[all_paths; folder_plot(line,:) 'Re' num2str(Re) '/mstar' num2str(m_star) '/'];
-% % % % %         end
-% % % % %     end
-% % % % % end %For storing all paths
-
-f_subplot1=figure; % Used by all options
-%f2=figure; % Used by option 2,3 ...
+f_subplot1=figure; % Used by all options and it has a silly name
 
 for element= 1: size(all_paths,2)
-    %for line= 1: size(all_paths,1)
-    if(exist(all_paths{element})~=7&&exist(all_paths{element})~=5) %je n'est pas compris tres bien cette commande; a voir ensemble apres
+    if(exist(all_paths{element})~=7&&exist(all_paths{element})~=5)
         disp('ERROR: The Folder of the data demanded was not calculated yet !!!!');
     else
         switch MODE
@@ -41,12 +27,12 @@ for element= 1: size(all_paths,2)
                 extracting=[all_paths{element} '03modeFLUID_data.mat'];
                 Legend{end+1}=extracting;
                 ploting=load( extracting,'Re','m_star','sigma_tab','U_star','Stiffness_table');
-                filename={'03modeFLUID'};%For the saving, in the end of this function
+                filename={'03modeFLUID'};%For the saving, outside
             case('Mode:Structure')
                 extracting=[all_paths{element} '02modeSTRUCTURE_data.mat'];
                 Legend{end+1}=extracting;
                 ploting=load( extracting,'Re','m_star','sigma_tab','U_star','Stiffness_table');
-                filename={'03modeSTRUCTURE'};%For the saving, in the end of this function
+                filename={'03modeSTRUCTURE'};%For the saving, outside
             case('Mode:Both')
                 extracting=[all_paths{element} '03modeFLUID_data.mat'];
                 Legend{end+1}=extracting;
@@ -54,11 +40,25 @@ for element= 1: size(all_paths,2)
                 Legend{end+1}=extracting2;
                 ploting=load( extracting,'Re','m_star','sigma_tab','U_star','Stiffness_table');
                 ploting2=load( extracting2,'Re','m_star','sigma_tab','U_star','Stiffness_table');
-                filename={'04modeBOTH'};%For the saving, in the end of this function
+                filename={'04modeBOTH'};%For the saving, outside
         end
         switch AXIS
-            case('Axis:sigma_VS_Ustar') %Done
-                filename={[filename{1} '_sigma_VS_Ustar']};%For the saving, in the end of this function
+            case{'Axis:sigma_rCOMP','Axis:sigma_rCOMPRe33m50'}
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %case('Axis:sigma_r')
+                filename={[filename{1} '_sigma_r']};%For the saving, outside
+                figure(f_subplot1);hold on
+                
+                plot(ploting.U_star,real(ploting.sigma_tab),'o-','MarkerSize',2);
+                plot(ploting.U_star,ploting.U_star*0,'--k','LineWidth',0.1,'HandleVisibility','off')
+                if(strcmp(MODE,'Mode:Both')==1)
+                    plot(ploting2.U_star,real(ploting2.sigma_tab),'o-','MarkerSize',2);
+                end
+                title('Amplification Rate');
+                xlabel('U^*'); ylabel('\lambda_r');
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            case('Axis:sigma_VS_Ustar') 
+                filename={[filename{1} '_sigma_VS_Ustar']};
                 figure(f_subplot1);
                 subplot(2,1,1);hold on
                 plot(ploting.U_star,real(ploting.sigma_tab),'o-','MarkerSize',2);
@@ -76,8 +76,9 @@ for element= 1: size(all_paths,2)
                 title('Oscillation Rate');
                 xlabel('U^*'); ylabel('\lambda_i');
             case{'Axis:F_LSA_VS_Ustar','Axis:NavroseMittal2016LockInRe60M20','Axis:NavroseMittal2016LockInRe60M5'} %Done %('Axis:F_LSA_VS_Ustar')
-                disp('HEREEEEEEEEEE')
-                filename={[filename{1} '_F_LSA_VS_Ustar']};%For the saving, in the end of this function
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %case('Axis:F_LSA_VS_Ustar')
+                filename={[filename{1} '_F_LSA_VS_Ustar']};
                 figure(f_subplot1);
                 subplot(2,1,1);hold on
                 plot(ploting.U_star,real(ploting.sigma_tab),'o-','MarkerSize',2);
@@ -95,6 +96,8 @@ for element= 1: size(all_paths,2)
                 title('Non-Dimensional Frequency F_{LSA}=\lambda_i/(2\pi)');
                 xlabel('U^*'); ylabel('F_{LSA}');
             case{'Axis:fstar_LSA_VS_Ustar','Axis:NavroseMittal2016LockInRe40M10'} %Done
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %case('Axis:fstar_LSA_VS_Ustar')
                 filename={[filename{1} '_fstar_LSA_VS_Ustar']};%For the saving, in the end of this function
                 figure(f_subplot1);
                 subplot(2,1,1);hold on
@@ -119,80 +122,152 @@ for element= 1: size(all_paths,2)
                     plot((2*pi)./imag(ploting.sigma_tab),real(ploting.sigma_tab),'o-','MarkerSize',2);
                     plot((2*pi)./imag(ploting2.sigma_tab),real(ploting2.sigma_tab),'o-','MarkerSize',2);
                     plot(ploting.U_star,ploting.U_star*0,'--k','LineWidth',0.1,'HandleVisibility','off')
-                    title('Variation of U^*_{LSA}=2\pi/\lambda_r with U^*');
-                    xlabel('U^*_{LSA}'); ylabel('\sigma_r');
+                    title('Variation of \lambda_r with U^*_{LSA}=2\pi/\lambda_r');
+                    xlabel('U^*_{LSA}'); ylabel('\lambda_r');
                 else
                     disp('This system of axis must be done with the option: Mode:Both ');
                 end
-%             case('Axis:NavroseMittal2016LockIn')
-%                 filename={[filename{1} '_Comparing_to_Navrose']};
-%                 figure(f_subplot1);
-%                 subplot(2,1,1);hold on
-%                 plot(ploting.U_star,real(ploting.sigma_tab),'o-','MarkerSize',2);
-%                 plot(ploting.U_star,ploting.U_star*0,'--k','LineWidth',0.1,'HandleVisibility','off')
-%                 title('Amplification Rate');
-%                 xlabel('U^*'); ylabel('\lambda_r');
-%                 subplot(2,1,2);hold on;
-%                 plot(ploting.U_star,imag(ploting.sigma_tab)/(2*pi),'o-','MarkerSize',2);
-%                 title('Non-Dimensional Frequency F_{LSA}=\lambda_i/(2\pi)');
-%                 xlabel('U^*'); ylabel('F_{LSA}');
-%                 %Column 1: Ustar; %Column 2:Structure MODE; %Column 3: Fluid MODE
-%                 Navrose_Re60_mstar20_real = importdata('./Navrose_Data/RE60_M20_real.csv');
-%                 Navrose_Re60_mstar20_imag = importdata('./Navrose_Data/RE60_M20_imag.csv');
-%                 switch MODE
-%                     case('Mode:Structure')
-%                         Legend{end+1}='NAVROSE_Structure';
-%                         subplot(2,1,1);hold on
-%                         plot(Navrose_Re60_mstar20_real.data(:,1),Navrose_Re60_mstar20_real.data(:,3),'--*');
-%                         subplot(2,1,2);hold on;
-%                         plot(Navrose_Re60_mstar20_imag.data(:,1),Navrose_Re60_mstar20_imag.data(:,3),'--*');
-%                     case('Mode:Fluid')
-%                                                 Legend{end+1}='NAVROSE_FLUID';
-%                         subplot(2,1,1);hold on
-%                         plot(Navrose_Re60_mstar20_real.data(:,1),Navrose_Re60_mstar20_real.data(:,2),'--*');
-%                         subplot(2,1,2);hold on;
-%                         plot(Navrose_Re60_mstar20_imag.data(:,1),Navrose_Re60_mstar20_imag.data(:,2),'--*');
-%                     case('Mode:Both')
-%                         subplot(2,1,1);hold on
-%                         plot(ploting2.U_star,real(ploting2.sigma_tab),'o-','MarkerSize',2);
-%                           Legend{end+1}='NAVROSE_stru';
-%                             Legend{end+1}='NAVROSE_fluid';
-%                         plot(Navrose_Re60_mstar20_real.data(:,1),Navrose_Re60_mstar20_real.data(:,3),'--*');
-%                         plot(Navrose_Re60_mstar20_real.data(:,1),Navrose_Re60_mstar20_real.data(:,2),'--*');
-%                         subplot(2,1,2);hold on; 
-%                         plot(ploting2.U_star,imag(ploting2.sigma_tab)/(2*pi),'o-','MarkerSize',2);
-%                         plot(Navrose_Re60_mstar20_imag.data(:,1),Navrose_Re60_mstar20_imag.data(:,3),'--*');
-%                         plot(Navrose_Re60_mstar20_imag.data(:,1),Navrose_Re60_mstar20_imag.data(:,2),'--*');
-%                        
-%                 end
-                %...
-                %case('spectrum')
+            case('Axis:spectrum')
+                filename={[filename{1} '_post_spectrum']};%For the saving, in the end of this function
+                figure(f_subplot1); hold on;
+                plot(real(ploting.sigma_tab),imag(ploting.sigma_tab),'*-','MarkerSize',2);
+                %for i=1:size(ploting.U_star,2)%Comment this loop if no text is desired
+                %    text_to_put=[num2str(ploting.U_star(i), '%.2f') ];
+                %    text(real(ploting.sigma_tab(i)),imag(ploting.sigma_tab(i)),text_to_put);
+                %end
+                plot([0 0],[0.4 2.2],'--k','LineWidth',0.1,'HandleVisibility','off')
+                title('Spectrum (with U* at each point)'); xlabel('\lambda_r'); ylabel('\lambda_i');
+                if(strcmp(MODE,'Mode:Both')==1)
+                    plot(real(ploting2.sigma_tab),imag(ploting2.sigma_tab),'*-','MarkerSize',2);
+                    %for i=1:size(ploting.U_star,2)%Comment this loop if no text is desired
+                     %   text_to_put=[num2str(ploting2.U_star(i), '%.2f') ];
+                     %   text(real(ploting2.sigma_tab(i)),imag(ploting2.sigma_tab(i)),text_to_put);
+                   % end
+                end
+            case('Axis:Zone_m_star_vs_Ustar') %THE post-treatement grafic
+                if(strcmp(MODE,'Mode:Both')==1)
+                    m_star = extractAfter(all_paths{element},'mstar');
+                    m_star = extractBefore(m_star,'/');
+                    for i=1:(size(real(ploting2.sigma_tab),2)-1) %Structure=0
+                        if (real(ploting2.sigma_tab(i))*real(ploting2.sigma_tab(i+1))<0)
+                            if (real(ploting2.sigma_tab(i))<0)%=0
+                                curve_zone_unstable2=[curve_zone_unstable2 [0 0 m_star imag(ploting2.sigma_tab(i))]']; value_discovered=1;
+                            else
+                                curve_zone_unstable2=[curve_zone_unstable2 [0 1 m_star imag(ploting2.sigma_tab(i))]']; value_discovered=1;
+                            end
+                        end
+                    end
+                    if (value_discovered==0)
+                        disp(['No added value for the Structure mode at m_star=' m_star]);
+                        disp('Go to the spectrum to see if it is always positive or negative!!');
+                    end
+                    value_discovered=0;
+                    for i=1:(size(real(ploting.sigma_tab),2)-1) %Fluid=1
+                        if (real(ploting.sigma_tab(i))*real(ploting.sigma_tab(i+1))<0)
+                            if (real(ploting.sigma_tab(i))<0)%=0
+                                curve_zone_unstable1=[curve_zone_unstable1 [1 0 m_star imag(ploting2.sigma_tab(i))]']; value_discovered=1;
+                            else
+                                curve_zone_unstable1=[curve_zone_unstable1 [1 1 m_star imag(ploting2.sigma_tab(i))]']; value_discovered=1;
+                            end
+                        end
+                    end
+                    if (value_discovered==0)
+                        disp(['No added value for the Fluid mode at m_star=' m_star]);
+                        disp('Go to the spectrum to see if it is always positive or negative!!');
+                    end
+                    value_discovered=0;
+                    
+                    
+                    
+                    
+                    
+                else
+                    disp('This system of axis must be done with the option: Mode:Both ');
+                end
+
+                %...case
         end
     end
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'Axis:NavroseMittal2016LockInRe60M20'
-%Navrose comparasion, if demanded: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%For comparing data; Data available (Re,mstar):
+%	Navrose Mittal 2016:(60,20), (60,5), (40,10) 
+%	Zhang et al. 2015:(60,20), ...
+%	Kou et al 2017: a faire ...
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %Options: Navrose, Zhang, NavroseZhang
+% Navrose_Re_available=[ [60,20]' [60,5]' [40,10]'];
+% 
+% %part 1: extracting data
+% %switch COMPARE
+% %    case('Compare:Navrose')
+% if(strcmp(COMPARE,'Compare:Navrose')==1|| strcmp(COMPARE,'Compare:Zhang')==1||strcmp(COMPARE,'Compare:NavroseZhang')==1)
+% %part 1: extracting data
+% %switch COMPARE
+%  %   case('Compare:Navrose')
+%         for R=Re_plot
+%             for m=m_star_plot
+%                 if(R==60&&m==20)
+%                     N_Re60_m20_r = importdata('./Literature_Data/csv/navroseRE60_M20_real.csv'); %sigma_r vs_ Ustar
+%                     N_Re60_m20_i = importdata('./Literature_Data/csv/navroseRE60_M20_imag.csv');
+%                     Z_Re60_m20_r = importdata('./Literature_Data/csv/ZhangRE60_M20_real_cut.csv');
+%                 elseif(R==60&&m==5)
+%                     N_Re60_m5_r = importdata('./Literature_Data/csv/navroseRE60_M5_real.csv'); %sigma_r vs_ Ustar
+%                     N_Re60_m5_i = importdata('./Literature_Data/csv/navroseRE60_M5_imag.csv');
+%                 elseif(R==40&&m==10)%Il n'existe pas encore
+%                     N_Re40_m10_r = importdata('./Literature_Data/csv/navroseRE60_M5_real.csv'); %sigma_r vs_ Ustar
+%                     N_Re40_m10_i = importdata('./Literature_Data/csv/navroseRE60_M5_imag.csv');
+%                 end
+%                 
+%                 
+%             end
+%         end
+%         
+%         
+% end
+
+
+% 
+% for R=Re_plot
+%     for m=m_star_plot
+%         if((strcmp(COMPARE,'Compare:Navrose')==1&&R==60&&m==20)
+%             N_Re60_m20_r = importdata('./Literature_Data/csv/navroseRE60_M20_real.csv'); %sigma_r vs_ Ustar
+%             N_Re60_m20_i = importdata('./Literature_Data/csv/navroseRE60_M20_imag.csv');
+%             
+%         end
+%     end
+% end
+
+%Navrose comparasion, if demanded:
+
 if(strcmp(AXIS,'Axis:NavroseMittal2016LockInRe60M20')==1||strcmp(AXIS,'Axis:NavroseMittal2016LockInRe60M5')==1||strcmp(AXIS,'Axis:NavroseMittal2016LockInRe40M10')==1)
     switch AXIS
         case('Axis:NavroseMittal2016LockInRe60M20')
+            disp('TOTO')
             filename={[filename{1} '_Comparing_to_NavroseRe60M20']};
-            Navrose_real = importdata('./Navrose_Data/RE60_M20_real.csv');
-            Navrose_imag = importdata('./Navrose_Data/RE60_M20_imag.csv');
+            Navrose_real = importdata('./Literature_Data/csv/navrose2016_RE60_M20_real.csv');
+            Zhang_real = importdata('./Literature_Data/csv/Zhang_RE60_M20_real_cut.csv');
+            Navrose_imag = importdata('./Literature_Data/csv/navrose2016_RE60_M20_imag.csv');
         case('Axis:NavroseMittal2016LockInRe60M5')
             filename={[filename{1} '_Comparing_to_NavroseRe60M5']};
-            Navrose_real = importdata('./Navrose_Data/RE60_M5_real.csv');
-            Navrose_imag = importdata('./Navrose_Data/RE60_M5_imag.csv');
+            Navrose_real = importdata('./Literature_Data/csv/navrose2016_RE60_M5_real.csv');
+            Navrose_imag = importdata('./Literature_Data/csv/navrose2016_RE60_M5_imag.csv');
         case('Axis:NavroseMittal2016LockInRe40M10')
             filename={[filename{1} '_Comparing_to_NavroseRe40M10']};
-            Navrose_real = importdata('./Navrose_Data/RE40_M10_real.csv');
-            Navrose_imag = importdata('./Navrose_Data/RE40_M10_imag.csv'); %J AI PAS ENCORE LE FICHIER
+            Navrose_real = importdata('./Literature_Data/csv/navrose2016_RE40_M10_real.csv');
+            Navrose_imag = importdata('./Literature_Data/csv/navrose2016_RE40_M10_imag.csv'); %J AI PAS ENCORE LE FICHIER
     end
     %Column 1: Ustar; %Column 2:Structure MODE; %Column 3: Fluid MODE
     switch MODE
         case('Mode:Structure')
             Legend{end+1}='NavroseMittal Structure';
+            Legend{end+1}='Zhang Structure';
             subplot(2,1,1);hold on
             plot(Navrose_real.data(:,1),Navrose_real.data(:,3),'--*');
+            plot(1./Zhang_real.data(:,1),Zhang_real.data(:,3),'--*'); %Because it is in FN x-axe
             subplot(2,1,2);hold on;
             plot(Navrose_imag.data(:,1),Navrose_imag.data(:,3),'--*');
         case('Mode:Fluid')
@@ -214,28 +289,89 @@ if(strcmp(AXIS,'Axis:NavroseMittal2016LockInRe60M20')==1||strcmp(AXIS,'Axis:Navr
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Adding the legend and saving:
-%Figure 1
-%figure(f_subplot1); hold on
-legend(Legend,'Location','southwest','AutoUpdate','off');
-
-if(size(all_paths,2)==1)
-    if((strcmp(MODE,'Mode:Fluid')==1||strcmp(MODE,'Mode:Structure')==1)&&strcmp(AXIS,'Axis:sigma_r_VS_Ustar_LSA')==1)
-        disp('Image not saved because this system of axis must be done with the option: Mode:Both')
-    else
-        SF_Save_Data('graphic',General_data_dir,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
-        disp('Figure saved !');
+%For comparing all data but just one grafic
+if(strcmp(AXIS,'Axis:sigma_rCOMP')==1)
+    filename={[filename{1} '_Comparing']};
+    Navrose_real = importdata('./Literature_Data/csv/navrose2016_RE60_M20_real.csv');
+    Zhang_real = importdata('./Literature_Data/csv/Zhang_RE60_M20_real_cut.csv');
+    %Navrose_imag = importdata('./Navrose_Data/RE60_M20_imag.csv');
+    %Column 1: Ustar; %Column 2:Structure MODE; %Column 3: Fluid MODE
+    switch MODE
+        case('Mode:Structure')
+            Legend{end+1}='Error_0.02/NavroseMittal Structure';
+            Legend{end+1}='Error_0.02/Zhang Structure';
+            plot(Navrose_real.data(:,1),Navrose_real.data(:,3),'--*');
+            plot(1./Zhang_real.data(:,1),Zhang_real.data(:,3),'--*'); %Because it is in FN x-axe
+        case('Mode:Fluid')
+            Legend{end+1}='Error_0.02/NavroseMittal Fluid';
+            Legend{end+1}='Error_0.02/Zhang Fluid';
+            plot(Navrose_real.data(:,1),Navrose_real.data(:,2),'--*');
+            plot(1./Zhang_real.data(:,1),Zhang_real.data(:,2),'--*'); %Because it is in FN x-axe
+        case('Mode:Both')
+            Legend{end+1}='Error_0.02/NavroseMittal Structure';
+            Legend{end+1}='Error_0.02/NavroseMittal Fluid';
+            Legend{end+1}='Error_0.02/Zhang Structure';
+            Legend{end+1}='Error_0.02/Zhang Fluid';
+            plot(Navrose_real.data(:,1),Navrose_real.data(:,3),'--*');
+            plot(Navrose_real.data(:,1),Navrose_real.data(:,2),'--*');
+            plot(1./Zhang_real.data(:,1),Zhang_real.data(:,3),'--*'); %Because it is in FN x-axe
+            plot(1./Zhang_real.data(:,1),Zhang_real.data(:,2),'--*'); %Because it is in FN x-axe
+            
     end
-else
-    disp('Attention: CHOOSE a filename and save the figure, please!!! (run next lines)');
+    
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%For comparing with Zhang page 87
+if(strcmp(AXIS,'Axis:sigma_rCOMPRe33m50')==1)
+    filename={[filename{1} '_ComparingZHANGRe33']};
+    Zhang_real = importdata('./Literature_Data/csv/Zhang_RE33_M50_real.csv');
+    %Column 1: Ustar; %Column 2:Structure MODE; %Column 3: Fluid MODE
+    switch MODE
+        case('Mode:Structure')
+            Legend{end+1}='Error_0.02/Zhang Structure';
+            plot(1./Zhang_real.data(:,1),Zhang_real.data(:,2),'--*'); %Because it is in FN x-axe
+        case('Mode:Fluid')
+            disp('Attention, pas de resultats de Zhang por fluid à Re=33')
+        case('Mode:Both')
+            disp('Attention, pas de resultats de Zhang por fluid à Re=33')
+    end
     
 end
 
-%Figure 2
-%TO DO if needed
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%ploting 'Axis:Zone_m_star_vs_Ustar'
+if (strcmp(AXIS,'Axis:Zone_m_star_vs_Ustar')==1)
+    if(isempty(curve_zone_unstable1)==0)%put in the if before
+        scatter(curve_zone_unstable1(4,:),curve_zone_unstable1(3,:),'*');
+    end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Adding the legend and saving:
+%Figure 1
+%figure(f_subplot1); hold on
+if(strcmp(AXIS,'Axis:Zone_m_star_vs_Ustar')==0)
+    %subplot(2,1,1);hold on 
+    Legend = extractAfter(Legend,'Error_0.02/');
+    legend(Legend,'Location','southwest','AutoUpdate','off');
+end
+disp('Attention: Do not forget to save the picture if you want it');
+%I decide to put the save part outside
+% if(size(all_paths,2)==1)
+%     if((strcmp(MODE,'Mode:Fluid')==1||strcmp(MODE,'Mode:Structure')==1)&&strcmp(AXIS,'Axis:sigma_r_VS_Ustar_LSA')==1)
+%         disp('Image not saved because this system of axis must be done with the option: Mode:Both')
+%     else
+%         SF_Save_Data('graphic',General_data_dir,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
+%         disp('Figure saved !');
+%     end
+% else
+%     disp('Attention: CHOOSE a filename and save the figure, please!!! (run next lines)');
+%     
+% end
 
 
+
+
+%curve_zone_unstable1
+%curve_zone_unstable2
+end

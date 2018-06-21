@@ -48,9 +48,9 @@ persistent eigenvaluesPrev % for sort of type 'cont'
    addParameter(p,'k',0,@isnumeric);
    addParameter(p,'sym','A',@ischar);   
    
-   %parameters for spring-mounted object  
-   addParameter(p,'STIFFNESS',0);
-   addParameter(p,'MASS',0);
+   %parameters for spring-mounted object: init values used in mesh adaptation
+   addParameter(p,'STIFFNESS',1000); %its the inverse of U, so it's a Ustar=0
+   addParameter(p,'MASS',1000);
    addParameter(p,'DAMPING',0);
    addParameter(p,'Frame','A',@ischar);
    

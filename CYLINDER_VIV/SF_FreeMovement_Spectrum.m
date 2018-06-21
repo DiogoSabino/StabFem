@@ -24,7 +24,7 @@ switch stability_analysis
         %sigma_tab=[];
         shift=RealShift+ImagShift*1i;
        
-        [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
+        [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
         set(gcf, 'Position', get(0, 'Screensize'));%img in fullscream during compute
         %disp('TOTO1');
         %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
@@ -34,7 +34,7 @@ switch stability_analysis
         
         for STIFFNESS=STIFFNESS_to_search
             %disp('TOTO3');
-            [ev,em] = SF_Stability(baseflow,'shift','cont','nev',nev,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
+            [ev,em] = SF_Stability(baseflow,'shift','cont','nev',nev,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
             %disp('TOTO4');
             %if(mod(i,4)==0)
              %   disp('TOTO4a');

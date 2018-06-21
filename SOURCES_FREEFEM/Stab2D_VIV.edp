@@ -263,12 +263,27 @@ Aaf = afbfluid(0,XXMh);
 
 matrix<complex> OP;// mat OP = A - shift B
 //OP = A+ (-SHIFT)*B; // Dont use it, because A and B are stored differently=>doesnt work
+
+if(iadjoint=="D"){
 OP = 	[
-	[OPff,		 0,			Avf,			Aaf],
-	[0,		 -shiftOP,		1,			0],
-	[0,		 0,			-shiftOP,			1],
-	[Afv',		-STIFFNESS,		-DAMPING,		-MASS-shiftOP*eps]
+	[OPff,		  	 0,	     Avf,		      Aaf],
+	[   0,		  -shiftOP,	       1,	 		0],
+	[   0,		 	 0,	-shiftOP,			1],
+	[Afv',		-STIFFNESS,	-DAMPING,	-MASS-shiftOP*eps]
 	];
+}
+else if(iadjoint=="A"){
+OP = 	[
+	[OPff,			0,	       0,		      Afv],
+	[   0,	 	 -shiftOP,	       0,	       -STIFFNESS],
+	[Avf',	    		1,	-shiftOP,		 -DAMPING],
+	[Aaf',			0,	       1,	-MASS-shiftOP*eps]
+	];
+}
+
+//else if(iadjoint=="cA")
+//else if(iadjoint=="S"||iadjoint=="cS") 
+
 
 set(OP,solver=sparsesolver);
 
@@ -295,7 +310,7 @@ if(nev>1)
 	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
 	cout << "Arpack Finished" << endl;
 	//////////////////////////////////////////////////////////////////////
-	WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,iadjoint,nev,2); //2 porque é a iter....
+	WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,iadjoint,nev,1); //Last number is the iter
 } // end if(nev>1)
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -386,62 +401,31 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 //	modeV = (1./modeV)*modeV;
 
 	EMCalculated(:,0)=[modex[],modeY,modeV,modeA];	
-
+	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
 
 	if(i<itmax) // post-processing if iteration was successful
 	{	
-		WriteOutputFiles(EVCalculated,SHIFT,mode,EMCalculated,iadjoint,nev,iter);
-	
+		WriteOutputFiles(EVCalculated,SHIFT,mode,EMCalculated,iadjoint,nev,i);
 		/////////////////////////////////////////////////////////
 		////////THE PLOT ////////////////////////////////////////
 
 		fespace p1(th,P1); 
 		cout << " Vb : " << modeV << endl;
-		p1 realux = real(modex);
+		//p1 realux = real(modex);
+		p1<complex> realux = modex;
 		plot(realux,fill=1,value=1);
 		p1 realuy = real(modey);
 		plot(realuy,fill=1,value=1);
-	
 	} // end of post-processing of simple shift-invert case
 
-	else // case iteration failed
-	{
-		ShiftAndInvertFAIL;
-	};
+	else{ShiftAndInvertFAIL;};// case iteration failed
 	
-/*	if (testCB==0)
+	/*if (testCB==0)
 	{
 		exec("rm "+ffdatadir+"Eigenmode_guess.txt");// to be sure this file is not reused unless explicitly requested
-	};
-*/
+	};*/
+
 }; //end of loop for direct/adjoint/selection
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -18,19 +18,21 @@
 global ffdataharmonicdir verbosity
 
 close all
-
 run('../SOURCES_MATLAB/SF_Start.m');
 
-disp(' ');  disp(' GENERATING  MESH : [-40:120]x[0:40] '); disp(' ');
+%CHOOSE the domain parameters:
+domain_parameters=[-50 50 50];
+disp_info=[' GENERATING  MESH :[' num2str(domain_parameters(1)) ':' num2str(domain_parameters(2)) ']x[0:' num2str(domain_parameters(3)) ']'];
+disp(' ');  disp(disp_info); disp(' ');
+verbosity=10;
 
-
-baseflow=SF_Init('Mesh_Cylinder.edp', [-40 80 40]);
+baseflow=SF_Init('Mesh_Cylinder.edp', domain_parameters);
 baseflow=SF_BaseFlow(baseflow,'Re',1);
 baseflow=SF_BaseFlow(baseflow,'Re',10);
 baseflow=SF_BaseFlow(baseflow,'Re',60);
 
-fig_mesh=plotFF(baseflow,'mesh'); %pause;
-set(fig_mesh, 'HandleVisibility', 'off'); %IMFT just have 3 licences, so...
+%fig_mesh=plotFF(baseflow,'mesh'); %pause;
+%set(fig_mesh, 'HandleVisibility', 'off'); %IMFT just have 3 licences, so...
 
 disp(' ');disp('ADAPTING MESH FOR RE=60 ');disp(' ');
 baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
@@ -38,19 +40,20 @@ plotFF(baseflow,'mesh');%pause(0.1);
 baseflow=SF_BaseFlow(baseflow,'Re',60);
 % 
 disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
-% adaptation du maillage sur un mode propre
+%Mesh adaptation to a fluid mode
 [ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005); %j'ai
-%changé ca!!!!
+
+
+[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
 plotFF(baseflow,'mesh');%pause(0.1);
 
+
+% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
+ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
 %% Erase previous data if mesh have change (do it manually!!)
 % Delete the data concerning the solution of the problem
 % (not the baseflow and the mesh; the others eg DATA_SF_CYLINDER)
 % NB: If one wants to delete just some of the values of .txt file, go do it manualy
-
-% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
-ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
 
 % Careful in the use of the next lines
 while(false) % change to 'true' if you want delete all this data
@@ -74,43 +77,15 @@ if(exist(ffdataharmonicdir)~=7&&exist(ffdataharmonicdir)~=5) %je n'est pas compr
 end %It's compulsory: Creation of the directory
 
 %Re_tab=20 %for testing just one value Re=20
-Re_tab=[15 20:10:60]; %for testing multiple values % first run
+Re_tab=[40]; %for testing multiple values % first run
 %Re_tab=[19.5 19.6 19.7 19.8 19.9 20]; %For Re1 first try
 %i didnt use it%Re_tab=[19.8 19.9 19.91 19.92 19.95 20]; %For Re1 SECOND try
 %Re_tab=[30 30.1 30.2 30.3 30.4 30.5 32 ]% search for the 2nd crit Re2
 %Re_tab=[46 46.5 46.6 46.7 46.8 46.9 47]% search for the 3nd crit Re3
 %i didnt use it%Re_tab=[19.91 30.3] curves of the 3 Rec
 
-%NB: If one adds a Re and wants to have the same data of the other Re already
-%       calculated... well, this isn't code yet, the best solution is to 
-%       delete all data and computed it again for all the Re needed
-
-
-%Don't give silly values, sometimes matlab inexplicably crash with them
-% First Value; Step; Last value
-Omega_values=0.3:0.02:1.2; % First Value;Step;Last value|eg 0.3:0.02:1.2
-
-Omega_fine=0; %First run
-%Omega_fine=0.62:0.005:0.68;   %Refinement for Rec1
-%Omega_fine=0.59:0.0005:0.61;  %Refinement for Rec2
-%Omega_fine=0.65:0.005:0.75;  %Refinement for Rec3
-%
-if isempty(Omega_fine)==1 %Create a array of omega_values to test
-    disp('Minor error: omega raffinement not achieved');
-elseif isempty(Omega_values)==1
-    disp('Major error: Omega values missed!');
-    Omega_values=-1;
-else
-    for i = 1:numel(Omega_values);
-        if Omega_values(i) >= Omega_fine(1)
-            n_upper=find(Omega_values>Omega_fine(end));
-            Omega_values=[Omega_values(1:i-1) Omega_fine Omega_values(n_upper:end)];
-            break;
-        end
-    end
-end
-%Omega_values will be between 
-%min(Omega_values,Omega_fine) and max(Omega_values,Omega_fine)
+% First Value; ...intermediate values ... ; Last value
+Omega_values=[ 0.01 0.3:0.3:1.2]; % First Value;Step;Last value|eg 0.3:0.02:1.2
 
 verbosity=10; %To see all
 
@@ -118,10 +93,20 @@ verbosity=10; %To see all
 figure
 for Re=Re_tab
    baseflow=SF_BaseFlow(baseflow,'Re',Re); 
-   [Omegatab,Ltab,Mtab]=SF_HarmonicForcing(baseflow,Omega_values);
-   SF_HarmonicForcing_Display(Omegatab,Ltab,Re_tab);
+   SF_HarmonicForcing(baseflow,Omega_values);
    disp('___________________________________________________')%To separete iters
 end
+
+%% Data treatement: à faire
+%select the desired omegas and re
+
+
+for Re=Re_tab
+    %extract data from importFFdata...
+    
+    SF_HarmonicForcing_Display(Omegatab,Ltab,Re_tab); % a refaire
+end
+
 
 
 %% Spectial treatement for a beautiful plot of Rec3: do it manually

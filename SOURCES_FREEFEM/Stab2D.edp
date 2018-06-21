@@ -57,7 +57,7 @@ include "Macros_StabFem.edp";
 	cout << " Symmetry properties ?? (A, S or N)" << endl;
 	cin >> symmetry;
 	string iadjoint; // 0 for direct ; 1 for adjoint
-	cout << " Direct (D), Adjoint (A), continusous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ?" << endl;
+	cout << " Direct (D), Adjoint (A), continuous adjoint (cA), D&A+sensitivity (S), D&A(c)+sentitivity (cS) ?" << endl;
 	cin >> iadjoint;	
 
 	int nev;
@@ -487,9 +487,9 @@ cout << "Computation of sensitivity after direct and adjoint" << endl;
 
 
 
-}; // end of selection of mutliple mode (krylov) / single mode (simple shift-invert)
+};// end of  if(iadjoint=="S"||iadjoint=="cS")
 
 
 
-};
+};// end of selection of mutliple mode (krylov) / single mode (simple shift-invert)
 

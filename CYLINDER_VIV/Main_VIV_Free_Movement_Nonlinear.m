@@ -12,6 +12,34 @@
 %  6/ Self-consistent model for Re=100
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+
+
+
+%%A FAIRE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 %% CHAPTER 0 & 1: Set the global variables needed by the drivers
 %                 and Computing the mesh with adapt procedure
 
