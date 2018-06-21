@@ -107,6 +107,7 @@ cout << "How many Omega values have to be computed?"<<endl;
 cin>> Nomega;
 
 if(Nomega==0){cout <<  "All values of Omega have been calculated" << endl;}
+//Normally, matlab script "SF_HarmonicForcing.m" never executes with Nomega=0
 
 else//Loop for different OMEGA values
 {
