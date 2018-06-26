@@ -64,20 +64,23 @@ savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 %% Computation: Spectrum
 %Parameters' Definition
 %CHOOSE the Re to test:
-Re_tab=[60]; verbosity=10;
+Re_tab=[21]; verbosity=10;
 for Re=Re_tab
     baseflow = SF_BaseFlow(baseflow,'Re',Re);
     
     %CHOOSE the m_star to test:
-    m_star_tab=[20];
-    %m_star=10;
+    m_star_tab=[100];
+    
     for m_star=m_star_tab
         mass=m_star*pi/4;
-        %U_star=[11:-0.2:9.5 9.5:-0.05:6.5 6.5:-0.2:3];
-        U_star=[3:0.2:6.5 6.5:0.05:11];
-        %U_star=[1:0.1:3];%
-        %U_star=[11:0.1:20];%
+        %CHOOSE U_star
         
+        %U_star=[1:0.05:4]; %m=0.05
+        %U_star=[2:0.1:7]; %m=0.2,0.1
+        %U_star=[3:0.1:7]; %m=1...0.8
+        U_star=[3:0.2:6.5 6.5:0.05:11];
+        %U_star=[11:0.1:20];%
+       
         Stiffness_table=pi^3*m_star./((U_star).^2);
         
         % Spectrum search: See spectrum if wanted, for discover the shift
@@ -95,30 +98,12 @@ for Re=Re_tab
             %SF_Save_Data('spectrum',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
         end
         
-        % Mode Follow: Follow a mode along the Stiffness_table/U_star
-        
-        %Manually put the right shift, acordding to the above spectrum(
-        %For the pair (Re;[m_star])(starting at U_star(1)=3 )
-        %For the STRUCTURE Mode:
-        %shift=0+2.1i:                                                                    
-        %shift=0+2i:	([60-19];[1000-5])                                                   %%(15;[100])
-        %shift=0+1.8i:                (40;[4.73])
-        %shift=0+1i:                                                                         %%(40;[0.7])
-        
-        %For the FLUID Mode :
-        %shift=0.05+0.75i:	(60;[20,10,5])
-        %shift=-0.03+0.75i:               (40,[300-5])
-        %shift=-0.07+0.62i:                                                                 %%%%(21;[10])
-        %close all
-        
-        %CHOOSE shift:
-        RealShift=0; ImagShift=1.9; %Normally, for Structure
-        %RealShift=-.01; ImagShift=0.75; %Normally, for Fluid
-        
+        % Mode Follow: Follow a mode along the Stiffness_table/U_star       
         %CHOOSE the one for save data w/ a good name:
         modename={'02modeSTRUCTURE'};
         %modename={'03modeFLUID'};
         
+        [RealShift, ImagShift]=SF_Shift_selection(modename,Re,m_star);
         sigma_tab=[];
         nev=1; %Normally if's just one, but if shift is wrong, it helps put more
         
@@ -138,8 +123,8 @@ domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2
 mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
 folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs ??
 
-Re_plot=[60] ; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=[20]; % m_star for previous calculation
+Re_plot=[20] ; % Re for previous calculation; for an array: [Re1 Re2]
+m_star_plot=[300]; % m_star for previous calculation
 
 %The different data treatment options: %How to do:'Mode:-', 'Axis:-'
 %Mode:Fluid, Structure or Both
@@ -150,12 +135,12 @@ m_star_plot=[20]; % m_star for previous calculation
 %SF_Data_Treatement('Mode:Both','Axis:NavroseMittal2016LockInRe60M20',folder_plot,Re_plot,m_star_plot);
 
 %IF one data only is plotted
-filename=SF_Data_Treatement('Mode:Structure','Axis:sigma_rCOMP',folder_plot,Re_plot,m_star_plot);
+filename=SF_Data_Treatement('Mode:Structure','Axis:spectrum',folder_plot,Re_plot,m_star_plot);
 
 SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
 %ELSE
-SF_Data_Treatement('Mode:Both','Axis:F_LSA_VS_Ustar',folder_plot,Re_plot,m_star_plot);
-filename={'IMAGE_TOTO5'};%CHOOSE name of the figure
+SF_Data_Treatement('Mode:Both','Axis:sigma_rCOMP',folder_plot,Re_plot,m_star_plot);
+filename={'Re60_m20_sacar_parte_real'};%CHOOSE name of the figure
 SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -175,19 +160,19 @@ m_star_plot=[20]; % m_star for previous calculation
 %%%Mode:Fluid, Structure or Both
 
 %SEE U_star available
-SF_Mode_Display('availability','Mode:Fluid',0,folder_plot,Re_plot,m_star_plot,0);
+SF_Mode_Display('availability','Mode:Structure',0,folder_plot,Re_plot,m_star_plot,0);
 
 %COMPUTE of the demanding eigenmodes
 U_star_plot=[5.4]; %put just one for now...
 baseflow = SF_BaseFlow(baseflow,'Re',Re_plot);
-[em]=SF_Mode_Display('Compute','Mode:Fluid',baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
+[em]=SF_Mode_Display('Compute','Mode:Structure',baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
 
 %Eigenmode plot reffinement
 %...to do...
-plotFF(em,'ux1.re')
+plotFF(em,'vort1')
 
-
-
+%Baseflow
+%plotFF(baseflow,'vort')
 %% Grafic m* vs fequency: not working yet
 General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
 domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'}
@@ -198,7 +183,6 @@ m_star_plot=[10 20 50 75]; %for m_star we want
 %USE 'Mode:Both','Axis:Zone_m_star_vs_Ustar'
 SF_Data_Treatement('Mode:Both','Axis:Zone_m_star_vs_Ustar',folder_plot,Re_plot,m_star_plot);
 
-
 %% Grafic U* Re
 %Put just one path!!
 General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
@@ -206,12 +190,50 @@ domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2
 mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
 folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs ??
 Re_plot=[20 23 25 27 30 33 35 40 42 43 45];
-m_star_plot=4.73;
+m_star_plot=50;
+%m_star_plot=4.73;
 
-SF_Data_Tretement_Post(folder_plot,Re_plot,m_star_plot);
+Point_TAB_ReUstar_plane=SF_Data_Tretement_Post('Case:Ustar_Re_plane',folder_plot,Re_plot,m_star_plot);
+%save( './Latex_data/Free/Koucomp/m473_ReUstar_plane.mat','Point_TAB_ReUstar_plane');
+%save( './Latex_data/Free/Koucomp/m50_ReUstar_plane.mat','Point_TAB_ReUstar_plane');
 
 
+%% Impedance values
+%CHOOSE Data to plot: (Be sure that data exists)
+General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
+domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'}
+mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
+folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs ??
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Rec1
+Re_plot=[19.95] ; 
+m_star_plot=[0.05 0.1 0.2 0.3 0.5 1 2 3 4.73 5 10 20];
+
+Point_TAB_Rec1=SF_Data_Tretement_Post('Case:Impedance_Points',folder_plot,Re_plot,m_star_plot);
+%save( './Impedance_Treatement/FreeCaseRec1.mat','Point_TAB_Rec1');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% David curve
+%Re=21
+Re_plot=[21] ;
+m_star_plot=[100];
+
+extracting=[folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(m_star_plot) '/02modeSTRUCTURE_data.mat'];
+DataFree_curveUstar_Re21_m100=load(extracting,'sigma_tab','U_star');
+%save( './Impedance_Treatement/FreeCaseRe21mstar100.mat','DataFree_curveUstar_Re21_m100');
+%Re=40
+Re_plot=[40] ;
+m_star_plot=[100];
+
+extracting=[folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(m_star_plot) '/02modeSTRUCTURE_data.mat'];
+DataFree_curveUstar_Re40_m100=load(extracting,'sigma_tab','U_star');
+%save( './Impedance_Treatement/FreeCaseRe40mstar100.mat','DataFree_curveUstar_Re40_m100');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comparacao com Kou
+%... a fazer
+    
 %% Put good legends
 if(1==0)
     
@@ -229,6 +251,35 @@ end
 %% Critic Reynolds Analysis: Search for the critic Re curve
 
 %To do FindThreshold_VIV.epd
-
+%a faire
 %[baseflowC,emC]=SF_FindThreshold_VIV(baseflow,em);
 
+%% Non-linear: Harmonic Balance
+
+%Re near the threshold
+
+Re_start=20.5;
+baseflow = SF_BaseFlow(baseflow,'Re',Re_start);
+m_star=300;
+U_star=9.6;
+
+mass=m_star*pi/4;
+STIFFNESS=pi^3*m_star./((U_star).^2);
+
+shift=0+0.655i;
+[ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R');
+
+YGuess=0.01;
+[meanflow,mode] = SF_SelfConsistentDirect(baseflow,em,'Yguess',YGuess,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
+
+%Not working... Falar com David...
+
+
+
+
+
+
+    
+    
+    
+    

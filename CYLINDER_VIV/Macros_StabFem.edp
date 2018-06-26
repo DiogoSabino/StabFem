@@ -73,25 +73,25 @@ macro BoundaryconditionsStability(u,v,symmetry)
 //EOM
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-macro BoundaryconditionsForced(u,v,symmetry,U0)
+macro BoundaryconditionsForced(u,v,symmetry,U0)/*Formulation repert Relatif*/
 	/*bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6*/
-	/*Formulation repert Relatif*/
 	on(bcinlet,bclat,u#y=-U0)
 	/* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
-	+ on(bcwall,u#x=0.0,u#y=0.0) /*ajouter 21 22 23*/
-	+ on(bcaxis,u#x=0.0,u#p=0.0) /*Mode symetric et antisymetric, on n'a pas besoin, oui ?*/
+	+ on(bcwall,u#x=0.0,u#y=0.0) 
+	+ on(bcaxis,u#x=0.0,u#p=0.0) /*Mode antisymetric*/
 //EOM
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 macro BoundaryconditionsLNSE(u,v,formulation)/*For the free movement problem*/
 	int1d(th,bcinlet,bclat)(u#y*v#y*TGVCL*(formulation=="A") )
 	+int1d(th,bcinlet,bclat)(u#y*v#y*TGVCL*(formulation=="R") ) /* + le terme BBB de interaction sur Avf*/
-	+int1d(th,bcinlet,bclat)(u#x*v#x*TGVCL) /*ajouté le D50 */
+	/* +int1d(th,bcinlet,bclat)(u#x*v#x*TGVCL)useless if domain is big enough:sometimes it introduces errors
+	+int1d(th,bcinlet,bclat)(u#p*q*TGVCL)*/
 
 	+int1d(th,bcwall)(u#y*v#y*TGVCL*(formulation=="A") ) /* + le terme AAA de interaction sur Avf*/
 	+int1d(th,bcwall)(u#y*v#y*TGVCL*(formulation=="R") )
+	+int1d(th,bcwall)(u#x*v#x*TGVCL) 
 
-	+int1d(th,bcwall)(u#x*v#x*TGVCL) /*equivalent: on(bcwall, ux=0);Dont put the bcinlet,bclat because it introduces errors, and its useless if domain is big enough*/
 	+int1d(th,bcaxis)(u#x*v#x*TGVCL);/*Valid for the 2 formulations*/
 	/*+int1d(th,bcaxis)(u#p*q*TGVCL);don't need*/
 //EOM
@@ -325,18 +325,16 @@ macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,iadjoint,nev,iter)
 		if( (iadjoint=="A"||iadjoint=="cA") &&nev>1){namefile=ffdatadir+"EigenmodeA"+(i+1);}
 		if( (iadjoint=="A"||iadjoint=="cA"||iadjoint=="S"||iadjoint=="cS") &&nev==1){namefile=ffdatadir+"EigenmodeA";}
 		{ofstream fileMode(namefile+".txt");
- 		 fileMode << mode#x[];  
+ 		 fileMode << mode#x[]<< endl;  
 		 fileMode << endl << mode#Y << " " << mode#V << " " << mode#A << endl; 
  		 fileMode << endl << endl << Re << endl << endl << real(EVCalculated[i]) << "   " << imag(EVCalculated[i])  << endl;
  		}
 		cout << "Writing eigenmode in .ff2m file: " << namefile << endl;
-		if(iadjoint=="D"){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeD",iter);}/*porque um, nao sei???*/
+		if(iadjoint=="D"){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeD",iter);}
 		if( (iadjoint=="A"||iadjoint=="cA"||iadjoint=="S"||iadjoint=="cS") ){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeA",iter);}
 	};
 	cout << "Writing Output Files Done" << endl;
 }
-
-
 //EOM	
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,8 +389,5 @@ macro ShiftAndInvertFAIL
 }
 //EOM	
 ////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////
-//macro PostProcessBaseFlowOutput(file,u1,u2,p)
-
 //END EDP FILE
 	

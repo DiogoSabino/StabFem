@@ -54,7 +54,7 @@ macro BoundaryconditionsBaseFlow(du,u,v)
 //EOM
 
 macro BoundaryconditionsStability(u,v,symmetry)
-	           on(bcinlet,ux#=0,u#y=0.0)
+	           on(bcinlet,u#x=0.0,u#y=0.0)
 	            /* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
 	         + on(bclatNOP,u#y=0.0)  /* if you want to try no-penetration boundary (not optimal) */
              + on(bcwall,u#x=0.0,u#y=0.0)

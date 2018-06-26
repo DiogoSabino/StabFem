@@ -131,18 +131,18 @@ for element= 1: size(all_paths,2)
                 filename={[filename{1} '_post_spectrum']};%For the saving, in the end of this function
                 figure(f_subplot1); hold on;
                 plot(real(ploting.sigma_tab),imag(ploting.sigma_tab),'*-','MarkerSize',2);
-                %for i=1:size(ploting.U_star,2)%Comment this loop if no text is desired
-                %    text_to_put=[num2str(ploting.U_star(i), '%.2f') ];
-                %    text(real(ploting.sigma_tab(i)),imag(ploting.sigma_tab(i)),text_to_put);
-                %end
+                for i=1:size(ploting.U_star,2)%Comment this loop if no text is desired
+                    text_to_put=[num2str(ploting.U_star(i), '%.2f') ];
+                    text(real(ploting.sigma_tab(i)),imag(ploting.sigma_tab(i)),text_to_put);
+                end
                 plot([0 0],[0.4 2.2],'--k','LineWidth',0.1,'HandleVisibility','off')
                 title('Spectrum (with U* at each point)'); xlabel('\lambda_r'); ylabel('\lambda_i');
                 if(strcmp(MODE,'Mode:Both')==1)
                     plot(real(ploting2.sigma_tab),imag(ploting2.sigma_tab),'*-','MarkerSize',2);
-                    %for i=1:size(ploting.U_star,2)%Comment this loop if no text is desired
-                     %   text_to_put=[num2str(ploting2.U_star(i), '%.2f') ];
-                     %   text(real(ploting2.sigma_tab(i)),imag(ploting2.sigma_tab(i)),text_to_put);
-                   % end
+                    for i=1:size(ploting.U_star,2)%Comment this loop if no text is desired
+                       text_to_put=[num2str(ploting2.U_star(i), '%.2f') ];
+                       text(real(ploting2.sigma_tab(i)),imag(ploting2.sigma_tab(i)),text_to_put);
+                    end
                 end
             case('Axis:Zone_m_star_vs_Ustar') %THE post-treatement grafic
                 if(strcmp(MODE,'Mode:Both')==1)
@@ -263,23 +263,24 @@ if(strcmp(AXIS,'Axis:NavroseMittal2016LockInRe60M20')==1||strcmp(AXIS,'Axis:Navr
     %Column 1: Ustar; %Column 2:Structure MODE; %Column 3: Fluid MODE
     switch MODE
         case('Mode:Structure')
-            Legend{end+1}='NavroseMittal Structure';
-            Legend{end+1}='Zhang Structure';
+            Legend{end+1}='Error_0.02/NavroseMittal Structure';
+            Legend{end+1}='Error_0.02/Zhang Structure';
             subplot(2,1,1);hold on
             plot(Navrose_real.data(:,1),Navrose_real.data(:,3),'--*');
             plot(1./Zhang_real.data(:,1),Zhang_real.data(:,3),'--*'); %Because it is in FN x-axe
             subplot(2,1,2);hold on;
             plot(Navrose_imag.data(:,1),Navrose_imag.data(:,3),'--*');
+            plot(8,0.25); %plot toto for avoid error in legend
         case('Mode:Fluid')
-            Legend{end+1}='NavroseMittal Fluid';
+            Legend{end+1}='Error_0.02/NavroseMittal Fluid';
             subplot(2,1,1);hold on
             plot(Navrose_real.data(:,1),Navrose_real.data(:,2),'--*');
             subplot(2,1,2);hold on;
             plot(Navrose_imag.data(:,1),Navrose_imag.data(:,2),'--*');
         case('Mode:Both')
             subplot(2,1,1);hold on
-            Legend{end+1}='NavroseMittal Structure';
-            Legend{end+1}='NavroseMittal Fluid';
+            Legend{end+1}='Error_0.02/NavroseMittal Structure';
+            Legend{end+1}='Error_0.02/NavroseMittal Fluid';
             plot(Navrose_real.data(:,1),Navrose_real.data(:,3),'--*');
             plot(Navrose_real.data(:,1),Navrose_real.data(:,2),'--*');
             subplot(2,1,2);hold on;

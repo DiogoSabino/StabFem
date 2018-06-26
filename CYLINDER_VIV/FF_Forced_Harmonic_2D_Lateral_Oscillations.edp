@@ -124,7 +124,7 @@ else//Loop for different OMEGA values
 		vfStokes;
 
 		Lift(i) = Portance(u,"A");
-		cout << "The lift is:" << Lift << endl;
+		cout << "The lift is:" << Lift(i) << endl;
 		Momentum(i) = VmomentC'*ux[]; //A refaire proprement
 	}
 	

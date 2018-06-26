@@ -385,11 +385,19 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 		cout << " Estimated eigenvalue sigma = " << EVCalculated[0] << endl;
 	}; // END ITERATION LOOP
 
-	Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
-	modex[] = 1/NormU[].max*modex[];
-	modeY = 1/NormU[].max*modeY;	
-	modeV = 1/NormU[].max*modeV;
-	modeA = 1/NormU[].max*modeA;
+	//Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
+	//modex[] = 1/NormU[].max*modex[];
+	//modeY = 1/NormU[].max*modeY;	
+	//modeV = 1/NormU[].max*modeV;
+	//modeA = 1/NormU[].max*modeA;
+
+	complex NormU = 2.*modeY; //je multiplie par 2 por faire 0.5 sur na normalization
+	modex[] = 1/NormU*modex[];
+	modeY = 1/NormU*modeY;	
+	modeV = 1/NormU*modeV;
+	modeA = 1/NormU*modeA;
+
+
 
 	/*if(directadjoint==2){sigma=conj(sigma);};  */
  	// renormalization by modeV

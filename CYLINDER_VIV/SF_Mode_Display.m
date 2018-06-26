@@ -79,7 +79,7 @@ for element= 1: size(all_paths,2)
             disp(['Using shift of: ' num2str(shift)])
             [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',str2num(char(m_star))*pi/4,'DAMPING',0,'Frame','R');
             %Ploting the mode (this function returns the mode, so you can also threat it outside)
-            plotFF(em,'ux1');
+            %plotFF(em,'ux1');
     end
 end
 

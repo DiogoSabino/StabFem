@@ -77,6 +77,13 @@ macro Lift(nu,u1,u2,p)
 	int1d(th,2,21,22,23)(2*p*N.y)
 	+int1d(th,2,21,22,23)( -nu*2*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x))
 	)
+
+//EOM
+macro LiftMinusOne(nu,u1,u2,p)   
+	(
+	int1d(th,2,21,22,23)(-2*p*N.y)
+	+int1d(th,2,21,22,23)( nu*2*(2*dy(u2)*N.y+(dx(u2)+dy(u1))*N.x) )
+	)
 // WARNING : HERE IT IS Lift FORCE
 
 macro Drag(nu,u1,u2,p)   
@@ -115,15 +122,22 @@ cout << "Drag force of guess mean flow : " << Drag(1/Re,ubx,uby,ubp) << endl;
 //int check=exec("head -1 "+ffdatadir+"SelfConsistentMode_guess.txt");
 //cout << "Check :"<<  check<< endl;
 
+complex modeY, modeV, modeA;
+
 {
 cout << "Starting from mode in file SelfConsistentMode_guess.txt" << endl;
 ifstream cbin(ffdatadir+"SelfConsistentMode_guess.txt");
-cbin >> u1x[] >> ReM >> sigmaM >> omegaM; 
-cout << " 			omega of the starting field = " << omegaM<< endl;
+cbin >> u1x[] >> modeY >> modeV >> modeA >> ReM >> sigmaM >> omegaM;  //New parameters in VIV
+
+
+
+
+
+cout << " omega of the starting field = " << omegaM << endl;
 cout << "           Fy of the starting field : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 cout << "   		Energy-Norm (A) of starting field (complex macro) : " << EnergyNorm(u1)/sqrt(2) << endl;	
-[u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
-[u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)];  
+//[u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
+//[u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)];  
 cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s) << endl << endl;
 }
 
@@ -136,7 +150,10 @@ cout << " -->  omegaguess = " << omega << endl;
 cout << " Choice of sigma1 : [0 for Harmonic balance ; not zero for self-consistent] " << endl; 
 cin >> sigma1 ;
 cout << " --> sigma1 = " << sigma1 << endl;
+sigma1=0;
 
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 string normalisation;
 cout << " Normalisation choice ?  [none, L or E]" << endl;
 cin >> normalisation ;
@@ -156,7 +173,28 @@ else if(normalisation=="L")
 		cout << "Fy before renormalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = Liftguess/modenorm*u1x[]; // normalize so that lift is 0.5 and Cy 1
+		modeY=Liftguess/modenorm*modeY;
+		modeV=Liftguess/modenorm*modeV;
+		modeA=Liftguess/modenorm*modeA;
 		cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		cout << "Structure mode values: " << modeY << " " << modeV << " " << modeA << endl;	
+		cout << "   ### Energy-norm A = " << EnergyNorm(u1)/sqrt(2) << endl << endl;
+	}
+else if(normalisation=="Y")
+	{
+		real Yguess;
+		cout << "Value of displacement Y for renormalisation ?"<< endl;
+		cin >> Yguess;
+		cout << "  -> Y = " << Yguess  << endl;
+
+		//cout << "Fy before renormalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		complex modenorm = modeY;
+		u1x[] = Yguess/modenorm*u1x[]; // normalize so that Yc = 1 
+		modeY=Yguess/modenorm*modeY;
+		modeV=Yguess/modenorm*modeV;
+		modeA=Yguess/modenorm*modeA;
+		cout << "Fy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
+		cout << "Structure mode values: " << modeY << " " << modeV <<  " " << modeA << endl;	
 		cout << "   ### Energy-norm A = " << EnergyNorm(u1)/sqrt(2) << endl << endl;
 	}	
 else if(normalisation=="E")
@@ -169,30 +207,54 @@ else if(normalisation=="E")
 		cout << "Energy-norm before renormalisation : " << EnergyNorm(u1)/sqrt(2) << endl;
 		complex modenorm = Lift(1/Re,u1x,u1y,u1p);
 		u1x[] = 1/modenorm*u1x[]; // first normalize so that imag part of lift is zero
+		modeY=1/modenorm*modeY;
+		modeV=1/modenorm*modeV;
+		modeA=1/modenorm*modeA;
 		modenorm = EnergyNorm(u1)/sqrt(2);
 		u1x[] = Eguess/modenorm*u1x[]; // then normalize so that Energy-norm is specified value
-		cout << "Energy-norm after renarmalisation : " << EnergyNorm(u1)/sqrt(2) << endl;	
+		modeY=Eguess/modenorm*modeY;
+		modeV=Eguess/modenorm*modeV;
+		modeA=Eguess/modenorm*modeA;
+		cout << "Energy-norm after renarmalisation : " << EnergyNorm(u1)/sqrt(2) << endl;
+		cout << "Structure mode values: " << modeY << modeV <<  modeA << endl;	
 		cout << "Cy after renarmalisation : " << Lift(1/Re,u1x,u1y,u1p) << endl;
 	};
 
+////////////////////////////////////////////////////////////////////////////////
+// Assign Values to Initialization       ///////////////////////////////////////
 
 [u0x,u0y,u0p] = [ubx,uby,ubp];
 [u1cx,u1cy,u1cp] = [real(u1x), real(u1y), real(u1p)]; 
 [u1sx,u1sy,u1sp] = [-imag(u1x), -imag(u1y), -imag(u1p)]; 
 cout << "   		Energy-Norm (A) of starting field (real macro) : " << EnergyNormCS(u1c,u1s) << endl << endl;
 
-int StateVectorSize=u0x[].n+5;
+y1c=real(modeY);
+y1s=-imag(modeY);
+yy1c=real(modeV);
+yy1s=-imag(modeV);
 
-//READ AMPLITUDES !!!!!!!!!!!!
-y1c=0.;
-y1s=0.;
-yy1c=0.;
-yy1s=0.;
+int SVectorSize=u0x[].n+5;
 
-//READ STIFFNESS!!!!!!!!!!!
-real STIFFNESS=5.;
-//READ DAMPING!!!!!!!!!!!!!!!!
-real DAMPING=0.;
+////////////////////////////////////////////////////////////////////////////////
+//Reading STIFFNESS for VIV case         ///////////////////////////////////////
+real STIFFNESS;
+cout << "Value of STIFFNESS: "<< endl;
+cin >> STIFFNESS;
+cout << "  -> STIFFNESS = " << STIFFNESS << endl;
+
+////////////////////////////////////////////////////////////////////////////////
+//Reading MASS for VIV case          ///////////////////////////////////////////
+real MASS;
+cout << "Value of MASS: "<< endl;
+cin >> MASS;
+cout << "  -> MASS = " << MASS << endl;
+
+////////////////////////////////////////////////////////////////////////////////
+//Reading DAMPING for VIV case       ///////////////////////////////////////////
+real DAMPING;
+cout << "Value of DAMPING: "<< endl;
+cin >> DAMPING;
+cout << "  -> DAMPING = " << DAMPING << endl;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -215,16 +277,17 @@ varf NLOpF1([du0x,du0y,du0p],[vx,vy,vp]) =
 varf NLOpF2([du1cx,du1cy,du1cp],[vx,vy,vp]) =
 	int2d(th)( NSL(nu,u0,u1c,v) )
 	- int2d(th) ( omega * (u1sx*vx+u1sy*vy ) )
- 	- int2d(th) ( omega * (yy1s*vy ) )			//DiogoVIV metre des eps sur vx et vp	..........		
-	+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");
-	
+ 	- int2d(th) ( omega * (yy1s*vy ) )			//DiogoVIV 	
+	+ Boundaryconditions(du1cx,du1cy,vx,vy,"A");			//DiogoVIV 	
+
 // block 3 : base-flow effect on imag part of eigenmode			
 varf NLOpF3([du1sx,du1sy,du1sp],[vx,vy,vp]) =
 	int2d(th)( NSL(nu,u0,u1s,v)  )              
 	+ Boundaryconditions(du1sx,du1sy,vx,vy,"A")
-	+ int2d(th) ( omega * (u1cx*vx+u1cy*vy ) )
-	+ int2d(th) ( omega * (yy1c*vy) ); 			//DiogoVIV metre des eps sur vx et vp .........
-
+	+ int2d(th) ( omega * (u1cx*vx+u1cy*vy ) );
+	+ int2d(th) ( omega * (yy1c*vy) ); 	//DiogoVIV
+		
+		
 // All the other blocks are constructed directly in the assembly phase, namely fix the phase with imag(lift)
 
 cout << " Defining operators for nonlinear term... DONE" << endl;
@@ -271,6 +334,9 @@ varf LinOp23([du1sx,du1sy,du1sp],[vx,vy,vp]) =
 // block 2-5: 0
 // block 2-6: 0
 // block 2-7: -omega
+varf LinOp27([du0x,du0y,du0p],[vx,vy,vp])=	// this is to be multiplied by	yy1s					
+	int2d(th)( -omega*vy);  		//eps por vx ????
+
 
 // block 2-8: effect of domega on eigenmode-real equations
 varf LinOp28([du0x,du0y,du0p],[vx,vy,vp])=	// this is to be multiplied by domega						
@@ -294,7 +360,8 @@ varf LinOp33([du1sx,du1sy,du1sp],[vx,vy,vp]) =
 // block 3-4: 0
 // block 3-5: 0
 // block 3-6: omega
-
+varf LinOp36([du0x,du0y,du0p],[vx,vy,vp])						 		
+	= int2d(th)(omega*vy);
 // block 3-7: 0
 
 // block 3-8 : effect of domega on eigenmode-imag equations
@@ -305,8 +372,8 @@ varf LinOp38([du0x,du0y,du0p],[vx,vy,vp])
 /////////////////////////////////////////////////////////////////////////////////
 // bloc 4-1:0
 // bloc 4-2:
-varf LinOp42([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
-	= -Lift(1/Re,du1cx,du1cy,du1cp);
+varf LinOp42([vx,vy,vp],[du1cx,du1cy,du1cp])									//ATTENTION inversion
+	= LiftMinusOne(1/Re,du1cx,du1cy,du1cp); //FALTA SINAL DE MENOS
 
 // bloc 4-3:0
 // bloc 4-4: STIFFNESS
@@ -314,23 +381,23 @@ varf LinOp42([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
 // bloc 4-6: DAMPING
 // bloc 4-7: MASS*omega
 // bloc 4-8:
-varf LinOp48([du1sx,du1sy,du1sp],[vx,vy,vp])								
-	= int2d(th)(MASS*yy1s*vy); //mettre un eps pour les autres fonctions test ??
+//varf LinOp48([du1sx,du1sy,du1sp],[vx,vy,vp])		 errado						
+//	= int2d(th)(MASS*yy1s*vy);
 
 /////////////////////////////////////////////////////////////////////////////////
 // bloc 5-1: 0
 // bloc 5-2: 0
 // bloc 5-3:
 varf LinOp53([vx,vy,vp],[du1sx,du1sy,du1sp])									//ATTENTION inversion
-	= -Lift(1/Re,du1sx,du1sy,du1sp);
+	= LiftMinusOne(1/Re,du1sx,du1sy,du1sp);
 
 // bloc 5-4: 0
 // bloc 5-5: STIFFNESS
 // bloc 5-6:MASS*omega
 // bloc 5-7: DAMPING
 // bloc 5-8:
-varf LinOp58([du1sx,du1sy,du1sp],[vx,vy,vp])								
-	= int2d(th)(-MASS*yy1c*vy); //mettre un eps pour les autres fonctions test ??
+//varf LinOp58([du1sx,du1sy,du1sp],[vx,vy,vp])	errado							
+//	= int2d(th)(-MASS*yy1c*vy); //mettre un eps pour les autres fonctions test ??errado
 
 /////////////////////////////////////////////////////////////////////////////////
 // bloc 6-1: 0
@@ -382,20 +449,19 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 	//Construct the RHS
 	cout << "Constructing rhs... " << endl;
 
-	real[int] RHSF1(StateVectorSize), RHSF2(StateVectorSize), RHSF3(StateVectorSize); 
-	RHSF1 = NLOpF1(0,XXMh);
-	RHSF2 = NLOpF2(0,XXMh);
-	RHSF3 = NLOpF3(0,XXMh);
-	real[int] RHSF4 (StateVectorSize);	
-	real RHSF4 = [-Lift(1/Re,u1cx,u1cy,u1cp),STIFFNESS,0,DAMPING,MASS*omega,0]; //Line cossine of cylinder equation
-	real[int] RHSF5 (StateVectorSize);
-	real RHSF5 = [-Lift(1/Re,u1sx,u1sy,u1sp),0,STIFFNESS,-MASS*omega,DAMPING,0]; //Line sinus of cylinder equation
-	real[int] RHSF6 (StateVectorSize);
-	real RHSF6 = [0,0,0,omega,0,0,1,0]; //Line cos of dispacement/velocity relation
-	real[int] RHSF7 (StateVectorSize);
-	real RHSF7 = [0,0,0,0,-omega,1,0,0]; //Line sin of dispacement/velocity relation
-	real[int] RHSF8 (StateVectorSize);
-	real RHSF8 = [Lift(1/Re,u1sx,u1sy,u1sp),0,0,0,0,0,0,0]; //Line phase correction
+	real[int] RHSF1(u0x[].n),RHSF2(u0x[].n),RHSF3(u0x[].n);
+        real RHSF4,RHSF5,RHSF6,RHSF7,RHSF8; 
+
+
+	RHSF1 = NLOpF1(0,XXMh) ;
+	RHSF2 = NLOpF2(0,XXMh);//+NLOpF2bis(0,XXMh);
+        RHSF3 = NLOpF3(0,XXMh);//+NLOpF3bis(0,XXMh);
+
+	RHSF4 = -Lift(1/Re,u1cx,u1cy,u1cp)+STIFFNESS*y1c+DAMPING*yy1c+MASS*omega*yy1s; //Line cossine of cylinder equation
+	RHSF5 = -Lift(1/Re,u1sx,u1sy,u1sp)+STIFFNESS*y1s-MASS*omega*yy1c+DAMPING*yy1s; //Line sinus of cylinder equation
+	RHSF6 = omega*y1c+yy1s; //Line cos of dispacement/velocity relation
+	RHSF7 = -omega*y1s+yy1c; //Line sin of dispacement/velocity relation
+	RHSF8 = Lift(1/Re,u1sx,u1sy,u1sp); //Line phase correction
 	
 	real[int] RHS = [RHSF1, RHSF2, RHSF3, RHSF4, RHSF5, RHSF6, RHSF7, RHSF8];		
 	cout <<  " max RHS : " << RHSF1.l2 <<  ", " << RHSF2.l2 <<  ", " << RHSF3.l2 <<  ", " << RHSF4 << ", " << RHSF5 <<", " << RHSF6 <<", " << RHSF7 <<", " << RHSF8 <<endl;
@@ -413,6 +479,7 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 		matrix matLinOp23 = LinOp23(XXMh,XXMh);
 		//Zero for 24 to 26
 		//27: -omega
+		real[int] matLinOp27 = LinOp27(0,XXMh);
 		real[int] matLinOp28 = LinOp28(0,XXMh);
 
 		////////////////////////////////Line 3:
@@ -421,6 +488,7 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 		matrix matLinOp33 = LinOp33(XXMh,XXMh);
 		//Zero for 34 and 35 and 37
 		//36: omega
+		real[int] matLinOp36 = LinOp36(0,XXMh);
 		real[int] matLinOp38 = LinOp38(0,XXMh);
 
 		////////////////////////////////Line 4:
@@ -430,7 +498,7 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 		//45: 0
 		//46: DAMPING
 		//47: MASS*omega
-		real[int] matLinOp48 = LinOp48(0,XXMh);		
+		//real[int] matLinOp48 = LinOp48(0,XXMh); errado		
 
 		////////////////////////////////Line 5:
 		//51: 0
@@ -440,7 +508,7 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 		//55: STIFFNESS
 		//56: MASS*omega
 		//57: DAMPING
-		real[int] matLinOp58 = LinOp58(0,XXMh);
+		//real[int] matLinOp58 = LinOp58(0,XXMh); errado
 
 		////////////////////////////////Line 6:
 		//61,62,63:0
@@ -462,14 +530,15 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 
 		////////////////////////////////MATRIX:
 		matrix LinOp =	[	[	matLinOp11,	 matLinOp12,	 matLinOp13,		0,		0,	          0,	         0,		0 ],
-					[	matLinOp21,	 matLinOp22,	 matLinOp23,		0,		0,	          0,	    -omega,	matLinOp28],
-					[	matLinOp31,	 matLinOp32,	 matLinOp33,		0,		0,	      omega,	         0,  	matLinOp38],
-					[		 0,	matLinOp42',		  0,	STIFFNESS,		0,	    DAMPING,	MASS*omega,  	matLinOp48],
-					[		 0,		  0,	matLinOp53',		0,	STIFFNESS,	-MASS*omega,	   DAMPING,  	matLinOp58],
+					[	matLinOp21,	 matLinOp22,	 matLinOp23,		0,		0,	          0,    matLinOp27,	matLinOp28],
+					[	matLinOp31,	 matLinOp32,	 matLinOp33,		0,		0,	 matLinOp36,	         0,  	matLinOp38],
+					[		 0,	matLinOp42',		  0,	STIFFNESS,		0,	    DAMPING,	MASS*omega,  	 MASS*yy1s],
+					[		 0,		  0,	matLinOp53',		0,	STIFFNESS,	-MASS*omega,	   DAMPING,  	-MASS*yy1c],
 					[		 0,		  0,		  0,	    omega,		0,		  0,	   	 1,  	       y1c],
 					[		 0,		  0,		  0,	        0,	   -omega,		  1,	   	 0,  	      -y1s],
-					[		 0,		  0,	matLinOp83',	        0,	  	0,		  0,	   	 0,  	       	 0],
+					[		 0,		  0,	matLinOp83',	        0,	  	0,		  0,	   	 0,  	       	 0]
 				];
+
 	cpu2=clock();
 	cout << endl << "Time consumed to assembling matrix: " << cpu2-cpu1 << " seconds" <<  endl << endl;		
 	cout << " Assembling matrix... done" << endl;
@@ -499,17 +568,18 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 
 
 
-	cout << endl << "   ### ||du0||, ||du1,r||, ||du1,i||, dy1c, dy1s, ddy1c, ddy1s, domega : " << du0x[].l2 
-			<< " " << du1cx[].l2 << " " << du1sx[].l2 << " " << dy1c <<" " <<  dy1s << " " <<  ddy1c << " " <<  ddy1s << " " <<  -domega << endl;
+	cout << endl << "   ### ||du0||, ||du1,r||, ||du1,i||, dy1c, dy1s, dyy1c, dyy1s, domega : " << du0x[].l2 
+			<< " " << du1cx[].l2 << " " << du1sx[].l2 << " " << dy1c <<" " <<  dy1s << " " <<  dyy1c << " " <<  dyy1s << " " <<  -domega << endl;
 	dXX = du0x[].l2+du1cx[].l2+du1sx[].l2+abs(dy1c+ dy1s+ dyy1c+ dyy1s+domega);
 	
 	cout << "   ### ||u0||, ||u1,r||, ||u1,i|| : " << u0x[].l2 
 			<< " " << u1cx[].l2 << " " << u1sx[].l2  << endl;
-
+	cout << "   ### ||y1c||, ||y1s||, ||yy1c||, ||yy1s||  : " << y1c << " " << y1s << " " << yy1c <<" " << yy1s  << endl;
 	
 	cout <<  "   ### omega = " << omega << endl;
 	cout << "   ### Energy-norm of perturbation A = " << EnergyNormCS(u1c,u1s)  << endl;	
 	cout << " 	### Fy = " << Lift(1/Re,u1cx,u1cy,u1cp) << endl ; 
+	cout << "________________________________________________________________" << endl;
 	//plot(u0x,cmm="mean flow approximation iteration "+iter, fill=1,value=1,wait=0);
 
 	iter++;
@@ -549,11 +619,14 @@ else
 
 	[u1x,u1y,u1p] = [u1cx-1i*u1sx,u1cy-1i*u1sy,u1cp-1i*u1sp]; 
 
+//cbin >> u1x[] >> modeY >> modeV >> modeA >> ReM >> sigmaM >> omegaM;  //New parameters in VIV
+
+
 	{
  		ofstream file(ffdatadir+"SelfConsistentMode.txt");
  	  	file << u1x[] ;	
- 	  	file << endl << endl << Re << endl
- 		  	<< endl << sigma1 << "   " << omega  << endl;
+ 	  	file << endl << endl << modeY << endl << endl << sigma1 << "   " << omega  << endl;
+ 	  	file << endl << endl << Re << endl << endl << sigma1 << "   " << omega  << endl;
 	};
 
 

@@ -50,10 +50,11 @@ switch save_option
             disp(['Saving image for the selected data with the following name: ' filename{1}]);
             k = strfind(path{1},'/');
             path{1}=insertAfter(path{1},k(2),'Post_Treatement/');
+            disp(path{1})
             if(exist(path{1})~=7&&exist(path{1})~=5) %je n'est pas compris tres bien cette commande; a voir ensemble apres  %I read in internet that the '-p'(stands for parent) not always work in every shell...
-                %system(['mkdir -p ' path{1}]); %In linux
-                path{1} = strrep(path{1},'/','\'); %In windows
-                system(['mkdir ' path{1}]); %In windows
+                system(['mkdir -p ' path{1}]); %In linux
+                %path{1} = strrep(path{1},'/','\'); %In windows
+                %system(['mkdir -p ' path{1}]); %In windows
             end
             H=findobj(gcf, 'type', 'line');
             x_data=get(H,'xdata');

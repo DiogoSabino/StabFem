@@ -15,15 +15,15 @@ plot(Strouhal_number,real(Ltab),'-o','MarkerSize',2);
 title('Re (Z) as function of omega');
 %xlabel('\omega/\omega_0','FontSize',15);ylabel('\Re (Z)','FontSize',15);
 xlabel('St','FontSize',15);ylabel('\Re (Z)','FontSize',15);
-axis([0.06 0.18 -1 1.5]) %Case general
+%axis([0.06 0.18 -1 1.5]) %Case general
 %axis([0.097 0.113 -0.01 0.09]) %Case Rec1
-axis([0.075 0.165 -1 1]) %Case Rec3
+%axis([0.075 0.165 -1 1]) %Case Rec3
 
 subplot(2,3,2);hold on
 plot(Strouhal_number,imag(Ltab),'-o','MarkerSize',2);
 title('Im (Z) as function of omega');
 xlabel('St','FontSize',15);ylabel('\Im (Z)','FontSize',15);
-axis([0.06 0.18 -1 2.5])
+%axis([0.06 0.18 -1 2.5])
 %axis([0.093 0.099 -0.01 0.025]) %Case Rec2
 
 subplot(2,3,3);hold on
@@ -31,30 +31,30 @@ subplot(2,3,3);hold on
 plot(Strouhal_number,real(1./Ltab),'-o','MarkerSize',2);
 title('Re (Y) as function of omega');
 xlabel('St','FontSize',15);ylabel('\Re (Y)','FontSize',15);
-axis([0.07 0.13 -6 6])
+%axis([0.07 0.13 -6 6])
 
 subplot(2,3,4);hold on
 plot(Strouhal_number,imag(1./Ltab),'-o','MarkerSize',2);
 title('Im (Y) as function of omega');
 xlabel('St','FontSize',15);ylabel('\Im (Y)','FontSize',15);
-axis([0.07 0.13 -4 4])
+%axis([0.07 0.13 -4 4])
 
 subplot(2,3,5);hold on
 plot(real(Ltab),imag(Ltab),'-o','MarkerSize',2);
 title('Nyquist : Z(omega) in the complex plane');
 xlabel('\Re (Z)','FontSize',15);ylabel('\Im (Z)','FontSize',15);
-axis([-1 1.5 -1 2.5])
+%axis([-1 1.5 -1 2.5])
 %axis([-0.01 0.09 0.55 1.25]) %Case Rec1
 %axis([-0.15 0.15 -0.01 0.02]) %Case Rec2
-axis([-1.5 1.5 -3 4]) %Case Rec3
+%axis([-1.5 1.5 -3 4]) %Case Rec3
 
 subplot(2,3,6);hold on
 plot(real(1./Ltab),imag(1./Ltab),'-o','MarkerSize',2);
 title('AntiNyquist : Y(omega) in the complex plane');
 xlabel('\Re (Y)','FontSize',15);ylabel('\Im (Y)','FontSize',15);
-axis([-0.5 5 -2 3.5])
+%axis([-0.5 5 -2 3.5])
 %axis([-10 10 -1.4 0.4]) %Case Rec2
-axis([-0.07 0.07 -0.15 0.15]) %Case Rec3
+%axis([-0.07 0.07 -0.15 0.15]) %Case Rec3
 
 %% Finish Grafics (Save is optional, uncomment for saveas)
 %Detect if all Re were plotted
@@ -68,7 +68,7 @@ if numel(get(gca,'Children'))==numel(Re_tab)
         legend(Legend,'Location','southwest','AutoUpdate','off');
         %legend('Re=20', 'Re=30', 'Re=40', 'Re=50', 'Re=60','Location','southwest')
         grid on;
-        plot(-30:30:30,[0 0 0],'k','LineWidth',0.1)
+        %plot([0 2],[0 0],'k','LineWidth',0.1)
         %saveas(gca,strcat('./DATA_SF_CYLINDER/',int2str(figure_number),'.png'));
     end
 end
