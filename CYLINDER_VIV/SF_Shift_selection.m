@@ -34,8 +34,11 @@ switch modename{1}
             elseif(m_star>=0.5&&m_star<1)
                 RealShift=-0.05; ImagShift=0.8;
                 
-            elseif(m_star>=1&&m_star<2)
+            elseif(m_star>=1&&m_star<2&&Re<45)
                 RealShift=-0.13; ImagShift=1.1;
+            
+            elseif(m_star>=1&&m_star<2&&Re>45)
+                RealShift=-0.04; ImagShift=1.15;                
                 
             elseif(m_star>=2&&m_star<3)
                 RealShift=-0.1; ImagShift=1.45;

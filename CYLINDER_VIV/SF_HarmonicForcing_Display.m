@@ -50,7 +50,7 @@ xlabel('\Re (Z)','FontSize',15);ylabel('\Im (Z)','FontSize',15);
 
 subplot(2,3,6);hold on
 plot(real(1./Ltab),imag(1./Ltab),'-o','MarkerSize',2);
-title('AntiNyquist : Y(omega) in the complex plane');
+title('AntiNyquist : G(omega) in the complex plane');
 xlabel('\Re (Y)','FontSize',15);ylabel('\Im (Y)','FontSize',15);
 %axis([-0.5 5 -2 3.5])
 %axis([-10 10 -1.4 0.4]) %Case Rec2

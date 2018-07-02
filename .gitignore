@@ -15,7 +15,10 @@
 #...
 
 	#Files from SOURCES_FREEFEM
-#...
+SOURCES_FREEFEM/Stab2D_VIVantigoooooooooooo.edp
+
+	#Files from Article
+ARTICLE_STABFEM/*
 
 	#Files from CYLINDER
 CYLINDER/Cylinder_*
@@ -23,25 +26,19 @@ CYLINDER/WORK/
 
 	#Files from CYLINDER_VIV (D.Sabino files)
 CYLINDER_VIV/Final_results*
+CYLINDER_VIV/Final_Results*
+CYLINDER_VIV/Latex_data/
 CYLINDER_VIV/WORK/
 CYLINDER_VIV/WORK_copie_FORCED_PROBLEM/
 CYLINDER_VIV/General_images/
 CYLINDER_VIV/Navrose_Data/
 CYLINDER_VIV/Stab2D_VIVbis.edp
-SOURCES_FREEFEM/Stab2D_VIVantigoooooooooooo.edp
+CYLINDER_VIV/FOLDER_TOTO/
+CYLINDER_VIV/TRASH/
+CYLINDER_VIV/Impedance_Treatement/
+CYLINDER_VIV/Modes_Tecplot/
 
-
-
-
-
-
-
-
-
-
-
-
-
+ZOLD_CYLINDER_VIV/
 
 
 

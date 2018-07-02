@@ -14,62 +14,33 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Mesh: creation and convergence using adapt mesh
-%clear all
-close all
-global ffdataharmonicdir verbosity
-run('../SOURCES_MATLAB/SF_Start.m');
+global  verbosity ffdatadir
 
 %CHOOSE the domain parameters:
 domain_parameters=[-50 50 50];
-disp_info=[' GENERATING  MESH :[' num2str(domain_parameters(1)) ':' num2str(domain_parameters(2)) ']x[0:' num2str(domain_parameters(3)) ']'];
-disp(' ');  disp(disp_info); disp(' ');
-verbosity=10;
-baseflow=SF_Init('Mesh_Cylinder.edp', domain_parameters);
 
-baseflow=SF_BaseFlow(baseflow,'Re',1);
-baseflow=SF_BaseFlow(baseflow,'Re',10);
-baseflow=SF_BaseFlow(baseflow,'Re',60);
+[baseflow]= SF_MeshGeneration(domain_parameters);
 
-%fig_mesh=plotFF(baseflow,'mesh'); %pause;
-%set(fig_mesh, 'HandleVisibility', 'off'); %IMFT just have 3 licences, so...
-
-disp(' ');disp('ADAPTING MESH FOR RE=60 ');disp(' ');
-
-baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
-
-%plotFF(baseflow,'mesh');%pause(0.1);
-baseflow=SF_BaseFlow(baseflow,'Re',60); % not needed, I think
-
-disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
-%Mesh adaptation to a fluid mode
-[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.02);
-%plotFF(baseflow,'mesh');%pause(0.1);
-%[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
-%plotFF(baseflow,'mesh');%pause(0.1);
-%[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01); 
-%plotFF(baseflow,'mesh');%pause(0.1);
-%baseflow=SF_Split(baseflow);
-plotFF(baseflow,'mesh');%pause(0.1);
+%% Save Data
 
 %CHOOSE folder for saving data:
 General_data_dir='./Final_Results_v20/'; %a array of char
 
 domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
 %CHOOSE the name of the folder mesh: (It's good to choose the name because we can adapt mesh during)
-mesh_identity={'Adapt_mode_Hmax10_InterError_0.02/'};
+mesh_identity={'Adapt_mode_Hmax1_InterError_0.02/'};
 savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 %savedata_dir=[General_data_folder domain_identity mesh_identity];
 
 %% Computation: Spectrum
 %Parameters' Definition
 %CHOOSE the Re to test:
-Re_tab=[21]; verbosity=10;
+Re_tab=[40]; verbosity=10;
 for Re=Re_tab
     baseflow = SF_BaseFlow(baseflow,'Re',Re);
     
     %CHOOSE the m_star to test:
-    m_star_tab=[100];
+    m_star_tab=[70];
     
     for m_star=m_star_tab
         mass=m_star*pi/4;
@@ -78,9 +49,10 @@ for Re=Re_tab
         %U_star=[1:0.05:4]; %m=0.05
         %U_star=[2:0.1:7]; %m=0.2,0.1
         %U_star=[3:0.1:7]; %m=1...0.8
-        U_star=[3:0.2:6.5 6.5:0.05:11];
-        %U_star=[11:0.1:20];%
-       
+        U_star=[3 3.05 3.1 3.2:0.2:6.5 6.5:0.05:11];
+        %U_star=[11.1:0.2:20];%
+        %U_star=[20:0.2:28];%
+        
         Stiffness_table=pi^3*m_star./((U_star).^2);
         
         % Spectrum search: See spectrum if wanted, for discover the shift
@@ -104,7 +76,7 @@ for Re=Re_tab
         %modename={'03modeFLUID'};
         
         [RealShift, ImagShift]=SF_Shift_selection(modename,Re,m_star);
-        sigma_tab=[];
+        sigma_tab=[]; %RealShift=0.005; ImagShift=0.64;
         nev=1; %Normally if's just one, but if shift is wrong, it helps put more
         
         [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('modefollow',baseflow,sigma_tab,RealShift,ImagShift,Stiffness_table,mass,nev);
@@ -117,14 +89,16 @@ end
 %% EigenValue: Data Treatement 
 
 %CHOOSE Data to plot: (Be sure that data exists)
-%NOT FULLY OPERATIONAL YET
 General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
-domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'}
-mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
-folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]}; % isto funciona se forem 2 meshs ??
+domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'} %%FALTA POR O DOMAIN NO PROXIMO LOOP
+mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/','Adapt_mode_Hmax1_InterError_0.02/'};
+folder_plot={};
+for element=1:size(mesh_plot,2)
+folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
+end
 
-Re_plot=[20] ; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=[300]; % m_star for previous calculation
+Re_plot=[45] ; % Re for previous calculation; for an array: [Re1 Re2]
+m_star_plot=[70]; % m_star for previous calculation
 
 %The different data treatment options: %How to do:'Mode:-', 'Axis:-'
 %Mode:Fluid, Structure or Both
@@ -136,6 +110,7 @@ m_star_plot=[300]; % m_star for previous calculation
 
 %IF one data only is plotted
 filename=SF_Data_Treatement('Mode:Structure','Axis:spectrum',folder_plot,Re_plot,m_star_plot);
+
 
 SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
 %ELSE
@@ -160,17 +135,19 @@ m_star_plot=[20]; % m_star for previous calculation
 %%%Mode:Fluid, Structure or Both
 
 %SEE U_star available
-SF_Mode_Display('availability','Mode:Structure',0,folder_plot,Re_plot,m_star_plot,0);
+SF_Mode_Display('availability','Mode:Fluid',0,folder_plot,Re_plot,m_star_plot,0);
 
 %COMPUTE of the demanding eigenmodes
-U_star_plot=[5.4]; %put just one for now...
+U_star_plot=[8]; %put just one for now...
 baseflow = SF_BaseFlow(baseflow,'Re',Re_plot);
-[em]=SF_Mode_Display('Compute','Mode:Structure',baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
+[em]=SF_Mode_Display('Compute','Mode:Fluid',baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
 
 %Eigenmode plot reffinement
 %...to do...
+plotFF(em,'ux1.re')
 plotFF(em,'vort1')
-
+plotFF(em,'vort1.re')
+%exportFF_tecplot(em,'./Modes_Tecplot/Re60m20U8Fluid.plt')
 %Baseflow
 %plotFF(baseflow,'vort')
 %% Grafic m* vs fequency: not working yet
@@ -255,6 +232,7 @@ end
 %[baseflowC,emC]=SF_FindThreshold_VIV(baseflow,em);
 
 %% Non-linear: Harmonic Balance
+%% first try
 
 %Re near the threshold
 
@@ -272,14 +250,63 @@ shift=0+0.655i;
 YGuess=0.01;
 [meanflow,mode] = SF_SelfConsistentDirect(baseflow,em,'Yguess',YGuess,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
 
-%Not working... Falar com David...
+%% second try
+
+Re_start=45;
+baseflow = SF_BaseFlow(baseflow,'Re',Re_start);
+m_star=70;
+U_star=6.4;
+
+mass=m_star*pi/4;
+STIFFNESS=pi^3*m_star./((U_star).^2);
+
+shift=0+1i;
+[ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R');
+
+YGuess=0.2;
+Amplitude_HB=[];
+[meanflow,mode] = SF_SelfConsistentDirect(baseflow,em,'Yguess',YGuess,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
+
+%%
+%data=importFFdata(baseflow.mesh,[ffdatadir 'SelfConsistentMode.ff2m']);
+%Amplitude_HB=[Amplitude_HB data.Y];
+Amplitude_HB=[Amplitude_HB mode.Y];
 
 
 
+Re_tab=[46 48 55 60 65 70 75 80 85 90 95 100];
+%Re_tab=[65 70 75 80 85 90 95 100];
+
+for Re=Re_tab
+    [meanflow,mode]=SF_SelfConsistentDirect(meanflow,mode,'Re',Re,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
+    Amplitude_HB=[Amplitude_HB mode.Y];  
+end
+figure
+plot([45 Re_tab],real(Amplitude_HB))
+
+system(['cp ' ffdatadir 'SelfConsistentMode.ff2m ' ffdatadir 'HB_O1/HB_ModeO1_mstar70_Re100_Ustar6p4.ff2m'])
+system(['cp ' ffdatadir 'MeanFlow.ff2m ' ffdatadir 'HB_O1/MeanFlow_mstar70_Re100_Ustar6p4.ff2m'])
+%save('./WORK/HB_O1/amplitude_HBO1_untilRe100.mat','Amplitude_HB', 'Re_tab')
 
 
+%% follow at Re=100
 
-    
-    
-    
+system(['cp ' ffdatadir 'HB_O1/HB_ModeO1_mstar70_Re100_Ustar6p4.ff2m ' ffdatadir 'SelfConsistentMode.ff2m ' ])
+system(['cp ' ffdatadir 'HB_O1/MeanFlow_mstar70_Re100_Ustar6p4.ff2m ' ffdatadir 'MeanFlow.ff2m '])
+
+Re=100;
+m_star=70;
+U_star_plot=[6.1 6 5.8 5.6 5.4 5.2];
+Amplitude_varying_Ustar=Amplitude_HB(end);
+
+for U_star=U_star_plot
+    STIFFNESS=pi^3*m_star./((U_star).^2);
+    [meanflow,mode]=SF_SelfConsistentDirect(meanflow,em,'Re',Re,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
+    Amplitude_varying_Ustar=[Amplitude_varying_Ustar mode.Y];
+end
+figure
+plot([6.2 U_star_plot],real(Amplitude_varying_Ustar))
+
+%save('./WORK/HB_O1/amplitude_HBO1_varyingUstar.mat','Amplitude_varying_Ustar','U_star_plot' )
+
     

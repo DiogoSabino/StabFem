@@ -12,45 +12,17 @@
 %
 %   To give a good use of this script, run each section at a time
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Mesh creation and convergence using adapt mesh
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Mesh: creation and convergence using adapt mesh
 %clear all
-global ffdataharmonicdir verbosity
-
-close all
-run('../SOURCES_MATLAB/SF_Start.m');
-
+global ffdataharmonicdir verbosity ffdatadir
 %CHOOSE the domain parameters:
 domain_parameters=[-50 50 50];
-disp_info=[' GENERATING  MESH :[' num2str(domain_parameters(1)) ':' num2str(domain_parameters(2)) ']x[0:' num2str(domain_parameters(3)) ']'];
-disp(' ');  disp(disp_info); disp(' ');
-verbosity=10;
 
-baseflow=SF_Init('Mesh_Cylinder.edp', domain_parameters);
-baseflow=SF_BaseFlow(baseflow,'Re',1);
-baseflow=SF_BaseFlow(baseflow,'Re',10);
-baseflow=SF_BaseFlow(baseflow,'Re',60);
+[baseflow]= SF_MeshGeneration(domain_parameters);
 
-%fig_mesh=plotFF(baseflow,'mesh'); %pause;
-%set(fig_mesh, 'HandleVisibility', 'off'); %IMFT just have 3 licences, so...
-
-disp(' ');disp('ADAPTING MESH FOR RE=60 ');disp(' ');
-baseflow=SF_Adapt(baseflow,'Hmax',10,'InterpError',0.005);
-plotFF(baseflow,'mesh');%pause(0.1);
-baseflow=SF_BaseFlow(baseflow,'Re',60);
-% 
-disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
-%Mesh adaptation to a fluid mode
-[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-
-
-[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005);
-plotFF(baseflow,'mesh');%pause(0.1);
-
-
-% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
+%% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
 ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
-
 
 %% Erase previous data if mesh have change (do it manually!!)
 % Delete the data concerning the solution of the problem
@@ -61,7 +33,6 @@ while(false) % change to 'true' if you want delete all this data
     
     break % Compulsory to exit the while loop
 end
-
 
 %% Case of Harmonic Forcing Cylinder
 % NB:verbosity= 10;if simulation seems to stuck do Ctrl+C and start again;
@@ -74,29 +45,38 @@ if(exist(ffdataharmonicdir)~=7&&exist(ffdataharmonicdir)~=5)
     mysystem(['mkdir ' ffdataharmonicdir]);
 end %It's compulsory: Creation of the directory
 
-%Re_tab=20 %for testing just one value Re=20
-Re_tab=[21]; %for testing multiple values % first run
-%Re_tab=[19.5 19.6 19.7 19.8 19.9 20]; %For Re1 first try
-%i didnt use it%Re_tab=[19.8 19.9 19.91 19.92 19.95 20]; %For Re1 SECOND try
-%Re_tab=[30 30.1 30.2 30.3 30.4 30.5 32 ]% search for the 2nd crit Re2
-%Re_tab=[46 46.5 46.6 46.7 46.8 46.9 47]% search for the 3nd crit Re3
-%i didnt use it%Re_tab=[19.91 30.3] curves of the 3 Rec
+%%% First Run
+Re_tab=[26 27 28 29 31 32 33 34 36 37 38 39 41 42 43 44 48 49 51 52 53 54 56 57 58 59];
+Omega_values=[0.1:0.005:1.2];
+%%% Second Run refining where needed (primeiras figuras)
+%Re_tab=[25 35];
+%Omega_values=[0.46:0.005:0.74];
+%Re=[55];
+%Omega_values=[0.6:0.005:0.86]; %Additional values for Re=55
+%%% Third run (para curvas a 21 e 100)
+%Re=[21 40];
+%Omega_values=[0.38:0.005:0.82];
+%%
 
-Omega_values=[0.1:0.02:1.2]; % First Value; ...intermediate values ... ; Last value
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 verbosity=10; %To see all
-
 for Re=Re_tab
    baseflow=SF_BaseFlow(baseflow,'Re',Re); 
    SF_HarmonicForcing(baseflow,Omega_values);
    disp('___________________________________________________')%To separete iters
+    %Calculating derivative:
+    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+    dataRe=importFFdata(all_data_stored_file);
+    dZr=diff(2*real(dataRe.Lift));
+    dZi=diff(2*real(dataRe.Lift));
+    save([ffdataharmonicdir 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat'],'dZr','dZi');
 end
 
 %% Data treatement
 %select the desired omegas and re
 
 figure
-Re_tab=[21];
+Re_tab=[40];
 for Re=Re_tab
     %extract data from importFFdata...
     all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
@@ -281,8 +261,19 @@ end
 disp('Loop Terminated');
 disp(['Rec3=' num2str(Re)]);
 
-%% Impedance Predictions
-%See IMPEDANCE_based_predictions.m
+%% Impedance Predictions: Derivative
+%Also See IMPEDANCE_based_predictions.m
+Re_tab=[45];
+for Re=Re_tab
+    %extract data from importFFdata...
+    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+    dataRe=importFFdata(all_data_stored_file);
+    dZr=diff(2*real(dataRe.Lift));
+    dZi=diff(2*real(dataRe.Lift));
+    save([ffdataharmonicdir 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat'],'dZr','dZi');
+end
+
+
 
 %% Spectial treatement for a beautiful plot of Rec3: do it manually
 if(1==0)

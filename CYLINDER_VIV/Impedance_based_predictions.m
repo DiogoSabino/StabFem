@@ -3,7 +3,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Limit Rec1
+%% Limit Rec1 %A REFAZER
 
 global ffdataharmonicdir  ffdatadir
 
@@ -35,9 +35,9 @@ Ustar_impedance=sqrt((4*(pi^2))./(Omega_f.*(Omega_f+2./(pi.*mstar).*Zi)));
 %semilogx(mstar,Ustar_impedance);
 
 % Load data from Free case:
-DataFreeCase=load('./Impedance_Treatement/FreeCase.mat');
-m_free=DataFreeCase.Point_TAB_Rec1(2,:);
-U_free=DataFreeCase.Point_TAB_Rec1(3,:);
+FreeCase=load('./Impedance_Treatement/FreeCase.mat');
+m_free=FreeCase.Point_TAB_Rec1(2,:);
+U_free=FreeCase.Point_TAB_Rec1(3,:);
 
 %Figure
 figure;
@@ -61,27 +61,37 @@ legend('Impedance Based Predictions','Data from free Case')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%% Courbe que David demande...
-% For Re=21
+%% OLD:Courbe que David demande...
+General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
+domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1'}
+mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
+folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]};
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For Re=21
+% For m=100
 Re=21;
+mstar=100;
+
+%Load Data Forced-Case:
 all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe_total=importFFdata(all_data_stored_file);
-
-Zr=real(dataRe_total.Lift);
-Zi=imag(dataRe_total.Lift);
+%Data Forced case:
+Zr=2*real(dataRe_total.Lift);
+Zi=2*imag(dataRe_total.Lift);
 Omega_f=dataRe_total.OMEGAtab;
 
-mstar=100;
 Ustar_impedance=sqrt((4*(pi^2))./(Omega_f.*(Omega_f+2./(pi.*mstar).*Zi)));
+lambda_r_impedance=-Zr./(mstar*pi);
 
-% Load data from Free case:
-DataFreeCase=load('./Impedance_Treatement/FreeCaseRe21mstar100.mat');
-lambda_r_Free=real(DataFreeCase.DataFree_curveUstar_Re21_m100.sigma_tab);
-U_free=DataFreeCase.DataFree_curveUstar_Re21_m100.U_star;
+%Load Data Free-Case:
+FreeCase=load([folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(mstar) '/02modeSTRUCTURE_data.mat']);
+lambda_r_Free=real(FreeCase.sigma_tab);
+U_free=FreeCase.U_star;
 
+%Figures:
 figure, hold on
-plot(Ustar_impedance,-Zr./(300*pi));
+plot(Ustar_impedance,lambda_r_impedance); %0.5 é por causa da differenca L e CL
 plot(U_free,lambda_r_Free);
 plot([8.5 10.5],[0 0],'k--')
 title('Comparision Impedance-Based-Method and Free Results for Re=21');
@@ -90,30 +100,92 @@ legend('Impedance Based Predictions','Data from free Case')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % For Re=40
-
+% For m=100
 Re=40;
+mstar=100;
+
+%Load Data Forced-Case:
 all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe_total=importFFdata(all_data_stored_file);
-
-Zr=real(dataRe_total.Lift);
-Zi=imag(dataRe_total.Lift);
+%Data Forced case:
+Zr=2*real(dataRe_total.Lift);
+Zi=2*imag(dataRe_total.Lift);
 Omega_f=dataRe_total.OMEGAtab;
 
-mstar=100;
 Ustar_impedance=sqrt((4*(pi^2))./(Omega_f.*(Omega_f+2./(pi.*mstar).*Zi)));
+lambda_r_impedance=-Zr./(mstar*pi);
 
 % Load data from Free case:
-DataFreeCase=load('./Impedance_Treatement/FreeCaseRe40mstar100.mat');
-lambda_r_Free=real(DataFreeCase.DataFree_curveUstar_Re40_m100.sigma_tab);
-U_free=DataFreeCase.DataFree_curveUstar_Re40_m100.U_star;
+FreeCase=load([folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(mstar) '/02modeSTRUCTURE_data.mat']);
+lambda_r_Free=real(FreeCase.sigma_tab);
+U_free=FreeCase.U_star;
 
+%Figures:
 figure, hold on
-plot(Ustar_impedance,-Zr./(300*pi));
+plot(Ustar_impedance,lambda_r_impedance); %0.5 é por causa da differenca L e CL
 plot(U_free,lambda_r_Free);
 plot([5 20],[0 0],'k--')
 title('Comparision Impedance-Based-Method and Free Results for Re=40');
 xlabel('U^*'); ylabel('\lambda_r or Z_r');
 legend('Impedance Based Predictions','Data from free Case')
+
+%% Compare Predictions of fixed Re and mstar
+%Data location from free case:
+General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
+domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1'}
+mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
+folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]};
+
+Re=35;%21 25 35 40 45 60
+mstar=1;
+
+[Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot);
+
+%Figures:
+figure, hold on
+plot(Ustar_impedance,lambda_r_impedance); %0.5 é por causa da differenca L e CL
+plot(U_free,lambda_r_Free);
+plot(U_freeFLUID,lambda_r_FreeFLUID);
+plot(Ustar_impedance,Ustar_impedance*0,'k--');
+title(['Comparision Impedance-Based-Method and Free Results for Re=' num2str(Re)]);
+xlabel('U^*'); ylabel('\lambda_r');
+legend('Impedance Based Predictions','Data from free Case');
+
+
+%% OLD
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For Re=40
+% For m=100
+Re=40;
+mstar=1;
+
+%Load Data Forced-Case:
+all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+dataRe_total=importFFdata(all_data_stored_file);
+%Data Forced case:
+Zr=2*real(dataRe_total.Lift);
+Zi=2*imag(dataRe_total.Lift);
+Omega_f=dataRe_total.OMEGAtab;
+
+Ustar_impedance=sqrt((4*(pi^2))./(Omega_f.*(Omega_f+2./(pi.*mstar).*Zi)));
+lambda_r_impedance=-Zr./(0.5*mstar*pi);
+
+% Load data from Free case:
+FreeCase=load([folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(mstar) '/02modeSTRUCTURE_data.mat']);
+lambda_r_Free=real(FreeCase.sigma_tab);
+U_free=FreeCase.U_star;
+
+%Figures:
+figure, hold on
+plot(Ustar_impedance,lambda_r_impedance); %0.5 é por causa da differenca L e CL
+plot(U_free,lambda_r_Free);
+plot([5 20],[0 0],'k--')
+title('Comparision Impedance-Based-Method and Free Results for Re=40');
+xlabel('U^*'); ylabel('\lambda_r or Z_r');
+legend('Impedance Based Predictions','Data from free Case')
+
+
+
 
 
  %% Limit for mstar=50 as function of Re

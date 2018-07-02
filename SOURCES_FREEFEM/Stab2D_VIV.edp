@@ -185,7 +185,7 @@ varf   LNSE ([ux,uy,up],[vx,vy,q]) =
 		+ div(u)*q		//Terme 5
 		+ up*q*(eps) 		//Terme Stabilization
              )
-	+ int2d(th)( -SHIFT*(ux*vx+uy*vy+up*q*eps) ) //For taking into acound the shift in B matrix
+	+ int2d(th)( -shiftOP*(ux*vx+uy*vy+up*q*eps) ) //For taking into acound the shift in B matrix
  	+BoundaryconditionsLNSE(u,v,formulation);
 
 varf   LNSEadjointDiscrete ([ux,uy,up],[vx,vy,q]) =
@@ -193,10 +193,10 @@ varf   LNSEadjointDiscrete ([ux,uy,up],[vx,vy,q]) =
 		- Conv(v,Ub,u)		//Terme 2: 	THIS CHANGED
 		+ up*div(v)		//Terme 3
 		-2*nu*(D(u):D(v))	//Terme 4	/*Diffusion(nu,ux,uy,vx,vy)*//*
-		- div(u)*q		//Terme 5
+		+ div(u)*q		//Terme 5
 		+ up*q*(eps)		//Terme Stabilization
              )
-	+ int2d(th)( -conj(SHIFT)*(ux*vx+uy*vy+up*q*eps) ) 
+	+ int2d(th)( -shiftOP*(ux*vx+uy*vy+up*q*eps) ) 
 // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
 	+BoundaryconditionsLNSE(u,v,formulation); //DIOGO
 
@@ -208,7 +208,7 @@ varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) =
 		- div(u)*q		//Terme 5
 		+ up*q*(eps)		//Terme Stabilization
              )
-	+ int2d(th)( -conj(SHIFT)*(ux*vx+uy*vy+up*q*eps) ) 
+	+ int2d(th)( -shiftOP*(ux*vx+uy*vy+up*q*eps) ) 
 // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
 	+BoundaryconditionsLNSE(u,v,formulation); //DIOGO
 
@@ -218,11 +218,11 @@ varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) =
 matrix<complex> OPff;
 
 if(iadjoint=="D")
-{ OPff=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP = SHIFT; }
+{shiftOP = SHIFT;  OPff=LNSE(XXMh,XXMh,solver=sparsesolver); }
 else if(iadjoint=="A")
-{ OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(SHIFT); }
+{shiftOP = conj(SHIFT);  OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); }
 else if(iadjoint=="cA")
-{ OPff=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); shiftOP = conj(SHIFT); }
+{shiftOP = conj(SHIFT);  OPff=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); }
 else if(iadjoint=="S"||iadjoint=="cS") { cout << " WARNING : in this program option S will work only for nev=1" << endl; 
 
 }
@@ -237,6 +237,8 @@ varf afv([vx,vy,q],[ux,uy,up]) = Portance(u,"A");
 // effet du fluide sur la vitesse v ; correspond à la force verticale
 // WARNING : c'est un vecteur LIGNE, il faut intervertir les inconnues et les fcns tests !
 complex[int] Afv = afv(0,XXMh); // maniere de construire un vecteur COLONNE qui sera ensuite transpose
+
+if(iadjoint=="A"){ Afv = conj(Afv);};
 
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix Avf and Aaf for VIV cylinder         //////////////////////////////////////
@@ -282,6 +284,7 @@ OP = 	[
 }
 
 //else if(iadjoint=="cA")
+//...
 //else if(iadjoint=="S"||iadjoint=="cS") 
 
 
@@ -380,40 +383,42 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	
 	for (i=0; ((err>errmax)&&(i<itmax)); i++) 
 	{ // ITERATION LOOP
-		ShiftAndInvertVIV(OP,B,u0,b0,mode,EVCalculated[0],SHIFT,sigma0,err)
+		ShiftAndInvertVIV(OP,B,u0,b0,mode,EVCalculated[0],shiftOP,sigma0,err)
 		cout << " Iteration: " << i+1 << " : " << endl;
 		cout << " Estimated eigenvalue sigma = " << EVCalculated[0] << endl;
 	}; // END ITERATION LOOP
 
+	//Normalize by the mode:
 	//Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
 	//modex[] = 1/NormU[].max*modex[];
 	//modeY = 1/NormU[].max*modeY;	
 	//modeV = 1/NormU[].max*modeV;
 	//modeA = 1/NormU[].max*modeA;
 
+	//Normalize by the displacement:
 	complex NormU = 2.*modeY; //je multiplie par 2 por faire 0.5 sur na normalization
 	modex[] = 1/NormU*modex[];
 	modeY = 1/NormU*modeY;	
 	modeV = 1/NormU*modeV;
 	modeA = 1/NormU*modeA;
 
+	//Normalize by the vorticity:
 
-
-	/*if(directadjoint==2){sigma=conj(sigma);};  */
- 	// renormalization by modeV
- 	//Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
+	//Xh<complex> vort1;
+        //vort1=dy(modex)-dx(modey);
+	//Xh NormU = abs(vort1);
 	//modex[] = 1/NormU[].max*modex[];
-//	modex[] = (1./modeV)*modex[];
-//	modeY = (1./modeV)*modeY;	
-//	modeA = (1./modeV)*modeA;
-//	modeV = (1./modeV)*modeV;
+	//modeY = 1/NormU[].max*modeY;	
+	//modeV = 1/NormU[].max*modeV;
+	//modeA = 1/NormU[].max*modeA;
+
 
 	EMCalculated(:,0)=[modex[],modeY,modeV,modeA];	
 	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
 
 	if(i<itmax) // post-processing if iteration was successful
 	{	
-		WriteOutputFiles(EVCalculated,SHIFT,mode,EMCalculated,iadjoint,nev,i);
+		WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,iadjoint,nev,i);
 		/////////////////////////////////////////////////////////
 		////////THE PLOT ////////////////////////////////////////
 
@@ -421,9 +426,9 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 		cout << " Vb : " << modeV << endl;
 		//p1 realux = real(modex);
 		p1<complex> realux = modex;
-		plot(realux,fill=1,value=1);
+		plot(realux,fill=1,value=1,wait=1);
 		p1 realuy = real(modey);
-		plot(realuy,fill=1,value=1);
+		plot(realuy,fill=1,value=1,wait=1);
 	} // end of post-processing of simple shift-invert case
 
 	else{ShiftAndInvertFAIL;};// case iteration failed

@@ -16,6 +16,8 @@ for element= 1: size(folder_plot,2)
     end
 end
 
+disp(all_paths)
+
 f_subplot1=figure; % Used by all options and it has a silly name
 
 for element= 1: size(all_paths,2)
