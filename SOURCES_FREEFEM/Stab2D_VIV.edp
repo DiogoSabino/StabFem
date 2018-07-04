@@ -18,8 +18,8 @@ include "Macros_StabFem.edp";
 real Re, nu, MASS, STIFFNESS, DAMPING,shiftr,shifti;
 real zero = 0;
 complex SHIFT,shiftOP;
-string symmetry="a",iadjoint="a",formulation="a"; //initialisation
-int nev,ncv; // number of eigenvalues to compute ; Krylov Basis 							//diogo:What is this ncv?
+string symmetry="a",iadjoint="a",formulation="a", typeDA; //initialisation
+int nev,ncv; // number of eigenvalues to compute ; Krylov Basis
 real eps=1e-30;
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -138,22 +138,11 @@ macro Conv(ua,ub,v) (
 macro D(u) [[dx(u#x), .5*(dx(u#y)+dy(u#x))], [.5*(dx(u#y)+dy(u#x)), dy(u#y)]] 
 // macro for rate-of-deformation tensor
 
-//macro Diffusion(nu,ux,uy,vx,vy)  (-nu*( dx(ux)*dx(vx)+dy(ux)*dy(vx)+dx(uy)*dx(vy)+dy(uy)*dy(vy))) 
-// integration by parts of nu (v.Delta u)
-
-//macro PortanceNAVROSE(u,symmetry)
-//	int1d(th,2,21,22,23)(
-//	( 1*(symmetry=="N") + 2*(symmetry=="A") )
-//	*u#p*N.y
-//	)
-//EOM
-
 /////////////////////////////////////////////////////////////////////////////////
 ///////////  Load baseflow   ////////////////////////////////////////////////////
 ifstream cbin(ffdatadir+"BaseFlow.txt");
 cbin >> Ubx[];
 
-/////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 ////// BUILD B-MATRIX ///////////////////////////////////////////////////////////
@@ -171,6 +160,7 @@ matrix<complex> B =
 		];
 set(B,solver=sparsesolver);
 
+
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +175,7 @@ varf   LNSE ([ux,uy,up],[vx,vy,q]) =
 		+ div(u)*q		//Terme 5
 		+ up*q*(eps) 		//Terme Stabilization
              )
-	+ int2d(th)( -shiftOP*(ux*vx+uy*vy+up*q*eps) ) //For taking into acound the shift in B matrix
+	+ int2d(th)( -SHIFT*(ux*vx+uy*vy+up*q*eps) ) //For taking into acound the shift in B matrix
  	+BoundaryconditionsLNSE(u,v,formulation);
 
 varf   LNSEadjointDiscrete ([ux,uy,up],[vx,vy,q]) =
@@ -196,7 +186,7 @@ varf   LNSEadjointDiscrete ([ux,uy,up],[vx,vy,q]) =
 		+ div(u)*q		//Terme 5
 		+ up*q*(eps)		//Terme Stabilization
              )
-	+ int2d(th)( -shiftOP*(ux*vx+uy*vy+up*q*eps) ) 
+	+ int2d(th)( -conj(SHIFT)*(ux*vx+uy*vy+up*q*eps) ) 
 // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
 	+BoundaryconditionsLNSE(u,v,formulation); //DIOGO
 
@@ -208,7 +198,7 @@ varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) =
 		- div(u)*q		//Terme 5
 		+ up*q*(eps)		//Terme Stabilization
              )
-	+ int2d(th)( -shiftOP*(ux*vx+uy*vy+up*q*eps) ) 
+	+ int2d(th)( -conj(SHIFT)*(ux*vx+uy*vy+up*q*eps) ) 
 // warning that shift/eigenvalues of adjoint are complex conjugates of direct !
 	+BoundaryconditionsLNSE(u,v,formulation); //DIOGO
 
@@ -217,28 +207,21 @@ varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) =
 //Matrix A for fixed cylinder     //////////////////////////////////////////////////
 matrix<complex> OPff;
 
-if(iadjoint=="D")
-{shiftOP = SHIFT;  OPff=LNSE(XXMh,XXMh,solver=sparsesolver); }
-else if(iadjoint=="A")
-{shiftOP = conj(SHIFT);  OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); }
-else if(iadjoint=="cA")
-{shiftOP = conj(SHIFT);  OPff=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); }
-else if(iadjoint=="S"||iadjoint=="cS") { cout << " WARNING : in this program option S will work only for nev=1" << endl; 
-
-}
+cout << "TOTO1" << endl;
+//if(iadjoint=="D")	{OPff=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP=SHIFT; };
+//else if(iadjoint=="A")	{OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); }
+//else if(iadjoint=="cA")	{OPff=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); }
+//else if(iadjoint=="S"||iadjoint=="cS") { cout << " WARNING : in this program option S will work only for nev=1" << endl; }
+ 
 
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix Afv for VIV cylinder		////////////////////////////////////////////
-varf afv([vx,vy,q],[ux,uy,up]) = Portance(u,"A"); 
-//We seek just the A modes, for the linear analysis
-//assuming the Navrose error, we put the next line:
-//varf afv([vx,vy,q],[ux,uy,up]) = PortanceNAVROSE(u,"A"); //We seek just the A modes, for the linear analysis
-
+varf afv([vx,vy,q],[ux,uy,up]) = Portance(u,"A"); //We seek just the A modes, for the linear analysis
 // effet du fluide sur la vitesse v ; correspond à la force verticale
 // WARNING : c'est un vecteur LIGNE, il faut intervertir les inconnues et les fcns tests !
 complex[int] Afv = afv(0,XXMh); // maniere de construire un vecteur COLONNE qui sera ensuite transpose
 
-if(iadjoint=="A"){ Afv = conj(Afv);};
+//if(iadjoint=="A"||iadjoint=="cA"){ Afv = conj(Afv);};
 
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix Avf and Aaf for VIV cylinder         //////////////////////////////////////
@@ -260,35 +243,30 @@ Aaf = afbfluid(0,XXMh);
 
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix A for VIV cylinder   	 	 ///////////////////////////////////////////
-
-//real coefNAVROSE = 0*0.56027; // this is the expected value of d(Cf)/d(Ub) in navrose assuming he made a mistake;Added coefficient after DAMPING: It didnt work
-
+cout << "TOTO2" << endl;
 matrix<complex> OP;// mat OP = A - shift B
 //OP = A+ (-SHIFT)*B; // Dont use it, because A and B are stored differently=>doesnt work
 
-if(iadjoint=="D"){
+
+/*if(iadjoint=="D"){
 OP = 	[
 	[OPff,		  	 0,	     Avf,		      Aaf],
 	[   0,		  -shiftOP,	       1,	 		0],
 	[   0,		 	 0,	-shiftOP,			1],
 	[Afv',		-STIFFNESS,	-DAMPING,	-MASS-shiftOP*eps]
 	];
-}
-else if(iadjoint=="A"){
+};
+else if(iadjoint=="A"||iadjoint=="cA"){
 OP = 	[
 	[OPff,			0,	       0,		      Afv],
 	[   0,	 	 -shiftOP,	       0,	       -STIFFNESS],
 	[Avf',	    		1,	-shiftOP,		 -DAMPING],
 	[Aaf',			0,	       1,	-MASS-shiftOP*eps]
 	];
-}
-
-//else if(iadjoint=="cA")
-//...
-//else if(iadjoint=="S"||iadjoint=="cS") 
+}*/
 
 
-set(OP,solver=sparsesolver);
+//set(OP,solver=sparsesolver);
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -298,22 +276,48 @@ set(OP,solver=sparsesolver);
 XXMh<complex> [modex,modey,modep];	// partie "fluide" du vecteur propre
 complex modeY,modeV,modeA ; 		// parties "solide" du vecteur propre
 complex[int] EVCalculated(nev);		// vector to store eigenvalues
-complex[int,int] EMCalculated(OP.n,nev);// vector to store EIGENVECTORS/MODES
+//complex[int,int] EMCalculated(OP.n,nev);// vector to store EIGENVECTORS/MODES
 
 /// SOLUTION AND POSTPROCESSING FOR NEV>1 (built-in eigenvalue solver)
 if(nev>1)
-{if(iadjoint=="S"||iadjoint=="cS")//DIOGO a fait ca
-	{
-	cout << "Sensivity not supported for nev>1" << endl;
-	cout << 1/zero;
+{
+	if(iadjoint=="D")	{
+	OPff=LNSE(XXMh,XXMh,solver=sparsesolver);
+	shiftOP=SHIFT;
+	OP = 	[
+		[OPff,		  	 0,	     Avf,		      Aaf],
+		[   0,		  -shiftOP,	       1,	 		0],
+		[   0,		 	 0,	-shiftOP,			1],
+		[Afv',		-STIFFNESS,	-DAMPING,	-MASS-shiftOP*eps]
+		];
+	set(OP,solver=sparsesolver);
+	typeDA="D";
+	 }
+
+	else if(iadjoint=="A")	{
+	OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver);
+	Afv = conj(Afv);
+	shiftOP=conj(SHIFT);
+	OP = 	[
+		[OPff,			0,	       0,		      Afv],
+		[   0,	 	 -shiftOP,	       0,	       -STIFFNESS],
+		[Avf',	    		1,	-shiftOP,		 -DAMPING],
+		[Aaf',			0,	       1,	-MASS-shiftOP*eps]
+		];
+	set(OP,solver=sparsesolver);
+	typeDA="A";	 
 	}
+
+
+	else if(iadjoint=="S"||iadjoint=="cS") { cout << "Sensivity not supported for nev>1" << endl; cout << 1/zero; }
+ 	complex[int,int] EMCalculated(OP.n,nev);// vector to store EIGENVECTORS/MODES
 	///////////// CALL TO ARPACK++ ////////////////////////////////// //////////
 	cout << "Executing Arpack" <<endl; //ça sert à quoi retourner un k? et le ncv ?//Arpack call:
 	int k=EigenValue(OP,B,sigma=shiftOP,value=EVCalculated,rawvector=EMCalculated,tol=1e-6,maxit=0,ncv=ncv);
 	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
 	cout << "Arpack Finished" << endl;
 	//////////////////////////////////////////////////////////////////////
-	WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,iadjoint,nev,1); //Last number is the iter
+	WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,typeDA,nev,1); //Last number is the iter
 } // end if(nev>1)
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -370,9 +374,45 @@ else if(iadjoint=="cS")
 	};	
 //////////////////////////////////////////////////////////////////////////////
 // LOOP TO SELECT WHICH COMPUTATION WILL BE DONE
-
+cout << "TOTO10" << endl;
 for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoint++)	
 {
+	if(directadjoint==1)
+	{
+		cout << " Constructing operator for DIRECT problem ..." << endl;
+		OPff=LNSE(XXMh,XXMh,solver=sparsesolver);
+		shiftOP=SHIFT;
+		OP = 	[
+			[OPff,		  	 0,	     Avf,		      Aaf],
+			[   0,		  -shiftOP,	       1,	 		0],
+			[   0,		 	 0,	-shiftOP,			1],
+			[Afv',		-STIFFNESS,	-DAMPING,	-MASS-shiftOP*eps]
+			];
+		set(OP,solver=sparsesolver);
+		typeDA="D";
+		
+		cout << " solving DIRECT problem ..." << endl;
+	}
+	else if(directadjoint==2)
+	{
+		cout << " Constructing operator for ADJOINT(discrete) problem ..." << endl;
+		OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver);
+		shiftOP=conj(SHIFT) ; 
+		Afv = conj(Afv);
+		OP = 	[
+			[OPff,			0,	       0,		      Afv],
+			[   0,	 	 -shiftOP,	       0,	       -STIFFNESS],
+			[Avf',	    		1,	-shiftOP,		 -DAMPING],
+			[Aaf',			0,	       1,	-MASS-shiftOP*eps]
+			];
+		set(OP,solver=sparsesolver);
+		typeDA="A";
+
+		cout << "solving ADJOINT problem ..." << endl;
+	};
+	complex[int,int] EMCalculated(OP.n,nev);// vector to store EIGENVECTORS/MODES
+
+
 	int itmax = 200;
 	complex sigma0 = 1e6;
 	real err = 1e6;
@@ -387,13 +427,17 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 		cout << " Iteration: " << i+1 << " : " << endl;
 		cout << " Estimated eigenvalue sigma = " << EVCalculated[0] << endl;
 	}; // END ITERATION LOOP
-
+	cout << "TOTO11" << endl;
 	//Normalize by the mode:
 	//Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
 	//modex[] = 1/NormU[].max*modex[];
 	//modeY = 1/NormU[].max*modeY;	
 	//modeV = 1/NormU[].max*modeV;
 	//modeA = 1/NormU[].max*modeA;
+	
+		
+	if(directadjoint==1) {uxdirect[]=modex[];}
+	else if(directadjoint==2) {uxadjoint[]=modex[];}
 
 	//Normalize by the displacement:
 	complex NormU = 2.*modeY; //je multiplie par 2 por faire 0.5 sur na normalization
@@ -412,13 +456,13 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	//modeV = 1/NormU[].max*modeV;
 	//modeA = 1/NormU[].max*modeA;
 
-
+	cout << "TOTO12" << endl;
 	EMCalculated(:,0)=[modex[],modeY,modeV,modeA];	
 	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
 
 	if(i<itmax) // post-processing if iteration was successful
 	{	
-		WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,iadjoint,nev,i);
+		WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,typeDA,nev,i);
 		/////////////////////////////////////////////////////////
 		////////THE PLOT ////////////////////////////////////////
 
@@ -429,6 +473,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 		plot(realux,fill=1,value=1,wait=1);
 		p1 realuy = real(modey);
 		plot(realuy,fill=1,value=1,wait=1);
+	cout << "TOTO13" << endl;
 	} // end of post-processing of simple shift-invert case
 
 	else{ShiftAndInvertFAIL;};// case iteration failed
@@ -440,27 +485,22 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 
 }; //end of loop for direct/adjoint/selection
 
-
+cout << "DIOGOOOOOOOOOOOOOOOOOOOOO TOTOTTOTOTTOTOTOTTO" << endl;
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //SENSITIVITY PART
 
-//TO UNCOMMENT AFTER WORK, DIOGO
-
-
-/*	if(iadjoint=="S"||iadjoint=="cS")
+	if(iadjoint=="S"||iadjoint=="cS")
 	//
 	{
 	cout << "Computation of sensitivity after direct and adjoint" << endl;
 
 	//	cout << "STAT" << uxdirect(2.5,.5) << " " << uxadjoint(2.5,.5) << " " << uydirect(2.5,.5) << " " << uyadjoint(2.5,.5) << endl ;
 
-		fespace p2(th,P2);fespace p1(th,P1);
-		p2 sensitivity;
-	
-	
-		/// FLAVIO PLEASE CHECK THIS !!!
+		//fespace p2(th,P2);fespace p1(th,P1);
+		//p2 sensitivity;
+		Xh sensitivity;
 	
 		if(iadjoint=="S") // sensitivity based on DISCERETE ADJOINT 
 		{
@@ -491,7 +531,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	  	file << sensitivity[] ;	
 	    }    
 	    namefileFF=ffdatadir+"Sensitivity.ff2m";
-		p1 xx,yy,sensitivityP1;
+		Mh xx,yy,sensitivityP1;
 		xx=x;
 		yy=y;
 	    sensitivityP1 = sensitivity;
@@ -506,7 +546,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 
 
 
-	};// end of  if(iadjoint=="S"||iadjoint=="cS")*/
+	};// end of  if(iadjoint=="S"||iadjoint=="cS")
 }; /// End of SIMPLE SHIFT-INVERT IF ONLY ONE MODE IS RESQUESTED
 //END EDP FILE
 

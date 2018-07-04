@@ -46,18 +46,19 @@ if(exist(ffdataharmonicdir)~=7&&exist(ffdataharmonicdir)~=5)
 end %It's compulsory: Creation of the directory
 
 %%% First Run
-Re_tab=[26 27 28 29 31 32 33 34 36 37 38 39 41 42 43 44 48 49 51 52 53 54 56 57 58 59];
-Omega_values=[0.1:0.005:1.2];
-%%% Second Run refining where needed (primeiras figuras)
+Re_tab=[46.6];
+Omega_values=[0.5:0.005:1.2];
+%%% Second Run refining where needed (first figures)
 %Re_tab=[25 35];
 %Omega_values=[0.46:0.005:0.74];
-%Re=[55];
+%Re_tab=[55];
 %Omega_values=[0.6:0.005:0.86]; %Additional values for Re=55
-%%% Third run (para curvas a 21 e 100)
-%Re=[21 40];
+%%% Third run (Curves for 21 and 100)
+%Re_tab=[21 40];
 %Omega_values=[0.38:0.005:0.82];
-%%
-
+%%% For critic Re
+%Re_tab=20;
+%Omega_values=[0.1:0.005:1.2];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 verbosity=10; %To see all
 for Re=Re_tab
@@ -76,206 +77,232 @@ end
 %select the desired omegas and re
 
 figure
-Re_tab=[40];
+Re_tab=[46.6 46.7 46.7688 46.7656 46.7641 46.7648 46.7652 ];
 for Re=Re_tab
     %extract data from importFFdata...
     all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
-    
     SF_HarmonicForcing_Display(dataRe.OMEGAtab,dataRe.Lift,Re_tab); 
 end
 
 %% Iterative method to find Rec1
-%St_tab=Omega_values/2/pi;
-%Omega_values=St_tab*2*pi;
 
-Omega_values=0.65:0.005:0.67;
-Re=19.9; %Re initial
-
+%erase previous values for Re=20 for assured convergence
+Re=20; %Re initial
+Omega_values=linspace(0.64,0.67,10);%omegas init
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
+
 SF_HarmonicForcing(baseflow,Omega_values);
 all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe=importFFdata(all_data_stored_file);
-Zr_min=min(real(dataRe.Lift));
+[Zr_min,indexmin]=min(real(dataRe.Lift));
+Omegamin=dataRe.OMEGAtab(indexmin);
+Zimin=imag(dataRe.Lift(indexmin));
 
-increment=0.1;
+incrementRe=0.1;
+incrementOMEGA=0.02;
 Re_last=25;% just to enter the loop
 Zr_min_last=Zr_min;
 Rec1_convergence_tab=[Re];
+incrementOMEGA_TAB=[0.02];
+Omegamin_tab=[Omegamin];
+Zimin_tab=[Zimin];
+indexmin_tab=[indexmin];
 
-
-while(abs(Re_last-Re)>0.001)
+while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     disp('___________________________________________________')%To separete iters
     Zr_min_last=Zr_min;
     Re_last=Re;
     
     if(Zr_min_last>0)
-        Re=Re_last+increment;
-        disp('TOTO1')
+        Re=Re_last+incrementRe;
     elseif(Zr_min_last<0)
-        Re=Re_last-increment;
-        disp('TOTO2')
+        Re=Re_last-incrementRe;
     elseif(Zr_min_last==0)
-        disp('TOTO3')
         break;
     end
+    
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
+    Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
     SF_HarmonicForcing(baseflow,Omega_values);
     
     all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
-    Zr_min=min(real(dataRe.Lift));
+    [Zr_min,indexmin]=min(real(dataRe.Lift));
+    Omegamin=dataRe.OMEGAtab(indexmin);
     
-    if((Zr_min_last*Zr_min)<0)
-        disp('TOTO4')
-        increment=0.5*increment;
+    if((Zr_min_last*Zr_min)<0&& abs(Re_last-Re)>0.0005)
+        incrementRe=0.5*incrementRe;
     end
+    if((Zr_min_last*Zr_min)<0 && incrementOMEGA>0.0005)
+        incrementOMEGA=0.5*incrementOMEGA;
+    end
+    
     Rec1_convergence_tab=[Rec1_convergence_tab Re];
-    disp(['Re=' num2str(Re)]);
-    disp(['Re_last=' num2str(Re_last)]);
+    incrementOMEGA_TAB=[incrementOMEGA_TAB incrementOMEGA];
+    Omegamin_tab=[Omegamin_tab Omegamin];
+    Zimin_tab=[Zimin_tab Zimin];
+    indexmin_tab=[indexmin_tab indexmin];
+    disp(['RE TAB:' num2str(Rec1_convergence_tab)]);
 end
 
 disp('Loop Terminated');
 disp(['Rec1=' num2str(Re)]);
-%19.9461
+%Re=19.9152
+%omega=0.6533
+%St=0.1040
+%Zi=0.9504*2=1.9010
 
 %% Iterative method to find Rec2
-%St_tab=Omega_values/2/pi;
-%Omega_values=St_tab*2*pi;
 
-Omega_values=0.57:0.005:0.61;
-Re=30.2; %Re initial
-
+%erase previous values for Re=30.3 for assured convergence
+Re=30.3; %Re initial
+Omega_values=linspace(0.56,0.62,10);%omegas init
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
+
 SF_HarmonicForcing(baseflow,Omega_values);
 all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe=importFFdata(all_data_stored_file);
-Z_min=min(imag(dataRe.Lift));
+[Zi_min,indexmin]=min(imag(dataRe.Lift));
+Omegamin=dataRe.OMEGAtab(indexmin);
+Zrmin=imag(dataRe.Lift(indexmin));
 
-increment=0.1;
+incrementRe=0.1;
+incrementOMEGA=0.02;
 Re_last=32;% just to enter the loop
-Z_min_last=Z_min;
+Zi_min_last=Zi_min;
 Rec2_convergence_tab=[Re];
+incrementOMEGA_TAB=[0.02];
+Omegamin_tab=[Omegamin];
+Zrmin_tab=[Zrmin];
+indexmin_tab=[indexmin];
 
-
-while(abs(Re_last-Re)>0.001)
+while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     disp('___________________________________________________')%To separete iters
-    Z_min_last=Z_min;
+    Zi_min_last=Zi_min;
     Re_last=Re;
-
     
-    if(Z_min_last>0)
-        Re=Re_last+increment;
-    elseif(Z_min_last<0)
-        Re=Re_last-increment;
-    elseif(Z_min_last==0)
+    if(Zi_min_last>0)
+        Re=Re_last+incrementRe;
+    elseif(Zi_min_last<0)
+        Re=Re_last-incrementRe;
+    elseif(Zi_min_last==0)
         break;
     end
+    
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
+    Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
     SF_HarmonicForcing(baseflow,Omega_values);
     
     all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
-    Z_min=min(imag(dataRe.Lift));
+    [Zi_min,indexmin]=min(imag(dataRe.Lift));
+    Omegamin=dataRe.OMEGAtab(indexmin);
     
-    
-    if((Z_min_last*Z_min)<0)
-        increment=0.5*increment;
+    if((Zi_min_last*Zi_min)<0&& abs(Re_last-Re)>0.0005)
+        incrementRe=0.5*incrementRe;
+    end
+    if((Zi_min_last*Zi_min)<0 && incrementOMEGA>0.0005)
+        incrementOMEGA=0.5*incrementOMEGA;
     end
     
     Rec2_convergence_tab=[Rec2_convergence_tab Re];
-    disp('End of iteration')
-    disp(['Re_last=' num2str(Re_last)]);
-    disp(['Re=' num2str(Re)]);
-    disp(['min Zi=' num2str(Z_min)]);
-    disp(['increment for next iter=' num2str(increment)]);
-
+    incrementOMEGA_TAB=[incrementOMEGA_TAB incrementOMEGA];
+    Omegamin_tab=[Omegamin_tab Omegamin];
+    Zrmin_tab=[Zrmin_tab Zrmin];
+    indexmin_tab=[indexmin_tab indexmin];
 end
 
+disp(['RE TAB:' num2str(Rec2_convergence_tab)]);
 disp('Loop Terminated');
 disp(['Rec2=' num2str(Re)]);
+%Re=30.349
+%omega=0.5972
+%St=0.0950
+%Zr=0
 
-%% Iterative method to find Rec3: not the best one, but it works...
 %St_tab=Omega_values/2/pi;
 %Omega_values=St_tab*2*pi;
 
-%The refinement of omega is extremly important in this iteration method...
-%The best would be a automatic refinement of omega...
-Omega_values=0.73:0.0005:0.735;
-Re=46.6; %Re initial
+%% Iterative method to find Rec3
+%St_tab=Omega_values/2/pi;
+%Omega_values=St_tab*2*pi;
+
+%erase previous values for Re=46.6 for assured convergence
+Re=46.6; %Re init
+Omega_values=linspace(0.72,0.75,10);%omegas init
 
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
 SF_HarmonicForcing(baseflow,Omega_values);
 all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe=importFFdata(all_data_stored_file);
 
-Yr_close=min(abs(real(1./dataRe.Lift)));
-index_close=find(abs(Yr_close-abs(real(1./dataRe.Lift)))<10^(-6) );
+[Yr_close,index_close]=min(abs(real(1./dataRe.Lift)));
 Yi_close=imag(1/dataRe.Lift(index_close));
+Omegamin=dataRe.OMEGAtab(index_close);
 
 norm=sqrt( real(1/dataRe.Lift(index_close)).^2+ imag(1/dataRe.Lift(index_close))^2 ) ;
 norm_tab=[norm];
-increment=0.1;
+incrementRe=0.1;
+incrementOMEGA=0.02;
 Re_last=46;% just to enter the loop
-Yi_close_last=Yi_close;
 Rec3_convergence_tab=[Re];
+incrementOMEGA_TAB=[0.02];
+Omegamin_tab=[Omegamin];
+ALL_OMEGA_VALUES=[Omega_values];
 
 
-while(abs(Re_last-Re)>0.001)
+while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     disp('___________________________________________________')%To separete iters
     Yi_close_last=Yi_close;
     Re_last=Re;
     
     if(Yi_close>0)
-        Re=Re_last+increment;
-        disp('TOTO1')
+        Re=Re_last+incrementRe;
     elseif(Yi_close<0)
-        Re=Re_last-increment;
-        disp('TOTO2')
+        Re=Re_last-incrementRe;
     elseif(Yi_close==0)
-        disp('TOTO3')
         break;
     end
+    
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
+    Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
+    ALL_OMEGA_VALUES=[ALL_OMEGA_VALUES;Omega_values];
     SF_HarmonicForcing(baseflow,Omega_values);
     
     all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
     
-    Yr_close=min(abs(real(1./dataRe.Lift)));
-    index_close=find(abs(Yr_close-abs(real(1./dataRe.Lift)))<10^(-6) );
+    [Yr_close,index_close]=min(abs(real(1./dataRe.Lift)));
     Yi_close=imag(1/dataRe.Lift(index_close));
+     Omegamin=dataRe.OMEGAtab(index_close);
     
     norm=sqrt( real(1/dataRe.Lift(index_close)).^2+ imag(1/dataRe.Lift(index_close))^2 ) ;
     
-    if((Yi_close_last*Yi_close)<0)
-        disp('TOTO4')
-        increment=0.5*increment;
+    if((Yi_close_last*Yi_close)<0&& abs(Re_last-Re)>0.0005)
+        incrementRe=0.5*incrementRe;
     end
+    if((Zi_min_last*Zi_min)<0 && incrementOMEGA>0.0005)
+        incrementOMEGA=0.5*incrementOMEGA;
+    end
+    
+    
     Rec3_convergence_tab=[Rec3_convergence_tab Re];
     norm_tab=[norm_tab norm];
-    disp(['Re=' num2str(Re)]);
-    disp(['Re_last=' num2str(Re_last)]);
+    incrementOMEGA_TAB=[incrementOMEGA_TAB incrementOMEGA];
+    Omegamin_tab=[Omegamin_tab Omegamin];
+    
 end
 
+disp(['RE TAB:' num2str(Rec3_convergence_tab)]);
 disp('Loop Terminated');
 disp(['Rec3=' num2str(Re)]);
+%Re=46.766 (see manually after covergence, due to lack of precision on omega)
+%omega=0.7323
+%St=0.1165
+%Zr=0
 
-%% Impedance Predictions: Derivative
-%Also See IMPEDANCE_based_predictions.m
-Re_tab=[45];
-for Re=Re_tab
-    %extract data from importFFdata...
-    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
-    dataRe=importFFdata(all_data_stored_file);
-    dZr=diff(2*real(dataRe.Lift));
-    dZi=diff(2*real(dataRe.Lift));
-    save([ffdataharmonicdir 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat'],'dZr','dZi');
-end
-
-
-
-%% Spectial treatement for a beautiful plot of Rec3: do it manually
+%% TRASH: Spectial treatement for a beautiful plot of Rec3: do it manually
 if(1==0)
     %First erase the purple line manually in graph 5 for Re=46.7
     %The execute this
@@ -290,10 +317,3 @@ if(1==0)
     %Finally change manually the collor of the line to correspond to the
     %legend. Right-click mouse-> edit...etc ;)
 end
-
-
-
-
-
-
-

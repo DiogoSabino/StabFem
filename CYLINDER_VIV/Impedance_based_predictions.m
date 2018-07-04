@@ -136,8 +136,8 @@ domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1'}
 mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
 folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]};
 
-Re=35;%21 25 35 40 45 60
-mstar=1;
+Re=60;%20 21 31 35 40 45 60
+mstar=20;
 
 [Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot);
 

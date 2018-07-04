@@ -18,8 +18,8 @@ global  verbosity ffdatadir
 
 %CHOOSE the domain parameters:
 domain_parameters=[-50 50 50];
-
-[baseflow]= SF_MeshGeneration(domain_parameters);
+ADAPTMODE='S'; % D, A or S 
+[baseflow]= SF_MeshGeneration(domain_parameters,ADAPTMODE);
 
 %% Save Data
 
@@ -28,19 +28,19 @@ General_data_dir='./Final_Results_v20/'; %a array of char
 
 domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
 %CHOOSE the name of the folder mesh: (It's good to choose the name because we can adapt mesh during)
-mesh_identity={'Adapt_mode_Hmax1_InterError_0.02/'};
+mesh_identity={'Adapt_sensibility_Hmax1_InterError_0.02/'};
 savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 %savedata_dir=[General_data_folder domain_identity mesh_identity];
 
 %% Computation: Spectrum
 %Parameters' Definition
 %CHOOSE the Re to test:
-Re_tab=[40]; verbosity=10;
+Re_tab=[19:1:47]; verbosity=10;
 for Re=Re_tab
     baseflow = SF_BaseFlow(baseflow,'Re',Re);
     
     %CHOOSE the m_star to test:
-    m_star_tab=[70];
+    m_star_tab=[100 20 10 5];
     
     for m_star=m_star_tab
         mass=m_star*pi/4;
@@ -48,7 +48,7 @@ for Re=Re_tab
         
         %U_star=[1:0.05:4]; %m=0.05
         %U_star=[2:0.1:7]; %m=0.2,0.1
-        %U_star=[3:0.1:7]; %m=1...0.8
+        %U_star=[3:0.1:4]; %m=1...0.8
         U_star=[3 3.05 3.1 3.2:0.2:6.5 6.5:0.05:11];
         %U_star=[11.1:0.2:20];%
         %U_star=[20:0.2:28];%
@@ -91,7 +91,7 @@ end
 %CHOOSE Data to plot: (Be sure that data exists)
 General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
 domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'} %%FALTA POR O DOMAIN NO PROXIMO LOOP
-mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/','Adapt_mode_Hmax1_InterError_0.02/'};
+mesh_plot={'Adapt_sensibility_Hmax1_InterError_0.02/'};%,'Adapt_mode_Hmax1_InterError_0.02/','Adapt_sensibility_Hmax1_InterError_0.02/'
 folder_plot={};
 for element=1:size(mesh_plot,2)
 folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
@@ -109,14 +109,14 @@ m_star_plot=[70]; % m_star for previous calculation
 %SF_Data_Treatement('Mode:Both','Axis:NavroseMittal2016LockInRe60M20',folder_plot,Re_plot,m_star_plot);
 
 %IF one data only is plotted
-filename=SF_Data_Treatement('Mode:Structure','Axis:spectrum',folder_plot,Re_plot,m_star_plot);
+filename=SF_Data_Treatement('Mode:Both','Axis:spectrum',folder_plot,Re_plot,m_star_plot);
 
 
-SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
+%SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
 %ELSE
-SF_Data_Treatement('Mode:Both','Axis:sigma_rCOMP',folder_plot,Re_plot,m_star_plot);
-filename={'Re60_m20_sacar_parte_real'};%CHOOSE name of the figure
-SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
+%SF_Data_Treatement('Mode:Both','Axis:sigma_rCOMP',folder_plot,Re_plot,m_star_plot);
+%filename={'Re60_m20_sacar_parte_real'};%CHOOSE name of the figure
+%SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -133,21 +133,24 @@ m_star_plot=[20]; % m_star for previous calculation
 %Usage:
 %%% availability, Compute
 %%%Mode:Fluid, Structure or Both
+%%%Problem:Direct, Adjoint
 
 %SEE U_star available
-SF_Mode_Display('availability','Mode:Fluid',0,folder_plot,Re_plot,m_star_plot,0);
+SF_Mode_Display('availability','Mode:Fluid',0,0,folder_plot,Re_plot,m_star_plot,0);
 
 %COMPUTE of the demanding eigenmodes
-U_star_plot=[8]; %put just one for now...
+U_star_plot=[5.4]; %put just one for now...
 baseflow = SF_BaseFlow(baseflow,'Re',Re_plot);
-[em]=SF_Mode_Display('Compute','Mode:Fluid',baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
+[em]=SF_Mode_Display('Compute','Mode:Fluid','Problem:Adjoint',baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
 
 %Eigenmode plot reffinement
 %...to do...
-plotFF(em,'ux1.re')
-plotFF(em,'vort1')
-plotFF(em,'vort1.re')
-%exportFF_tecplot(em,'./Modes_Tecplot/Re60m20U8Fluid.plt')
+%plotFF(em,'ux1.re')
+%plotFF(em,'vort1')
+%plotFF(em,'vort1.re')
+
+plotFF(em,'uy1Adj')
+%exportFF_tecplot(em,'./Modes_Tecplot/Re60m20U5p4Fluid.plt')
 %Baseflow
 %plotFF(baseflow,'vort')
 %% Grafic m* vs fequency: not working yet
@@ -231,64 +234,110 @@ end
 %a faire
 %[baseflowC,emC]=SF_FindThreshold_VIV(baseflow,em);
 
-%% Non-linear: Harmonic Balance
-%% first try
-
-%Re near the threshold
-
-Re_start=20.5;
+%% Non-linear: Validation for big mass ans small Ustar on fluid mode
+%not sure it's working...
+Re_start=47.;
 baseflow = SF_BaseFlow(baseflow,'Re',Re_start);
-m_star=300;
-U_star=9.6;
+m_star=100;
+U_star=0.01;
 
 mass=m_star*pi/4;
 STIFFNESS=pi^3*m_star./((U_star).^2);
 
-shift=0+0.655i;
+shift=0+0.74i;
 [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R');
 
-YGuess=0.01;
+YGuess=0.00000001;
+Amplitude_HB=[];
 [meanflow,mode] = SF_SelfConsistentDirect(baseflow,em,'Yguess',YGuess,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
 
-%% second try
+disp(['The eingenvalue was ' num2str(ev)]);
+
+%% Go to Re=100
+Y_HB=[mode.Y];
+omega_HB = [imag(mode.lambda)];
+Aenergy_HB  = [mode.AEnergy];
+
+
+Re_tab=[47.5 48 50 52 54 60 65 70 75 80 85 90 95 100];
+
+for Re=Re_tab
+    [meanflow,mode]=SF_SelfConsistentDirect(meanflow,mode,'Re',Re,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
+    Y_HB=[Amplitude_HB mode.Y];
+       omega_HB = [omega_HB imag(mode.lambda)];
+       Aenergy_HB  = [Aenergy_HB mode.AEnergy];
+end
+omega_gallaire = importdata('./Literature_Data/NL/omega_gallaire.csv');
+figure; hold on;
+plot(omega_gallaire.data(:,1),omega_gallaire.data(:,2))
+plot([47 Re_tab],real(omega_HB))
+legend('Gallaire2014','Present mstar=1 Ustar=0.1')
+A_gallaire = importdata('./Literature_Data/NL/A_gallaire.csv');
+figure; hold on
+plot([47 Re_tab],real(Aenergy_HB)./sqrt(2))
+plot(A_gallaire.data(:,1),A_gallaire.data(:,2))
+plot(A_gallaire.data(:,1),A_gallaire.data(:,3))
+legend('Present mstar=1 Ustar=0.1','SC Gallaire','DNS Gallaire')
+
+%system(['cp ' ffdatadir 'SelfConsistentMode.ff2m ' ffdatadir 'HB_O1/HB_ModeO1_mstar70_Re100_Ustar6p4.ff2m'])
+%system(['cp ' ffdatadir 'MeanFlow.ff2m ' ffdatadir 'HB_O1/MeanFlow_mstar70_Re100_Ustar6p4.ff2m'])
+%save('./WORK/HB_O1/amplitude_HBO1_untilRe100.mat','Amplitude_HB', 'Re_tab')
+
+%% Non-linear: Harmonic Balance
+%Guess
+%not working...
 
 Re_start=45;
 baseflow = SF_BaseFlow(baseflow,'Re',Re_start);
 m_star=70;
-U_star=6.4;
+U_star=4.5;
 
 mass=m_star*pi/4;
 STIFFNESS=pi^3*m_star./((U_star).^2);
 
-shift=0+1i;
+shift=0+1.4i;
 [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R');
 
-YGuess=0.2;
-Amplitude_HB=[];
+YGuess=0.5;
+
 [meanflow,mode] = SF_SelfConsistentDirect(baseflow,em,'Yguess',YGuess,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
 
-%%
-%data=importFFdata(baseflow.mesh,[ffdatadir 'SelfConsistentMode.ff2m']);
-%Amplitude_HB=[Amplitude_HB data.Y];
-Amplitude_HB=[Amplitude_HB mode.Y];
+%% Go to Ustar 5.5
+%Y_HB=[mode.Y];
+%omega_HB = [imag(mode.lambda)];
+%Aenergy_HB  = [mode.AEnergy];
 
 
-
-Re_tab=[46 48 55 60 65 70 75 80 85 90 95 100];
-%Re_tab=[65 70 75 80 85 90 95 100];
-
-for Re=Re_tab
-    [meanflow,mode]=SF_SelfConsistentDirect(meanflow,mode,'Re',Re,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
-    Amplitude_HB=[Amplitude_HB mode.Y];  
+%Re_tab=[47.5 48 50 52 54 60 65 70 75 80 85 90 95 100];
+%Ustar_tab= [4.6 4.7 4.8 4.9 5 5.1 5.2 5.3 5.4 5.5]
+Ustar_tab= [8.2]
+for Ustar=Ustar_tab
+    STIFFNESS=pi^3*m_star./((Ustar).^2);
+    [meanflow,mode]=SF_SelfConsistentDirect(meanflow,mode,'Re',100,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
+    Y_HB=[Amplitude_HB mode.Y];
+	 omega_HB = [omega_HB imag(mode.lambda)];
+	Aenergy_HB  = [Aenergy_HB mode.AEnergy];
 end
-figure
-plot([45 Re_tab],real(Amplitude_HB))
 
-system(['cp ' ffdatadir 'SelfConsistentMode.ff2m ' ffdatadir 'HB_O1/HB_ModeO1_mstar70_Re100_Ustar6p4.ff2m'])
-system(['cp ' ffdatadir 'MeanFlow.ff2m ' ffdatadir 'HB_O1/MeanFlow_mstar70_Re100_Ustar6p4.ff2m'])
+omega_gallaire = importdata('./Literature_Data/NL/omega_gallaire.csv');
+figure; hold on;
+plot(omega_gallaire.data(:,1),omega_gallaire.data(:,2))
+plot([4.5 Ustar_tab],real(omega_HB))
+legend('Gallaire2014','Present mstar=1 Ustar=0.1')
+A_gallaire = importdata('./Literature_Data/NL/A_gallaire.csv');
+figure; hold on
+plot([47 Re_tab],real(Aenergy_HB)./sqrt(2))
+plot(A_gallaire.data(:,1),A_gallaire.data(:,2))
+plot(A_gallaire.data(:,1),A_gallaire.data(:,3))
+legend('Present mstar=1 Ustar=0.1','SC Gallaire','DNS Gallaire')
+
+%system(['cp ' ffdatadir 'SelfConsistentMode.ff2m ' ffdatadir 'HB_O1/HB_ModeO1_mstar70_Re100_Ustar6p4.ff2m'])
+%system(['cp ' ffdatadir 'MeanFlow.ff2m ' ffdatadir 'HB_O1/MeanFlow_mstar70_Re100_Ustar6p4.ff2m'])
 %save('./WORK/HB_O1/amplitude_HBO1_untilRe100.mat','Amplitude_HB', 'Re_tab')
 
+%% Go to Re=100 ...
 
+%to do...
 %% follow at Re=100
 
 system(['cp ' ffdatadir 'HB_O1/HB_ModeO1_mstar70_Re100_Ustar6p4.ff2m ' ffdatadir 'SelfConsistentMode.ff2m ' ])

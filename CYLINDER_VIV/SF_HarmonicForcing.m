@@ -20,7 +20,7 @@ if exist(all_data_stored_file)~=0
     all_data_stored=importFFdata(all_data_stored_file);
     %discover the values of Omega that have not been calculated
     for i=1:size(Omega_values,2)
-        if(ismembertol(Omega_values(i),all_data_stored.OMEGAtab)==0)
+        if(ismembertol(Omega_values(i),all_data_stored.OMEGAtab,2*10^-5)==0) %TOLERANCE DUE TO FF2M WRITING IN FREEFEM++
             Omega_to_compute=[Omega_to_compute Omega_values(i)];
         end
     end
