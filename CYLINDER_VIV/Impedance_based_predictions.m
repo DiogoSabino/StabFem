@@ -5,8 +5,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Limit Rec1 %A REFAZER
 
-global ffdataharmonicdir  ffdatadir
-
 %run('../SOURCES_MATLAB/SF_Start.m');
 %ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
 
@@ -131,19 +129,23 @@ legend('Impedance Based Predictions','Data from free Case')
 
 %% Compare Predictions of fixed Re and mstar
 %Data location from free case:
+global ffdataharmonicdir ffdatadir
+ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
+
 General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
 domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1'}
 mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
 folder_plot={[General_data_dir_folder  domain_plot{1} mesh_plot{1} ]};
 
 Re=60;%20 21 31 35 40 45 60
-mstar=20;
+mstar=5;
+formulation='R'; 
 
-[Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot);
+[Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot,formulation);
 
 %Figures:
 figure, hold on
-plot(Ustar_impedance,lambda_r_impedance); %0.5 é por causa da differenca L e CL
+plot(Ustar_impedance,lambda_r_impedance);
 plot(U_free,lambda_r_Free);
 plot(U_freeFLUID,lambda_r_FreeFLUID);
 plot(Ustar_impedance,Ustar_impedance*0,'k--');

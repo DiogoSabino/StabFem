@@ -1,4 +1,4 @@
-function baseflow= SF_MeshGeneration(domain_parameters)
+function baseflow= SF_MeshGeneration(domain_parameters,ADAPTMODE)
 
 %clear all
 close all
@@ -26,8 +26,8 @@ baseflow=SF_BaseFlow(baseflow,'Re',60); % not needed, I think
 
 disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 %Mesh adaptation to a fluid mode
-[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type','D');
-[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',2,'InterpError',0.02);
+[ev,em] = SF_Stability(baseflow,'shift',0.04+0.74i,'nev',1,'type',ADAPTMODE);
+[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',1,'InterpError',0.02);
 
 %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',10,'InterpError',0.005); fazia antes assim para o caso forcado
 %plotFF(baseflow,'mesh');%pause(0.1);
@@ -36,7 +36,7 @@ disp(' ');disp('ADAPTING MESH FOR RE=60 ACORDING TO EIGENVALUE ');disp(' ');
 %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01); 
 %plotFF(baseflow,'mesh');%pause(0.1);
 %baseflow=SF_Split(baseflow);
-plotFF(baseflow,'mesh');%pause(0.1);
+plotFF(baseflow,'mesh');
 
 
 

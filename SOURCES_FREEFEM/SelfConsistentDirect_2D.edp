@@ -97,10 +97,10 @@ macro NSL(nu,U,u,v)
         )
 //EOM
         
-macro Boundaryconditions(u1,u2,v1,v2,symmetry)
+//macro Boundaryconditions(u1,u2,v1,v2,symmetry)
 	/* on(bcinlet,u1=0.0,u2=0.0) + on(bcwall,u1=0.0,u2=0.0) */
-          int1d(th,bcinlet,bcwall)(u1*v1*1e30+u2*v2*1e30)
-	+ int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
+//          int1d(th,bcinlet,bcwall)(u1*v1*1e30+u2*v2*1e30)
+//	+ int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
 //EOM 
 
 macro Lift(nu,u1,u2,p)   
@@ -226,7 +226,7 @@ cout << " Defining operators for nonlinear term..." << endl;
 // block 1 : NS for base flow
 varf NLOpF1([du0x,du0y,du0p],[vx,vy,vp]) =
 	int2d(th)( NS(nu,u0,v) )
- 	+ Boundaryconditions(du0x,du0y,vx,vy,"S")				///DIOGO DOUTE	serve a alguma coisa ? é que nos metemos a zeros quando construimos a matrix...
+ 	+ Boundaryconditions(du0x,du0y,vx,vy,"S")			
 	+int2d(th)( - .25*Conv(u1c,u1c,v) - .25*Conv(u1s,u1s,v) ); 						
 			
 // block 2 : base-flow effect on real part of eigenmode			
@@ -364,11 +364,11 @@ while(abs(dXX)>tol&&abs(dXX)<1000&&iter<100)
 	cout << endl << "Time consumed to assembling matrix: " << cpu2-cpu1 << " seconds" <<  endl << endl;		
 	cout << " Assembling matrix... done" << endl;
 
-	cout << " SETING solver matrix..." << endl;
+	cout << " SETTING solver matrix..." << endl;
 	set(LinOp,solver=sparsesolver);
 	cpu3=clock();
 	cout << endl << "Time consumed to SETING solver matrix: " << cpu3-cpu2 << " seconds" <<  endl << endl;
-	cout << " SETING solver matrix... done" << endl;
+	cout << " SETTING solver matrix... done" << endl;
 	
 	cout << " solving BIG problem..." << endl;
 	real[int] dX(LinOp.n);

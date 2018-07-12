@@ -203,7 +203,7 @@ varf LinOp14([du1b,du2b,dpb],[v1b,v2b,qb])
 // block 2-1 : base-flow effect on real part of eigenmode			
 varf LinOp21([du1b,du2b,dpb],[v1mr,v2mr,qmr]) =
 	 int2d(th)( 
-                  - Conv(du1b,du2b,u1mr,u2mr,v1mr,v2mr)
+                  - Conv(du1b,du2b,u1mr,u2mr,v1mr,v2mr) ////////////////////BAD SIGNAL, it must be a + DAVID
              );
              
 // block 2-2 : Stokes operator on real part of eigenmode             

@@ -14,20 +14,20 @@ function [meanflow,mode,mode2] = SF_HarmonicBalance_Ordre2(meanflow,mode,mode2,v
 
 global ff ffdir ffdatadir sfdir verbosity
 
-% if(meanflow.datatype=='BaseFlow')
-%     disp('### Self Consistent  : with guess from BaseFlow/Eigenmode');
-%     system(['cp ',ffdatadir, 'BaseFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
-%     system(['cp ',ffdatadir, 'Eigenmode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);
+ if(meanflow.datatype=='BaseFlow')
+     disp('### Self Consistent  : with guess from BaseFlow/Eigenmode');
+     system(['cp ',ffdatadir, 'BaseFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
+     system(['cp ',ffdatadir, 'Eigenmode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);
     
-% % elseif(meanflow.datatype=='MeanFlow')
-%    disp('### Self Consistent : with guess from MeanFlow/SCMode');
-%    system(['cp ',ffdatadir, 'MeanFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
-%    system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);  
-%    system(['cp ',ffdatadir, 'SecondHarmonicMode.txt ',ffdatadir, 'SecondHarmonicMode_guess.txt']);  
+ elseif(meanflow.datatype=='MeanFlow')
+    disp('### Self Consistent : with guess from MeanFlow/SCMode');
+    system(['cp ',ffdatadir, 'MeanFlow.txt ',ffdatadir, 'MeanFlow_guess.txt']);
+    system(['cp ',ffdatadir, 'SelfConsistentMode.txt ',ffdatadir, 'SelfConsistentMode_guess.txt']);  
+    system(['cp ',ffdatadir, 'SecondHarmonicMode.txt ',ffdatadir, 'SecondHarmonicMode_guess.txt']);  
 
-% else
-%     error('wrong type of field for Harmonic balance'); 
-% end
+ else
+     error('wrong type of field for Harmonic balance'); 
+ end
 
 % % if(p.Results.Fyguess~=-1) 
 %       disp(['starting with guess Lift force : ' num2str(p.Results.Fyguess) ]);

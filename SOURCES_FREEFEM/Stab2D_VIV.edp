@@ -207,7 +207,6 @@ varf   LNSEadjointContinuous ([ux,uy,up],[vx,vy,q]) =
 //Matrix A for fixed cylinder     //////////////////////////////////////////////////
 matrix<complex> OPff;
 
-cout << "TOTO1" << endl;
 //if(iadjoint=="D")	{OPff=LNSE(XXMh,XXMh,solver=sparsesolver); shiftOP=SHIFT; };
 //else if(iadjoint=="A")	{OPff=LNSEadjointDiscrete(XXMh,XXMh,solver=sparsesolver); }
 //else if(iadjoint=="cA")	{OPff=LNSEadjointContinuous(XXMh,XXMh,solver=sparsesolver); }
@@ -427,7 +426,6 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 		cout << " Iteration: " << i+1 << " : " << endl;
 		cout << " Estimated eigenvalue sigma = " << EVCalculated[0] << endl;
 	}; // END ITERATION LOOP
-	cout << "TOTO11" << endl;
 	//Normalize by the mode:
 	//Xh NormU = sqrt(abs(modex)^2+abs(modey)^2);
 	//modex[] = 1/NormU[].max*modex[];
@@ -456,7 +454,6 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	//modeV = 1/NormU[].max*modeV;
 	//modeA = 1/NormU[].max*modeA;
 
-	cout << "TOTO12" << endl;
 	EMCalculated(:,0)=[modex[],modeY,modeV,modeA];	
 	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
 

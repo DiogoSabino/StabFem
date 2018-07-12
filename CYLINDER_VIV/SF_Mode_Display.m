@@ -1,4 +1,4 @@
-function [em]=SF_Mode_Display(Mode_option,MODE,baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
+function [em]=SF_Mode_Display(Mode_option,MODE,EIGENPROBLEM,baseflow,folder_plot,Re_plot,m_star_plot,U_star_plot);
 
 all_paths={};
 em=-1;
@@ -77,7 +77,13 @@ for element= 1: size(all_paths,2)
             index_shift = find(abs(DATA.U_star-U_star_plot)<tol);%to overcome tolerance problems
             shift=DATA.sigma_tab(index_shift);
             disp(['Using shift of: ' num2str(shift)])
-            [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',str2num(char(m_star))*pi/4,'DAMPING',0,'Frame','R');
+            
+            if(strcmp(EIGENPROBLEM,'Problem:Direct')==1)
+                [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',str2num(char(m_star))*pi/4,'DAMPING',0,'Frame','R');
+            elseif(strcmp(EIGENPROBLEM,'Problem:Adjoint')==1)
+                [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','A','STIFFNESS',STIFFNESS,'MASS',str2num(char(m_star))*pi/4,'DAMPING',0,'Frame','R');
+            end
+            
             %Ploting the mode (this function returns the mode, so you can also threat it outside)
             %plotFF(em,'ux1');
     end

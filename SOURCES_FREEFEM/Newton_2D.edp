@@ -104,7 +104,7 @@ problem NewtonIter([dux,duy,dup],[vx,vy,q]) =
 	  } ;
 
 
-
+plot(ux,fill=1,value=1,wait=0);
 // sortie des r?sultats 
 
 		if((ener>50)||(iter>Nitermax))

@@ -22,12 +22,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 //Directories
 string ffdatadir = "./WORK/";
-string ffdataharmonicdir=ffdatadir+"DATA_SF_CYLINDER/"; 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 string symmetryBaseFlow = "S"; // symmetry propery of base flow :; set "S" if domain is half domain and "N" if it is full domain
 int bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6,bclatNOP=41;
-real TGVCL = 1e30;
+real TGVCL = 1e25;
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 //Macros for forced problem   //////////////////////////////////////////////////////////////
@@ -73,12 +72,18 @@ macro BoundaryconditionsStability(u,v,symmetry)
 //EOM
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-macro BoundaryconditionsForced(u,v,symmetry,U0)/*Formulation repert Relatif*/
+macro BoundaryconditionsForced(u,v,U0,formulation)
 	/*bclat=4,bcinlet=1,bcoutflow=3,bcwall=2,bcaxis=6*/
-	on(bcinlet,bclat,u#y=-U0)
-	/* bc normally used at lateral boundaries are neumann (nothing to specify) */ 
-	+ on(bcwall,u#x=0.0,u#y=0.0) 
-	+ on(bcaxis,u#x=0.0,u#p=0.0) /*Mode antisymetric*/
+	/*next 2 lines equivalent to on(bcinlet,bclat,u#y=-U0)*/
+	int1d(th,bcinlet,bclat)(TGVCL*(u#y*v#y) )
+	+int1d(th,bcinlet,bclat)(TGVCL*(U0*v#y)*(formulation=="R") )
+	
+	/*next 2 lines equivalent to on(bcwall,u#x=0.0,u#y=0.0) */
+	+int1d(th,bcwall)(u#y*v#y*TGVCL )
+	+int1d(th,bcwall)(u#x*v#x*TGVCL)
+	-int1d(th,bcwall)(TGVCL*(U0*v#y)*(formulation=="A") )
+
+	+ on(bcaxis,u#x=0.0,u#p=0.0) /*Mode antisymetric, valid for both formulations*/
 //EOM
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,22 +100,6 @@ macro BoundaryconditionsLNSE(u,v,formulation)/*For the free movement problem*/
 	+int1d(th,bcaxis)(u#x*v#x*TGVCL);/*Valid for the 2 formulations*/
 	/*+int1d(th,bcaxis)(u#p*q*TGVCL);don't need*/
 //EOM
-macro BoundaryconditionsLNSEdiogoADJOINT(Ub,u,v,formulation)/*For the free movement problem*/
-	int1d(th,bcinlet,bclat)(u#y*v#y*TGVCL*(formulation=="A") )
-	+int1d(th,bcinlet,bclat)(u#y*v#y*TGVCL*(formulation=="R") ) /* + le terme BBB de interaction sur Avf*/
-	/* +int1d(th,bcinlet,bclat)(u#x*v#x*TGVCL)useless if domain is big enough:sometimes it introduces errors
-	+int1d(th,bcinlet,bclat)(u#p*q*TGVCL)*/
-
-	+int1d(th,bcwall)(u#y*v#y*TGVCL*(formulation=="A") ) /* + le terme AAA de interaction sur Avf*/
-	+int1d(th,bcwall)(u#y*v#y*TGVCL*(formulation=="R") )
-	+int1d(th,bcwall)(u#x*v#x*TGVCL) 
-
-	+int1d(th,bcoutflow)(Ub#x*u#x*v#x)
-
-	+int1d(th,bcaxis)(u#x*v#x*TGVCL);/*Valid for the 2 formulations*/
-	/*+int1d(th,bcaxis)(u#p*q*TGVCL);don't need*/
-//EOM
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -323,7 +312,7 @@ macro SFWriteModeVIV(namefile,mode,ev,shift,typeFlow,iter)
 //EOM	
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,iadjoint,nev,iter)
+macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,typeDA,nev,iter)
 {
 	string namefile;
 	namefile=ffdatadir+"Spectrum.txt";
@@ -337,18 +326,18 @@ macro WriteOutputFiles(EVCalculated,shift,mode,EMCalculated,iadjoint,nev,iter)
 		[mode#x[],mode#Y,mode#V,mode#A] = EMCalculated(:,i);
 		/*Two files: a txt file and a ff2m file*/
 
-		if(iadjoint=="D"&&nev>1){namefile=ffdatadir+"Eigenmode"+(i+1);}
-		if(iadjoint=="D"&&nev==1){namefile=ffdatadir+"Eigenmode";}
-		if( (iadjoint=="A"||iadjoint=="cA") &&nev>1){namefile=ffdatadir+"EigenmodeA"+(i+1);}
-		if( (iadjoint=="A"||iadjoint=="cA"||iadjoint=="S"||iadjoint=="cS") &&nev==1){namefile=ffdatadir+"EigenmodeA";}
+		if(typeDA=="D"&&nev>1){namefile=ffdatadir+"Eigenmode"+(i+1);}
+		if(typeDA=="D"&&nev==1){namefile=ffdatadir+"Eigenmode";}
+		if( (typeDA=="A"||typeDA=="cA") &&nev>1){namefile=ffdatadir+"EigenmodeA"+(i+1);}
+		if( (typeDA=="A"||typeDA=="cA") &&nev==1){namefile=ffdatadir+"EigenmodeA";}
 		{ofstream fileMode(namefile+".txt");
  		 fileMode << mode#x[]<< endl;  
 		 fileMode << endl << mode#Y << " " << mode#V << " " << mode#A << endl; 
  		 fileMode << endl << endl << Re << endl << endl << real(EVCalculated[i]) << "   " << imag(EVCalculated[i])  << endl;
  		}
 		cout << "Writing eigenmode in .ff2m file: " << namefile << endl;
-		if(iadjoint=="D"){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeD",iter);}
-		if( (iadjoint=="A"||iadjoint=="cA"||iadjoint=="S"||iadjoint=="cS") ){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeA",iter);}
+		if(typeDA=="D"){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeD",iter);}
+		if( (typeDA=="A"||typeDA=="cA") ){SFWriteModeVIV(namefile+".ff2m",mode,EVCalculated[i],shift,"VIVModeA",iter);}
 	};
 	cout << "Writing Output Files Done" << endl;
 }

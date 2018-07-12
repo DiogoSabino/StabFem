@@ -18,82 +18,109 @@
 global ffdataharmonicdir verbosity ffdatadir
 %CHOOSE the domain parameters:
 domain_parameters=[-50 50 50];
+%domain_parameters=[-100 100 100]; %for the case when St->0
+ADAPTMODE='S'; % D, A or S 
+[baseflow]= SF_MeshGeneration(domain_parameters,ADAPTMODE);
 
-[baseflow]= SF_MeshGeneration(domain_parameters);
+%% CHOOSE folder for saving data:
+%General_data_dir='v1/General_data/';
+%General_data_dir='v1/Rec1/';
+%General_data_dir='v1/Rec2/';
+%General_data_dir='v1/Rec3/';
+%General_data_dir='v1/Limit_St0/';
+General_data_dir='v1/Limit_St_Infty/';
+domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
+%mesh_identity={'Adapt_sensibility_Hmax2_InterError_0.02/'};
+%mesh_identity={'Adapt_mode_Hmax2_InterError_0.02/'};
+mesh_identity={'Adapt_sensibility_stepOMEGA1000_Hmax1_InterError_0.02/'};
+savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 
-%% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
-ffdataharmonicdir=[ffdatadir 'DATA_SF_CYLINDER/'];
+% path of the saved data for the harmonic case cylinder (repeated in macros.edp)
+ffdataharmonicdir={[ffdatadir 'DATA_Forced_Cylinder/' savedata_dir{1} ]};
 
-%% Erase previous data if mesh have change (do it manually!!)
-% Delete the data concerning the solution of the problem
-% (not the baseflow and the mesh; the others eg DATA_SF_CYLINDER)
-% Careful in the use of the next lines
-while(false) % change to 'true' if you want delete all this data
-    system(['rm -R ' ffdataharmonicdir]);
-    
-    break % Compulsory to exit the while loop
-end
-
-%% Case of Harmonic Forcing Cylinder
-% NB:verbosity= 10;if simulation seems to stuck do Ctrl+C and start again;
-% previous data will not be lost and script will continue where it was interrupted
-%clear all
-%close all
-
-%Data
-if(exist(ffdataharmonicdir)~=7&&exist(ffdataharmonicdir)~=5)
-    mysystem(['mkdir ' ffdataharmonicdir]);
+% Create path if it does not exist
+if(exist(ffdataharmonicdir{1})~=7&&exist(ffdataharmonicdir{1})~=5)
+    mysystem(['mkdir -p ' ffdataharmonicdir{1}]); %I read in internet that the '-p'(stands for parent) not always work in every shell...
 end %It's compulsory: Creation of the directory
 
-%%% First Run
-Re_tab=[46.6];
-Omega_values=[0.5:0.005:1.2];
-%%% Second Run refining where needed (first figures)
+%% Computation of Harmonic Forcing Cylinder
+% NB:verbosity= 10;if simulation seems to stuck do Ctrl+C and start again;
+% previous data will not be lost and script will continue where it was interrupted
+
+%Options: A or R for Absolute or Relative velocity resp. in relative frame
+formulation='R'; 
+Re_tab=15;
+Omega_values=[0.1:0.1:0.3];
+
+%%%%%%%%%%First Run %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Re_tab=[15:1:19 19.9 20:1:30 30.3 31:1:60];
+%Omega_values=[0.1:0.02:1.3];
+%%%%%%%%%%Second Run refining where needed (first figures) %%%%%%%%%%%%%%%%
 %Re_tab=[25 35];
 %Omega_values=[0.46:0.005:0.74];
 %Re_tab=[55];
 %Omega_values=[0.6:0.005:0.86]; %Additional values for Re=55
-%%% Third run (Curves for 21 and 100)
+%%%%%%%%%%Third run (Curves for 21 and 100) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Re_tab=[21 40];
 %Omega_values=[0.38:0.005:0.82];
-%%% For critic Re
+%%%%%%%%%%For critic Re %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Re_tab=20;
 %Omega_values=[0.1:0.005:1.2];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%Limits %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Re_tab=[15:1:60]; Omega_values=[0:0.001:0.01 0.02:0.01:0.05];
+%Re_tab=[15 25 35 55]; Omega_values=[5:5:20 30 40 50:50:1000 1000:1000:10000 10000:10000:100000]; %for the case without adaptation
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 verbosity=10; %To see all
 for Re=Re_tab
-   baseflow=SF_BaseFlow(baseflow,'Re',Re); 
-   SF_HarmonicForcing(baseflow,Omega_values);
-   disp('___________________________________________________')%To separete iters
-    %Calculating derivative:
-    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
-    dataRe=importFFdata(all_data_stored_file);
-    dZr=diff(2*real(dataRe.Lift));
-    dZi=diff(2*real(dataRe.Lift));
-    save([ffdataharmonicdir 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat'],'dZr','dZi');
+    [baseflow]=SF_HarmonicForcing(baseflow,Re,Omega_values,formulation);
+    disp('___________________________________________________')%To separete iters
 end
 
-%% Data treatement
+%% Computation of Limit Case St INF: Adaptation to the Stokes Boundary Layer
+Re_tab=[15 25 35 55];
+Omega_values=[3:5:20 30 40 50:50:1000];
+formulation='R';
+filename=[formulation 'Forced_Harmonic2D_Re']; %name WITHOUT the Re
+
+for Re=Re_tab
+    SF_HarmonicForcing(baseflow,Re,Omega_values,formulation);
+    disp('___________________________________________________')%To separete iters
+end
+Omega_values=[1000:100:2000];
+for Re=Re_tab
+    ForcedField_file={[ffdataharmonicdir{1} filename num2str(Re) 'Omega' num2str(Omega_values(1)) '.ff2m' ]};
+    ForcedField=importFFdata(ForcedField_file{1});
+    baseflow=SF_BaseFlow(baseflow,'Re',Re);
+    baseflow=SF_Adapt(ForcedField);%...
+    SF_HarmonicForcing(baseflow,Re,Omega_values,formulation);
+    disp('___________________________________________________')%To separete iters
+end
+%...
+
+%% Data treatement: General
 %select the desired omegas and re
 
 figure
-Re_tab=[46.6 46.7 46.7688 46.7656 46.7641 46.7648 46.7652 ];
+Re_tab=[15 25 35 55];
+formulation='R'; 
 for Re=Re_tab
     %extract data from importFFdata...
-    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
-    dataRe=importFFdata(all_data_stored_file);
+    all_data_stored_file={[ffdataharmonicdir{1}  formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m']};
+    dataRe=importFFdata(all_data_stored_file{1} );
     SF_HarmonicForcing_Display(dataRe.OMEGAtab,dataRe.Lift,Re_tab); 
 end
 
-%% Iterative method to find Rec1
+%% Iterative method to find Rec1 To redo
 
 %erase previous values for Re=20 for assured convergence
+formulation='R';
 Re=20; %Re initial
 Omega_values=linspace(0.64,0.67,10);%omegas init
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
 
-SF_HarmonicForcing(baseflow,Omega_values);
-all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+SF_HarmonicForcing(baseflow,Omega_values,formulation);
+all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe=importFFdata(all_data_stored_file);
 [Zr_min,indexmin]=min(real(dataRe.Lift));
 Omegamin=dataRe.OMEGAtab(indexmin);
@@ -124,9 +151,9 @@ while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
     Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
-    SF_HarmonicForcing(baseflow,Omega_values);
+    SF_HarmonicForcing(baseflow,Omega_values,formulation);
     
-    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+    all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
     [Zr_min,indexmin]=min(real(dataRe.Lift));
     Omegamin=dataRe.OMEGAtab(indexmin);
@@ -153,15 +180,16 @@ disp(['Rec1=' num2str(Re)]);
 %St=0.1040
 %Zi=0.9504*2=1.9010
 
-%% Iterative method to find Rec2
+%% Iterative method to find Rec2 To redo
 
 %erase previous values for Re=30.3 for assured convergence
 Re=30.3; %Re initial
 Omega_values=linspace(0.56,0.62,10);%omegas init
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
+formulation='R';
 
-SF_HarmonicForcing(baseflow,Omega_values);
-all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+SF_HarmonicForcing(baseflow,Omega_values,formulation);
+all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe=importFFdata(all_data_stored_file);
 [Zi_min,indexmin]=min(imag(dataRe.Lift));
 Omegamin=dataRe.OMEGAtab(indexmin);
@@ -192,9 +220,9 @@ while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
     Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
-    SF_HarmonicForcing(baseflow,Omega_values);
+    SF_HarmonicForcing(baseflow,Omega_values,formulation);
     
-    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+    all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
     [Zi_min,indexmin]=min(imag(dataRe.Lift));
     Omegamin=dataRe.OMEGAtab(indexmin);
@@ -224,17 +252,18 @@ disp(['Rec2=' num2str(Re)]);
 %St_tab=Omega_values/2/pi;
 %Omega_values=St_tab*2*pi;
 
-%% Iterative method to find Rec3
+%% Iterative method to find Rec3 To redo
 %St_tab=Omega_values/2/pi;
 %Omega_values=St_tab*2*pi;
 
 %erase previous values for Re=46.6 for assured convergence
 Re=46.6; %Re init
 Omega_values=linspace(0.72,0.75,10);%omegas init
+formulation='R';
 
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
-SF_HarmonicForcing(baseflow,Omega_values);
-all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+SF_HarmonicForcing(baseflow,Omega_values,formulation);
+all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe=importFFdata(all_data_stored_file);
 
 [Yr_close,index_close]=min(abs(real(1./dataRe.Lift)));
@@ -268,9 +297,9 @@ while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
     Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
     ALL_OMEGA_VALUES=[ALL_OMEGA_VALUES;Omega_values];
-    SF_HarmonicForcing(baseflow,Omega_values);
+    SF_HarmonicForcing(baseflow,Omega_values,formulation);
     
-    all_data_stored_file=[ffdataharmonicdir, 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+    all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
     dataRe=importFFdata(all_data_stored_file);
     
     [Yr_close,index_close]=min(abs(real(1./dataRe.Lift)));
@@ -302,6 +331,8 @@ disp(['Rec3=' num2str(Re)]);
 %St=0.1165
 %Zr=0
 
+%% Limit Case St tends to ZERO and INF 
+% See Main2_Forced_Case_Limits...
 %% TRASH: Spectial treatement for a beautiful plot of Rec3: do it manually
 if(1==0)
     %First erase the purple line manually in graph 5 for Re=46.7

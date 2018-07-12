@@ -17,7 +17,7 @@ function [RealShift, ImagShift]=SF_Shift_selection(modename,Re,m_star)
 
 switch modename{1}
     case('02modeSTRUCTURE')
-        if (Re>15&&Re<70)
+        if (Re>15&&Re<100)
             
             if(m_star>=0.05&&m_star<0.1)
                    RealShift=-0.07; ImagShift=0.85; %u=1
@@ -60,7 +60,10 @@ switch modename{1}
             RealShift=300; ImagShift=300;
         end
     case('03modeFLUID')
-        if (Re>50&&Re<=60)
+        if (Re>60&&Re<=100)
+            RealShift=0.09; ImagShift=0.75;
+            
+        elseif (Re>50&&Re<=60)
             RealShift=0.05; ImagShift=0.75;
             
         elseif(Re>45&&Re<=50)

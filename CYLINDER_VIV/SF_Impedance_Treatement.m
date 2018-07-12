@@ -1,17 +1,23 @@
-function [Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot)
+function [Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot,formulation)
 
 global ffdataharmonicdir
 
 %Load Data Forced-Case:
-all_data_stored_file=[ffdataharmonicdir 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
+all_data_stored_file=[ffdataharmonicdir formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
 dataRe_total=importFFdata(all_data_stored_file);
-diffZ=load([ffdataharmonicdir 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat']);
+diffZ=load([ffdataharmonicdir formulation 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat']);
 %Data Forced case:
 Zr=2*real(dataRe_total.Lift);
 Zi=2*imag(dataRe_total.Lift);
 Omega_f=dataRe_total.OMEGAtab;
 dZi=diffZ.dZi; dZr=diffZ.dZr;
-dZi=[dZi ;dZi(end)]; dZr=[dZr; dZr(end)]; %DAVID§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
+dOMEGA=diffZ.dOMEGA;
+
+%dZi=[dZi ;dZi(end)]; dZr=[dZr; dZr(end)]; %DAVID !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+dOMEGA=[dOMEGA(1) ; dOMEGA]; %DAVID !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+dZi=[dZi(1) ; dZi]; dZr=[dZr(1) ; dZr]; 
+dZi=dZi./dOMEGA;
+dZr=dZr./dOMEGA;
 
 A=-Zr;
 B=pi*mstar+dZr+Zi./Omega_f;

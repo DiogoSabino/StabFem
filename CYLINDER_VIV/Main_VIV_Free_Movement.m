@@ -24,23 +24,25 @@ ADAPTMODE='S'; % D, A or S
 %% Save Data
 
 %CHOOSE folder for saving data:
-General_data_dir='./Final_Results_v20/'; %a array of char
+%General_data_dir='./Final_Results_v20/'; %a array of char
+General_data_dir='./Final_Results_v24/'; %studying the limits of Ustar to 0
 
 domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
 %CHOOSE the name of the folder mesh: (It's good to choose the name because we can adapt mesh during)
 mesh_identity={'Adapt_sensibility_Hmax1_InterError_0.02/'};
+%mesh_identity={'Adapt_mode_Hmax10_InterError_0.02/'};
 savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 %savedata_dir=[General_data_folder domain_identity mesh_identity];
 
 %% Computation: Spectrum
 %Parameters' Definition
 %CHOOSE the Re to test:
-Re_tab=[19:1:47]; verbosity=10;
+Re_tab=[45]; verbosity=10;
 for Re=Re_tab
     baseflow = SF_BaseFlow(baseflow,'Re',Re);
     
     %CHOOSE the m_star to test:
-    m_star_tab=[100 20 10 5];
+    m_star_tab=[1000];
     
     for m_star=m_star_tab
         mass=m_star*pi/4;
@@ -49,9 +51,10 @@ for Re=Re_tab
         %U_star=[1:0.05:4]; %m=0.05
         %U_star=[2:0.1:7]; %m=0.2,0.1
         %U_star=[3:0.1:4]; %m=1...0.8
-        U_star=[3 3.05 3.1 3.2:0.2:6.5 6.5:0.05:11];
+        %%%%U_star=[3 3.05 3.1 3.2:0.2:6.5 6.5:0.05:11];
         %U_star=[11.1:0.2:20];%
         %U_star=[20:0.2:28];%
+        U_star=[1:-0.1:0.1];% limit Ustar tends to 0
         
         Stiffness_table=pi^3*m_star./((U_star).^2);
         
@@ -72,8 +75,8 @@ for Re=Re_tab
         
         % Mode Follow: Follow a mode along the Stiffness_table/U_star       
         %CHOOSE the one for save data w/ a good name:
-        modename={'02modeSTRUCTURE'};
-        %modename={'03modeFLUID'};
+        %modename={'02modeSTRUCTURE'};
+        modename={'03modeFLUID'};
         
         [RealShift, ImagShift]=SF_Shift_selection(modename,Re,m_star);
         sigma_tab=[]; %RealShift=0.005; ImagShift=0.64;
@@ -89,16 +92,18 @@ end
 %% EigenValue: Data Treatement 
 
 %CHOOSE Data to plot: (Be sure that data exists)
-General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
+%General_data_dir_folder='./Final_Results_v20/';   %General_data_dir; % e.g.: './FOLDER_TOTO/'
+General_data_dir_folder='./Final_Results_v24/';
 domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'} %%FALTA POR O DOMAIN NO PROXIMO LOOP
 mesh_plot={'Adapt_sensibility_Hmax1_InterError_0.02/'};%,'Adapt_mode_Hmax1_InterError_0.02/','Adapt_sensibility_Hmax1_InterError_0.02/'
+%mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
 folder_plot={};
 for element=1:size(mesh_plot,2)
 folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
 end
 
-Re_plot=[45] ; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=[70]; % m_star for previous calculation
+Re_plot=[70] ; % Re for previous calculation; for an array: [Re1 Re2]
+m_star_plot=[1000 100 20]; % m_star for previous calculation
 
 %The different data treatment options: %How to do:'Mode:-', 'Axis:-'
 %Mode:Fluid, Structure or Both
@@ -109,7 +114,7 @@ m_star_plot=[70]; % m_star for previous calculation
 %SF_Data_Treatement('Mode:Both','Axis:NavroseMittal2016LockInRe60M20',folder_plot,Re_plot,m_star_plot);
 
 %IF one data only is plotted
-filename=SF_Data_Treatement('Mode:Both','Axis:spectrum',folder_plot,Re_plot,m_star_plot);
+filename=SF_Data_Treatement('Mode:Fluid','Axis:sigma_VS_Ustar',folder_plot,Re_plot,m_star_plot);
 
 
 %SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
@@ -153,6 +158,80 @@ plotFF(em,'uy1Adj')
 %exportFF_tecplot(em,'./Modes_Tecplot/Re60m20U5p4Fluid.plt')
 %Baseflow
 %plotFF(baseflow,'vort')
+
+%% Validation with the fixed cilinder
+%(use mode adapted to the sensitivity)
+
+General_data_dir_folder='./Final_Results_v24/';domain_plot={'-50_50_50/'}; mesh_plot={'Adapt_sensibility_Hmax1_InterError_0.02/'};folder_plot={};
+for element=1:size(mesh_plot,2)
+    folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
+end
+Re_plot=[40:5:100];
+m_star_plot=[1000]; 
+lambda_r=[];
+lambda_i=[];
+
+for Re=Re_plot
+    extracting=[folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(m_star_plot) '/03modeFLUID_data.mat'];
+    ploting=load( extracting,'Re','m_star','sigma_tab','U_star','Stiffness_table');
+    lambda_r=[lambda_r real(ploting.sigma_tab(1)) ];
+    lambda_i=[lambda_i imag(ploting.sigma_tab(1))];
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Load fixed cylinder data
+FC=load('./Literature_Data/Validation_data_from_fixed_cylinder.mat');
+
+figure; hold on;
+plot(Re_plot,lambda_r)
+plot(FC.Re_LIN,real(FC.lambda_LIN))
+figure; hold on;
+plot(Re_plot,lambda_i/(2*pi))
+plot(FC.Re_LIN,imag(FC.lambda_LIN)/(2*pi))
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%savedata (for Diogo)
+%filename_latex1=['./Latex_data/Free/Validation/LAMBDArealvariation_m1000Re40to100.txt'];
+%filename_latex2=['./Latex_data/Free/Validation/LAMBDAimagvariation_m1000Re40to100.txt'];
+%for Re=Re_plot
+%    extracting=[folder_plot{1} 'Re' num2str(Re) '/mstar' num2str(m_star_plot) '/03modeFLUID_data.mat'];
+%    ploting=load( extracting,'Re','m_star','sigma_tab','U_star','Stiffness_table');
+%    str_latex1=['(' num2str(Re) ',' num2str(real(ploting.sigma_tab(1))) ')'];
+%    str_latex2=['(' num2str(Re) ',' num2str(imag(ploting.sigma_tab(1))) ')'];
+%    dlmwrite(filename_latex1,str_latex1,'delimiter', '','-append' )
+%    dlmwrite(filename_latex2,str_latex2,'delimiter', '','-append' ) 
+%end
+%filename_latex1=['./Latex_data/Free/Validation/LAMBDArealvariation_m1000Re40to100FIXED.txt'];
+%filename_latex2=['./Latex_data/Free/Validation/LAMBDAimagvariation_m1000Re40to100FIXED.txt'];
+%for indexx=1:size(FC.Re_LIN,2)
+
+%    ploting=load( extracting,'Re','m_star','sigma_tab','U_star','Stiffness_table');
+%    str_latex1=['(' num2str(FC.Re_LIN(indexx)) ',' num2str(real(FC.lambda_LIN(indexx))) ')'];
+%    str_latex2=['(' num2str(FC.Re_LIN(indexx)) ',' num2str(imag(FC.lambda_LIN(indexx))) ')'];
+%    dlmwrite(filename_latex1,str_latex1,'delimiter', '','-append' )
+%    dlmwrite(filename_latex2,str_latex2,'delimiter', '','-append' ) 
+%end
+
+%% Treatement for Re=20
+
+General_data_dir_folder='./Final_Results_v20/'; domain_plot={'-50_50_50/'}; mesh_plot={'Adapt_sensibility_Hmax1_InterError_0.02/'};%mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
+folder_plot={};
+for element=1:size(mesh_plot,2)
+    folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
+end
+
+Re_plot=[19.95] ; % Re for previous calculation; for an array: [Re1 Re2]
+m_star_plot=[1]; % m_star for previous calculation
+
+%The different data treatment options: %How to do:'Mode:-', 'Axis:-'
+%Axis:sigma_VS_Ustar, F_LSA_VS_Ustar, f_star_LSA_VS_Ustar, sigma_r_VS_Ustar_LSA,
+%NavroseMittal2016LockInRe60M20, NavroseMittal2016LockInRe60M5,
+
+filename=SF_Data_Treatement('Mode:Structure','Axis:sigma_VS_Ustar',folder_plot,Re_plot,m_star_plot);
+
+
+
+
+
 %% Grafic m* vs fequency: not working yet
 General_data_dir_folder='./Final_Results_v20/';    %General_data_dir; % e.g.: './FOLDER_TOTO/'
 domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'}
@@ -238,8 +317,8 @@ end
 %not sure it's working...
 Re_start=47.;
 baseflow = SF_BaseFlow(baseflow,'Re',Re_start);
-m_star=100;
-U_star=0.01;
+m_star=1;
+U_star=0.1;
 
 mass=m_star*pi/4;
 STIFFNESS=pi^3*m_star./((U_star).^2);
@@ -247,7 +326,7 @@ STIFFNESS=pi^3*m_star./((U_star).^2);
 shift=0+0.74i;
 [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',1,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','R');
 
-YGuess=0.00000001;
+YGuess=0.001;
 Amplitude_HB=[];
 [meanflow,mode] = SF_SelfConsistentDirect(baseflow,em,'Yguess',YGuess,'STIFFNESS', STIFFNESS,'MASS',mass,'DAMPING',0);
 

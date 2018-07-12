@@ -49,8 +49,9 @@ if(exist([ffdatadir,fileToRead])==2)
     fileToRead = [ffdatadir,fileToRead];
 end
 
-rawData1 = importdata(fileToRead);
 mydisp(2,['FUNCTION  importFFdata.m : reading file ' fileToRead ]); 
+rawData1 = importdata(fileToRead);
+
 data = rawData1.data;
 
 if(np>0&&i==istart)

@@ -126,7 +126,7 @@ macro SFWriteMesh(filename,TH)
 macro SFWriteBaseFlow(filename,u,typeFlow,iter)
 	if(iter>=0)
 	{
-	fespace p1forff2m(th,P1);  
+	fespace p1forff2m(Th,P1);  
 	p1forff2m xx,yy;
 	xx=x;
 	yy=y;
@@ -203,7 +203,7 @@ macro SFWriteBaseFlow(filename,u,typeFlow,iter)
 macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		 {
 		 ofstream file(namefile);
-   		 fespace p1forff2m(th,P1); 
+   		 fespace p1forff2m(Th,P1); 
 		 p1forff2m xx,yy;
 		 xx=x;
 		 yy=y;
@@ -234,7 +234,7 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		if(typeFlow=="EigenModeD"||typeFlow=="EigenModeA")
 		{
 		cout << "#### customisable output for a mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
-		real AEnergyMode = sqrt(2*int2d(th)(abs(u#x)^2+abs(u#y)^2)); /* factor should be 4 because 2 half domains and time-average of (u1 e^iphi+cc) is 2 |u1|^2  */
+		real AEnergyMode = sqrt(2*int2d(Th)(abs(u#x)^2+abs(u#y)^2)); /* factor should be 4 because 2 half domains and time-average of (u1 e^iphi+cc) is 2 |u1|^2  */
 		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl;
 		complex LiftMode = Portance(u,"A"); 
@@ -244,7 +244,7 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		if(typeFlow=="HarmonicMode")
 		{
 		cout << "#### customisable output for a SC mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
-		real AEnergyMode = sqrt(int2d(th)(abs(u#x)^2+abs(u#y)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
+		real AEnergyMode = sqrt(int2d(Th)(abs(u#x)^2+abs(u#y)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
 		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl;
 		complex LiftMode = Portance(u,"A"); 
@@ -254,7 +254,7 @@ macro SFWriteMode(namefile,u,ev,shift,typeFlow,iter)
 		if(typeFlow=="SecondHarmonicMode")
 		{
 		cout << "#### customisable output for a HB-2 mode in the WAKE OF A 2D BLUFF BODY : " << endl; 
-		real AEnergyMode = sqrt(int2d(th)(abs(u#x)^2+abs(u#y)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
+		real AEnergyMode = sqrt(int2d(Th)(abs(u#x)^2+abs(u#y)^2));  /* here factor 1 because 2 half domaines and time-average of cos^2 and sin^2 = 1/2. */ 
 		cout << "#   Amplitude (with definition of Mantic-Lugo) = " << AEnergyMode << endl;
 		file << AEnergyMode << endl;
 		complex DragMode = Trainee(u,"S"); 

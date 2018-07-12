@@ -1,21 +1,16 @@
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 /////
-/////            DIRECT COMPUTATION OF STABILITY thRESHOLD FOR 2D FLOW
+/////            DIRECT COMPUTATION OF STABILITY THRESHOLD FOR 2D FLOW VIV
 /////
-/////		Adapted for usage with matlab driver by D. Fabre, july 2017
-/////
-/////		NEEDS SOME CLEAN-UP !
-/////
-/////  this program should be rewritten in the same way as HarmonicBalance_2D.edp
-/////
+/////  		 DIOGO:A REFAIRE POR LE CAS VIV  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 //load "iovtk"                      //////// library to write vtk files
 //load "BinaryIO"                //////// library to read/write binary files 
 // load "BinaryIO_64"
 //load "UMFPACK64"        ////////  load sparsesolver    
-//load "MUMPS_seq"
+load "MUMPS_seq"
 include "Macros_StabFem.edp";
 
 
@@ -208,7 +203,7 @@ varf LinOp14([du1b,du2b,dpb],[v1b,v2b,qb])
 // block 2-1 : base-flow effect on real part of eigenmode			
 varf LinOp21([du1b,du2b,dpb],[v1mr,v2mr,qmr]) =
 	 int2d(th)( 
-                  - Conv(du1b,du2b,u1mr,u2mr,v1mr,v2mr)
+                  + Conv(du1b,du2b,u1mr,u2mr,v1mr,v2mr) ////////////////////GOOD SIGNAL
              );
              
 // block 2-2 : Stokes operator on real part of eigenmode             
@@ -321,12 +316,14 @@ real LinOp44 = Lift(-1/Re^2,u1mr,u2mr,0);
 real LinOp54 = Lift(-1/Re^2,u1mi,u2mi,0);
 
 
-matrix LinOp = [	[matLinOp11, 	0, 			0,	  matLinOp14, 	  0    ],
-					[matLinOp21,matLinOp22,matLinOp23,matLinOp24, matLinOp25 ],
-					[matLinOp31,matLinOp32,matLinOp33,matLinOp34, matLinOp35 ],
-					[	0	   ,matLinOp42',	    0,	LinOp44, 	0 ],
-					[	0	   ,	0		,matLinOp53',  LinOp54,	0  ]	  
-				  ];
+matrix LinOp = [	[matLinOp11,	 	  0,		  0,	matLinOp14,		0  ],
+			[matLinOp21,	 matLinOp22,	 matLinOp23,	matLinOp24,	matLinOp25 ],
+			[matLinOp31,	 matLinOp32,	 matLinOp33,	matLinOp34, 	matLinOp35 ],
+			[	  0,	matLinOp42',	     	  0,	   LinOp44,   	       	 0 ],
+			[	  0,	 	  0,	matLinOp53',  	   LinOp54,	 	 0 ]	  
+		];
+
+
 cout << " Assembling matrix... done" << endl;
 
 cout << " LU-ing matrix..." << endl;

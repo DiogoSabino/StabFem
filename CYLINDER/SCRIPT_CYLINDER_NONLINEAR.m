@@ -119,8 +119,6 @@ else
     HB_completed = 1;
 end
 
-t_cpu_end=clock()-t_cpu_init %DIOGO: ca va servir à comparer les performaces du avec et sans BIGSPACE
-
 %%% chapter 5b : figures
 
 figure(21);hold off;
