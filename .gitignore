@@ -23,6 +23,9 @@ ARTICLE_STABFEM/*
 	#Files from CYLINDER
 CYLINDER/Cylinder_*
 CYLINDER/WORK/
+CYLINDER/data*
+CYLINDER/Results_Cylinder_HB12.mat
+CYLINDER/*.eps
 
 	#Files from CYLINDER_VIV (D.Sabino files)
 CYLINDER_VIV/Final_results*
@@ -37,13 +40,36 @@ CYLINDER_VIV/FOLDER_TOTO/
 CYLINDER_VIV/TRASH/
 CYLINDER_VIV/Impedance_Treatement/
 CYLINDER_VIV/Modes_Tecplot/
-
+CYLINDER/*Diogo.m
+CYLINDER_VIV/Main2_Forced_Case_Limits.m
+CYLINDER_VIV/O*
 ZOLD_CYLINDER_VIV/
+CYLINDER_VIV/Forced_Data_DNS_LJ/
+CYLINDER_VIV/Literature_Data/
+CYLINDER_VIV/NL/
 
 	#Files from Cavity (D.Sabino files)
 
-Cavity/Results_v1/Guess_for_2nd_branchHB2/Re*
-Cavity/Results_v1/Guess_for_2nd_branchHB1/Re*
-Cavity/Results_v1/Guess_for_1nd_branchHB2/Re*
+Cavity/Results_v1
+Cavity/WORK
+Cavity/LIXO*
+Cavity/*.eps
+Cavity/Litterature_data/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
