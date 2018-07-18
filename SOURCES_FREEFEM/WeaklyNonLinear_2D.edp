@@ -100,7 +100,7 @@ macro NSL(nu,U,u,v)
         )
 //EOM
    
-macro Boundaryconditions(u,v,symmetry)
+macro BoundaryconditionsNEW(u,v,symmetry)
 	on(bcinlet,u#x=0.0,u#y=0.0) 
 	+ on(bcwall,u#x=0.0,u#y=0.0)
 	+ int1d(th,bcaxis)(u#x*v#x*1e30*(symmetry=="A")+u#y*v#y*1e30*(symmetry=="S"))
@@ -195,19 +195,19 @@ cout << " Solving problems at order 2 :" << endl;
 solve varfEpsilon([uepsx,uepsy,uepsp],[vx,vy,vp]) =
 	int2d(th)( NSL(nu,ub,ueps,v) )
 	+ int2d(th) (2*(D(ub):D(v))) 
-	+ Boundaryconditions(ueps,v,"S");
+	+ BoundaryconditionsNEW(ueps,v,"S");
 
 //Computation of q_{2,0} (U_2^{|A|^2})
 solve varf20([u20x,u20y,u20p],[vCx,vCy,vCp]) = //Diogo: Porquoi on utilise des fonctions test differents ?
 	int2d(th)( NSL(nu,ub,u20,vC) )
 	- int2d(th)( Conv(u1,u1C,vC) ) 
-	+ Boundaryconditions(u20,vC,"S"); 
+	+ BoundaryconditionsNEW(u20,vC,"S"); 
 
 //Computation of q_{2,2} (U_2^{A^2})	
 solve varf22([u22x,u22y,u22p],[vCx,vCy,vCp]) = //DIOGO DOUTe: les memes fonctions tests ?...
 	int2d(th)( NSL(nu,ub,u22,vC) ) -int2d(th)(2i*omegaC*(u22x*vCx+u22y*vCy) )
 	- int2d(th)(.5*Conv(u1,u1,vC) )  
-	+ Boundaryconditions(u22,vC,"S");
+	+ BoundaryconditionsNEW(u22,vC,"S");
 
 real Fx0 = Drag(nu,ubx,uby,ubp);
 real Fxeps2 = (Drag(nu,uepsx,uepsy,uepsp)-Drag(1,ubx,uby,0)); //Second term commes from the development of Drag force.

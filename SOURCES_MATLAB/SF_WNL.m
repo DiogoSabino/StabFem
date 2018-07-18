@@ -64,13 +64,16 @@ meanflow = importFFdata(baseflow.mesh,'MeanFlow_guess.ff2m');
 selfconsistentmode=importFFdata(baseflow.mesh,'SelfConsistentMode_guess.ff2m');
 disp(' Estimating base flow and quasilinear mode from WNL')
 disp([ '### Mode characteristics : AE = ' num2str(selfconsistentmode.AEnergy) ' ; Fy = ' num2str(selfconsistentmode.Fy) ' ; omega = ' num2str(imag(selfconsistentmode.lambda))]); 
-disp([ '### Mean-flow : Fx = ' num2str(meanflow.Fx) ]); 
+disp([ '### Mean-flow : Fx = ' num2str(meanflow.Fx) ]);
+    system(['cp ', ffdatadir, 'MeanFlow_guess.txt ',ffdatadir, 'MeanFlow.txt ']);
+    system(['cp ',ffdatadir, 'SelfConsistentMode_guess.txt ',ffdatadir, 'SelfConsistentMode.txt ']);  
+    
 end
 if(nargout==4 && p.Results.Retest>-1)
 secondharmonicmode=importFFdata(baseflow.mesh,'SecondHarmonicMode_guess.ff2m');
 disp(' Estimating SECOND HARMONIC mode from WNL')
 disp([ '### Mode characteristics :  Fx = ' num2str(secondharmonicmode.Fx)  ]); 
-
+system(['cp ',ffdatadir, 'SecondHarmonicMode_guess.txt ',ffdatadir, 'SecondHarmonicMode.txt ']);  
 end
 
 

@@ -24,6 +24,7 @@ for element= 1: size(savedata_dir,2)
     for R=Re
         for m_sta=m_star
             path{end+1}=strcat(savedata_dir{element},'Re',num2str(R),'/mstar',num2str(m_sta),'/');
+            %disp(path{1})
             if(exist(path{end})~=7&&exist(path{end})~=5) 
                 disp('toto');
                 %I read in internet that the '-p'(stands for parent) not always work in every shell...

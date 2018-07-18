@@ -133,54 +133,45 @@ Diogo_HB2_Br2=load('./Results_v1/Guess_for_2nd_branchHB2/data.mat');
 
 figure; hold on;
 subplot(1,2,1);hold on;
-plot(Meliga_E_SC.data(:,1),Meliga_E_SC.data(:,2),'+') %SC MELIGA
+plot(Meliga_E_SC.data(:,1),Meliga_E_SC.data(:,2),'ko','LineWidth',2) %SC MELIGA
 Meliga_DNS_smooth_x = Meliga_E_DNS.data(1,1):0.25:Meliga_E_DNS.data(end,1);
 Meliga_DNS_smooth_y = interp1(Meliga_E_DNS.data(:,1),Meliga_E_DNS.data(:,2),Meliga_DNS_smooth_x);
-plot(Meliga_DNS_smooth_x,Meliga_DNS_smooth_y,'b') %DNS MELIGA
+plot(Meliga_DNS_smooth_x,Meliga_DNS_smooth_y,'k-.','LineWidth',2) %DNS MELIGA
 
-plot(Diogo_HB1_Br2.Re_tab,Diogo_HB1_Br2.Aenergy_HB1./sqrt(2),'k-') %DIOGO
-plot(Diogo_HB2_Br2.Re_tab(1,4:end),Diogo_HB2_Br2.Aenergy_HB2(1,4:end)./sqrt(2),'r-') %DIOGO
-
-
-
-text(4000,0.007,'SC Meliga'); %DIOGO ICI
-text(6400,0.039,'DNS Meliga'); %DIOGO ICI
-text(6500,0.055,'HB1'); %DIOGO ICI
-text(6550,0.0445,'HB2'); %DIOGO ICI
-xlim([4000 7050])
-%ylim([-0.4 0.8])
-
-box on
+plot(Diogo_HB1_Br2.Re_tab,Diogo_HB1_Br2.Aenergy_HB1./sqrt(2),'r--','LineWidth',2) %DIOGO
+plot(Diogo_HB2_Br2.Re_tab(1,4:end),Diogo_HB2_Br2.Aenergy_HB2(1,4:end)./sqrt(2),'b-','LineWidth',2) %DIOGO
+%Details:
+text(4000,0.007,'M17: SC','FontSize', 15); %DIOGO ICI
+text(6400,0.039,'M17: DNS','FontSize', 15); %DIOGO ICI
+text(6450,0.055,'HB1','FontSize', 15); %DIOGO ICI
+text(6550,0.0455,'HB2','FontSize', 15); %DIOGO ICI
+text(4050,0.056,'(a)','FontSize', 20); %DIOGO ICI
+xlim([4000 7050]); %ylim([-0.4 0.8])
+set(gca,'fontsize',15); box on
 %legend('P. Meliga 2017: SC','P. Meliga 2017: DNS','Present HB1','Present HB2','Location','southeast')
-xlabel('Re');ylabel('A');
+xlabel('Re','FontSize', 20);ylabel('A','FontSize', 20);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 subplot(1,2,2);hold on;
-plot(Meliga_Omega_SC.data(:,1),Meliga_Omega_SC.data(:,2),'+')
+plot(Meliga_Omega_SC.data(:,1),Meliga_Omega_SC.data(:,2),'ko','LineWidth',2)
 Meliga_DNS_smooth_x = Meliga_Omega_DNS.data(1,1):0.25:Meliga_Omega_DNS.data(end,1);
 Meliga_DNS_smooth_y = interp1(Meliga_Omega_DNS.data(:,1),Meliga_Omega_DNS.data(:,2),Meliga_DNS_smooth_x);
-plot(Meliga_DNS_smooth_x,Meliga_DNS_smooth_y,'b')
+plot(Meliga_DNS_smooth_x,Meliga_DNS_smooth_y,'k-.','LineWidth',2)
 
-plot(Diogo_HB1_Br2.Re_tab,Diogo_HB1_Br2.omega_HB1,'k-') %DIOGO 
-plot(Diogo_HB2_Br2.Re_tab(1,4:end),Diogo_HB2_Br2.omega_HB2(1,4:end),'r-') %DIOGO 
+plot(Diogo_HB1_Br2.Re_tab,Diogo_HB1_Br2.omega_HB1,'r--','LineWidth',2) %DIOGO hb1
+plot(Diogo_HB2_Br2.Re_tab(1,4:end),Diogo_HB2_Br2.omega_HB2(1,4:end),'b-','LineWidth',2) %DIOGO 
 
-
-
+%Details:
 %legend('P. Meliga 2017: SC','P. Meliga 2017: DNS','Present HB1','Present HB2','Location','southeast')
-xlabel('Re');ylabel('\omega');
-
-text(4050,10.41,'SC Meliga'); %DIOGO ICI
-text(5770,11.30,'DNS Meliga'); %DIOGO ICI
-text(6550,11.67,'HB1'); %DIOGO ICI
-text(6400,11.35,'HB2'); %DIOGO ICI
-xlim([4000 7050])
-box on
-x0=10;
-y0=10;
-width=1800;
-height=400;
-set(gcf,'units','points','position',[x0,y0,width,height])
+xlabel('Re','FontSize', 25);ylabel('\fontsize{25} \omega','FontSize',25);
+text(4050,10.43,'M17: SC','FontSize', 15); %DIOGO ICI
+text(5770,11.30,'M17: DNS','FontSize', 13); %DIOGO ICI
+text(6550,11.69,'HB1','FontSize', 15); %DIOGO ICI
+text(6450,11.35,'HB2','FontSize', 15); %DIOGO ICI
+text(4050,11.7,'(b)','FontSize', 20); %DIOGO ICI
+xlim([4000 7050]); box on; x0=10; y0=10; width=1800; height=400;
+set(gca,'fontsize',15); set(gcf,'units','points','position',[x0,y0,width,height])
 saveas(gcf,'Branch2_Energy_Omega.eps','epsc')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,28 +182,25 @@ Diogo_HB2_Br1=load('./Results_v1/Guess_for_1nd_branchHB2/data.mat');
 Meliga_Om_DNS_2Br = importdata('./Litterature_data/DATA/MeligaRe_Omega_DNS_2Br.csv');
 
 plot(Diogo_HB2_Br2.Re_tab(1,1:4),Diogo_HB2_Br2.omega_HB2(1,1:4),'r--','HandleVisibility','off') %DIOGO BRANCH 2
-plot(Diogo_HB2_Br2.Re_tab(1,4:end),Diogo_HB2_Br2.omega_HB2(1,4:end),'r-') %DIOGO BRANCH 2
-
-plot(Diogo_HB2_Br1.Re_tab(1,1:4),Diogo_HB2_Br1.omega_HB2(1,1:4),'b-') %DIOGO BRANCH 1
+plot(Diogo_HB2_Br2.Re_tab(1,4:end),Diogo_HB2_Br2.omega_HB2(1,4:end),'r-','LineWidth',2) %DIOGO BRANCH 2
+plot(Diogo_HB2_Br1.Re_tab(1,1:4),Diogo_HB2_Br1.omega_HB2(1,1:4),'b-','LineWidth',2) %DIOGO BRANCH 1
 plot(Diogo_HB2_Br1.Re_tab(1,4:end),Diogo_HB2_Br1.omega_HB2(1,4:end),'b--','HandleVisibility','off') %DIOGO BRANCH 1
+plot(Meliga_Om_DNS_2Br.data(:,1),Meliga_Om_DNS_2Br.data(:,2),'ko','LineWidth',2) %2Br MELIGA
 
-
-plot(Meliga_Om_DNS_2Br.data(:,1),Meliga_Om_DNS_2Br.data(:,2),'o') %2Br MELIGA
 
 %legend('Present Br2','Present Br1','P. Meliga 2017: DNS','Location','southeast')
-
 plot([4400 4400],[7 12],'k--','HandleVisibility','off')
-xlabel('Re');ylabel('\omega');
+%Details:
+xlabel('Re','FontSize', 20); ylabel('\fontsize{25} \omega','FontSize', 25);
 box on
-
-text(4770,10.78,'DNS Meliga'); %DIOGO ICI
-text(4150,10.5,'Branch 2'); %DIOGO ICI
-text(6000,8.2,'Branch 1'); %DIOGO ICI
-
+text(4810,10.85,'M17: DNS','FontSize', 15); %DIOGO ICI
+text(4100,10.5,'Branch 2','FontSize', 15); %DIOGO ICI
+text(6000,8.2,'Branch 1','FontSize', 15); %DIOGO ICI
 x0=10;
 y0=410;
 width=950;
 height=400;
+set(gca,'fontsize',15) 
 set(gcf,'units','points','position',[x0,y0,width,height])
 saveas(gcf,'Omega_Branches_1_2.eps','epsc')
 %% Trash diogo

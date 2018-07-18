@@ -24,37 +24,40 @@ ADAPTMODE='S'; % D, A or S
 %% Save Data
 
 %CHOOSE folder for saving data:
-%General_data_dir='./Final_Results_v20/'; %a array of char
-General_data_dir='./Final_Results_v24/'; %studying the limits of Ustar to 0
-
+General_data_dir='./Final_Results_v20/';
+%General_data_dir='./Final_Results_v24/'; %studying the limits of Ustar to 0
 domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
-%CHOOSE the name of the folder mesh: (It's good to choose the name because we can adapt mesh during)
-mesh_identity={'Adapt_sensibility_Hmax1_InterError_0.02/'};
-%mesh_identity={'Adapt_mode_Hmax10_InterError_0.02/'};
+
+%mesh_identity={'Adapt_S_Step_mod10_Hmax1_InterError_0.02/'};
+%mesh_identity={'Adapt_D_Hmax10_InterError_0.02/'};
+mesh_identity={'Adapt_S_Hmax1_InterError_0.02/'};
+
 savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 %savedata_dir=[General_data_folder domain_identity mesh_identity];
 
 %% Computation: Spectrum
 %Parameters' Definition
 %CHOOSE the Re to test:
-Re_tab=[45]; verbosity=10;
+Re_tab=[19.95]; verbosity=10;
 for Re=Re_tab
     baseflow = SF_BaseFlow(baseflow,'Re',Re);
     
     %CHOOSE the m_star to test:
-    m_star_tab=[1000];
+    m_star_tab=[];  
     
     for m_star=m_star_tab
         mass=m_star*pi/4;
         %CHOOSE U_star
         
         %U_star=[1:0.05:4]; %m=0.05
-        %U_star=[2:0.1:7]; %m=0.2,0.1
-        %U_star=[3:0.1:4]; %m=1...0.8
-        %%%%U_star=[3 3.05 3.1 3.2:0.2:6.5 6.5:0.05:11];
+        %U_star=[2:0.1:7]; %0.3,...,0.1
+        %U_star=[3:0.1:7]; %m=0.7,...0.4 
+        %U_star=[4:0.1:7]; %m=0.9,0.8 
+        %U_star=[3:0.1:7]; %m=1 RealShift=-0.13; ImagShift=1.1;
+        U_star=[3:0.2:6.5 6.5:0.05:11];
         %U_star=[11.1:0.2:20];%
         %U_star=[20:0.2:28];%
-        U_star=[1:-0.1:0.1];% limit Ustar tends to 0
+        %U_star=[1:-0.1:0.1];% limit Ustar tends to 0
         
         Stiffness_table=pi^3*m_star./((U_star).^2);
         
@@ -62,21 +65,22 @@ for Re=Re_tab
         if(1==0)
             sigma_tab=[];
             %Re and mass are already defined above. Define numbers or tables for:
-            m=1000; % mass
-            STIFFNESS_to_search=1000; %Use whatever we want, e.g.: Stiffness_table(1)
-            RealShift=[0.05 0 -0.03];
-            ImagShift=[0.75];
+            m_s=0.2; % mass
+            m=m_s*pi/4;
+            STIFFNESS_to_search=Stiffness_table(1); %Use whatever we want, e.g.: Stiffness_table(1)
+            RealShift=[0];
+            ImagShift=[0.8 ];
             
             nev=10; %Normally here we don't use just one
-            [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('search',baseflow,sigma_tab,RealShift,ImagShift,STIFFNESS_to_search,0,nev);
-            filename={'01spectrum_search'};
+            [baseflow,sigma_tab] = SF_FreeMovement_Spectrum('search',baseflow,sigma_tab,RealShift,ImagShift,STIFFNESS_to_search,m,nev);
+            %filename={'01spectrum_search'};
             %SF_Save_Data('spectrum',General_data_dir,savedata_dir,Re,m_star,filename,Stiffness_table,U_star,sigma_tab);
         end
         
         % Mode Follow: Follow a mode along the Stiffness_table/U_star       
         %CHOOSE the one for save data w/ a good name:
-        %modename={'02modeSTRUCTURE'};
-        modename={'03modeFLUID'};
+        modename={'02modeSTRUCTURE'};
+        %modename={'03modeFLUID'};
         
         [RealShift, ImagShift]=SF_Shift_selection(modename,Re,m_star);
         sigma_tab=[]; %RealShift=0.005; ImagShift=0.64;
@@ -92,18 +96,19 @@ end
 %% EigenValue: Data Treatement 
 
 %CHOOSE Data to plot: (Be sure that data exists)
-%General_data_dir_folder='./Final_Results_v20/';   %General_data_dir; % e.g.: './FOLDER_TOTO/'
-General_data_dir_folder='./Final_Results_v24/';
+General_data_dir_folder='./Final_Results_v20/';   %General_data_dir; % e.g.: './FOLDER_TOTO/'
+%General_data_dir_folder='./Final_Results_v24/';
 domain_plot={'-50_50_50/'}; %domain_identity;        %e.g.:{'totodir1','totodir2'} %%FALTA POR O DOMAIN NO PROXIMO LOOP
-mesh_plot={'Adapt_sensibility_Hmax1_InterError_0.02/'};%,'Adapt_mode_Hmax1_InterError_0.02/','Adapt_sensibility_Hmax1_InterError_0.02/'
-%mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
+%mesh_plot={'Adapt_S_Hmax1_InterError_0.02/'};%,'Adapt_mode_Hmax1_InterError_0.02/','Adapt_sensibility_Hmax1_InterError_0.02/'
+%mesh_plot={'Adapt_D_Hmax10_InterError_0.02/'};
+mesh_plot={'Adapt_D_Hmax10_InterError_0.02/','Adapt_S_Step_mod10_Hmax1_InterError_0.02/'};
 folder_plot={};
 for element=1:size(mesh_plot,2)
 folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
 end
 
-Re_plot=[70] ; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=[1000 100 20]; % m_star for previous calculation
+Re_plot=[60] ; % Re for previous calculation; for an array: [Re1 Re2]
+m_star_plot=[20]; % m_star for previous calculation
 
 %The different data treatment options: %How to do:'Mode:-', 'Axis:-'
 %Mode:Fluid, Structure or Both
@@ -114,7 +119,7 @@ m_star_plot=[1000 100 20]; % m_star for previous calculation
 %SF_Data_Treatement('Mode:Both','Axis:NavroseMittal2016LockInRe60M20',folder_plot,Re_plot,m_star_plot);
 
 %IF one data only is plotted
-filename=SF_Data_Treatement('Mode:Fluid','Axis:sigma_VS_Ustar',folder_plot,Re_plot,m_star_plot);
+filename=SF_Data_Treatement('Mode:Structure','Axis:NavroseMittal2016LockInRe60M20',folder_plot,Re_plot,m_star_plot);
 
 
 %SF_Save_Data('graphic',General_data_dir_folder,folder_plot,Re_plot,m_star_plot,filename,0,0,0); %Last 3 not used in 'graphic'
@@ -211,16 +216,16 @@ plot(FC.Re_LIN,imag(FC.lambda_LIN)/(2*pi))
 %    dlmwrite(filename_latex2,str_latex2,'delimiter', '','-append' ) 
 %end
 
-%% Treatement for Re=20
+%% Treatement for Re=20 (in progress) é aqui que estou para fazer a primeira figura
 
-General_data_dir_folder='./Final_Results_v20/'; domain_plot={'-50_50_50/'}; mesh_plot={'Adapt_sensibility_Hmax1_InterError_0.02/'};%mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
+General_data_dir_folder='./Final_Results_v20/'; domain_plot={'-50_50_50/'}; mesh_plot={'Adapt_S_Hmax1_InterError_0.02/'};%mesh_plot={'Adapt_mode_Hmax10_InterError_0.02/'};
 folder_plot={};
 for element=1:size(mesh_plot,2)
     folder_plot{end+1}=[General_data_dir_folder  domain_plot{1} mesh_plot{element} ];
 end
 
 Re_plot=[19.95] ; % Re for previous calculation; for an array: [Re1 Re2]
-m_star_plot=[1]; % m_star for previous calculation
+m_star_plot=[0.2:0.2:1 3:3:9]; % m_star for previous calculation
 
 %The different data treatment options: %How to do:'Mode:-', 'Axis:-'
 %Axis:sigma_VS_Ustar, F_LSA_VS_Ustar, f_star_LSA_VS_Ustar, sigma_r_VS_Ustar_LSA,
@@ -229,6 +234,16 @@ m_star_plot=[1]; % m_star for previous calculation
 filename=SF_Data_Treatement('Mode:Structure','Axis:sigma_VS_Ustar',folder_plot,Re_plot,m_star_plot);
 
 
+for mf=m_star_plot
+    FreeCase=load([folder_plot{1} 'Re' num2str(Re_plot) '/mstar' num2str(mf) '/02modeSTRUCTURE_data.mat']);
+    %%%%filename_latex=['./Latex_data/Free/Re20/aMASS' num2str(mf) 'FREEmesh50_50_50_Re19p95.txt'];%DONE in relatorio
+    for index=1:size(FreeCase.U_star,2)
+        if(real(FreeCase.sigma_tab(index))>=-0.03)
+        %%%%str_latex=['(' num2str(FreeCase.U_star(index)) ',' num2str(real(FreeCase.sigma_tab(index))) ')'];
+        %%%%dlmwrite(filename_latex,str_latex,'delimiter', '','-append' )
+        end
+    end
+end
 
 
 

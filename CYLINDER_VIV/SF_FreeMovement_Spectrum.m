@@ -23,28 +23,28 @@ switch stability_analysis
         %STIFFNESS_to_search=Stiffness_table;
         %sigma_tab=[];
         shift=RealShift+ImagShift*1i;
-       
-        [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
-        set(gcf, 'Position', get(0, 'Screensize'));%img in fullscream during compute
-        %disp('TOTO1');
-        %[baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
-        %plotFF(baseflow,'mesh');
-        %disp('TOTO2');
-        %i=1;
         
-        for STIFFNESS=STIFFNESS_to_search
-            %disp('TOTO3');
-            [ev,em] = SF_Stability(baseflow,'shift','cont','nev',nev,'type','D','STIFFNESS',STIFFNESS,'MASS',mass,'DAMPING',0,'Frame','A','PlotSpectrum','yes');
-            %disp('TOTO4');
-            %if(mod(i,4)==0)
-             %   disp('TOTO4a');
-             %   [baseflow,em]=SF_Adapt(baseflow,em,'Hmax',5,'InterpError',0.01);
-                %plotFF(baseflow,'mesh');
-            %end
-            %disp('TOTO5');
+        %%%%%%%%%%%plotFF(baseflow,'mesh');
+        %Adapt to the first value
+        %%%%%%%%%%%[evadapt,emadapt] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','S','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','R');
+        %%%%%%%%%%%[baseflow,em]=SF_Adapt(baseflow,emadapt,'Hmax',1,'InterpError',0.02);
+        %%%%%%%%%%%plotFF(baseflow,'mesh');
+        
+        [ev,em] = SF_Stability(baseflow,'shift',shift,'nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(1),'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
+        set(gcf, 'Position', get(0, 'Screensize'));%img in fullscream during compute
+
+        
+        %for STIFFNESS=STIFFNESS_to_search
+        for index_S=1:size(STIFFNESS_to_search,2)
+            [ev,em] = SF_Stability(baseflow,'shift','cont','nev',nev,'type','D','STIFFNESS',STIFFNESS_to_search(index_S),'MASS',mass,'DAMPING',0,'Frame','R','PlotSpectrum','yes');
+            
+            %%%%%%%%%%%if(mod(index_S,10)==0)
+            %%%%%%%%%%%    [evadapt,emadapt] = SF_Stability(baseflow,'shift',ev,'nev',nev,'type','S','STIFFNESS',STIFFNESS_to_search(index_S),'MASS',mass,'DAMPING',0,'Frame','R');
+            %%%%%%%%%%%    [baseflow,emADAPTED]=SF_Adapt(baseflow,emadapt,'Hmax',1,'InterpError',0.02);
+            %%%%%%%%%%%    plotFF(baseflow,'mesh');
+            %%%%%%%%%%%end
             sigma_tab = [sigma_tab ev];
             %mode_tab=[mode_tab em];It's too heavy in terms of memory
-            %i=i+1;
         end
 end
 

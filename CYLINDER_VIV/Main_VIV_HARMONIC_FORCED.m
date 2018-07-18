@@ -24,15 +24,17 @@ ADAPTMODE='S'; % D, A or S
 
 %% CHOOSE folder for saving data:
 %General_data_dir='v1/General_data/';
+General_data_dir='v1/General_data_refined/';
 %General_data_dir='v1/Rec1/';
-%General_data_dir='v1/Rec2/';
-%General_data_dir='v1/Rec3/';
+%General_data_dir='v1/Rec2/'; %TO REDO 
+%General_data_dir='v1/Rec3/';%TO REDO
 %General_data_dir='v1/Limit_St0/';
-General_data_dir='v1/Limit_St_Infty/';
+%General_data_dir='v1/Limit_St_Infty/';
 domain_identity={[ num2str(domain_parameters(1)) '_' num2str(domain_parameters(2)) '_' num2str(domain_parameters(3)) '/']};
 %mesh_identity={'Adapt_sensibility_Hmax2_InterError_0.02/'};
 %mesh_identity={'Adapt_mode_Hmax2_InterError_0.02/'};
-mesh_identity={'Adapt_sensibility_stepOMEGA1000_Hmax1_InterError_0.02/'};
+%mesh_identity={'Adapt_sensibility_stepOMEGA1000_Hmax1_InterError_0.02/'}; %For inf limit adapt each 1000 omegas
+mesh_identity={'Adapt_S_Hmax1_InterError_0.02/'};
 savedata_dir={[ General_data_dir domain_identity{1} mesh_identity{1}]};
 
 % path of the saved data for the harmonic case cylinder (repeated in macros.edp)
@@ -44,29 +46,27 @@ if(exist(ffdataharmonicdir{1})~=7&&exist(ffdataharmonicdir{1})~=5)
 end %It's compulsory: Creation of the directory
 
 %% Computation of Harmonic Forcing Cylinder
-% NB:verbosity= 10;if simulation seems to stuck do Ctrl+C and start again;
-% previous data will not be lost and script will continue where it was interrupted
+% NB: If simulation seems to stuck do Ctrl+C and start again; Previous data 
+%will not be lost and script will continue at the omega it was interrupted
+% NB2: Comment/Uncomment the parts that interest you.
 
-%Options: A or R for Absolute or Relative velocity resp. in relative frame
+%Options: A or R for Absolute or Relative velocity resp., in relative frame
 formulation='R'; 
-Re_tab=15;
-Omega_values=[0.1:0.1:0.3];
+%Re_tab=15; %For a small test demonstration
+%Omega_values=[0.1:0.1:0.3]; %For a small test demonstration
 
 %%%%%%%%%%First Run %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Re_tab=[15:1:19 19.9 20:1:30 30.3 31:1:60];
 %Omega_values=[0.1:0.02:1.3];
 %%%%%%%%%%Second Run refining where needed (first figures) %%%%%%%%%%%%%%%%
 %Re_tab=[25 35];
-%Omega_values=[0.46:0.005:0.74];
+%Omega_values=[0.46:0.005:0.74];                            % A refazer !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 %Re_tab=[55];
 %Omega_values=[0.6:0.005:0.86]; %Additional values for Re=55
-%%%%%%%%%%Third run (Curves for 21 and 100) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Re_tab=[21 40];
-%Omega_values=[0.38:0.005:0.82];
-%%%%%%%%%%For critic Re %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Re_tab=20;
-%Omega_values=[0.1:0.005:1.2];
-%%%%%%%%%%Limits %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%Third run (refining everywhere) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Re_tab=[15:1:19 19.9 20:1:30 30.3 31:1:60];
+Omega_values=[0.1:0.005:1.3];
+%%%%%%%%%%Limits St --> 0 or St--> infty %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Re_tab=[15:1:60]; Omega_values=[0:0.001:0.01 0.02:0.01:0.05];
 %Re_tab=[15 25 35 55]; Omega_values=[5:5:20 30 40 50:50:1000 1000:1000:10000 10000:10000:100000]; %for the case without adaptation
 
@@ -103,6 +103,9 @@ end
 
 figure
 Re_tab=[15 25 35 55];
+%Re_tab=Rec1_convergence_tab; % For the Rec1
+% For the Rec2...
+% For the Rec3...
 formulation='R'; 
 for Re=Re_tab
     %extract data from importFFdata...
@@ -111,7 +114,7 @@ for Re=Re_tab
     SF_HarmonicForcing_Display(dataRe.OMEGAtab,dataRe.Lift,Re_tab); 
 end
 
-%% Iterative method to find Rec1 To redo
+%% Iterative method to find Rec1
 
 %erase previous values for Re=20 for assured convergence
 formulation='R';
@@ -119,9 +122,9 @@ Re=20; %Re initial
 Omega_values=linspace(0.64,0.67,10);%omegas init
 baseflow=SF_BaseFlow(baseflow,'Re',Re);
 
-SF_HarmonicForcing(baseflow,Omega_values,formulation);
-all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
-dataRe=importFFdata(all_data_stored_file);
+SF_HarmonicForcing(baseflow,Re,Omega_values,formulation);
+all_data_stored_file={[ffdataharmonicdir{1}  formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m']};
+dataRe=importFFdata(all_data_stored_file{1});
 [Zr_min,indexmin]=min(real(dataRe.Lift));
 Omegamin=dataRe.OMEGAtab(indexmin);
 Zimin=imag(dataRe.Lift(indexmin));
@@ -134,6 +137,7 @@ Rec1_convergence_tab=[Re];
 incrementOMEGA_TAB=[0.02];
 Omegamin_tab=[Omegamin];
 Zimin_tab=[Zimin];
+Zrmin_tab=[Zr_min];
 indexmin_tab=[indexmin];
 
 while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
@@ -151,10 +155,10 @@ while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     
     baseflow=SF_BaseFlow(baseflow,'Re',Re);
     Omega_values=linspace(Omegamin-incrementOMEGA,Omegamin+incrementOMEGA,10);
-    SF_HarmonicForcing(baseflow,Omega_values,formulation);
+    SF_HarmonicForcing(baseflow,Re,Omega_values,formulation);
     
-    all_data_stored_file=[ffdataharmonicdir, formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
-    dataRe=importFFdata(all_data_stored_file);
+    all_data_stored_file={[ffdataharmonicdir{1}  formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m']};
+    dataRe=importFFdata(all_data_stored_file{1});
     [Zr_min,indexmin]=min(real(dataRe.Lift));
     Omegamin=dataRe.OMEGAtab(indexmin);
     
@@ -169,16 +173,21 @@ while(abs(Re_last-Re)>0.0005 || incrementOMEGA>0.0005)
     incrementOMEGA_TAB=[incrementOMEGA_TAB incrementOMEGA];
     Omegamin_tab=[Omegamin_tab Omegamin];
     Zimin_tab=[Zimin_tab Zimin];
+    Zrmin_tab=[Zrmin_tab Zr_min];
     indexmin_tab=[indexmin_tab indexmin];
     disp(['RE TAB:' num2str(Rec1_convergence_tab)]);
 end
 
+ [Zr_min_FINAL_REc1,indexmin]=min(abs(Zrmin_tab));
+ Re_c1_FINAL_REc1=Rec1_convergence_tab(indexmin);
+ Zimin_FINAL_REc1=Zimin_tab(indexmin);
+ Omegamin_FINAL_REc1=Omegamin_tab(indexmin);
+ 
 disp('Loop Terminated');
-disp(['Rec1=' num2str(Re)]);
-%Re=19.9152
-%omega=0.6533
-%St=0.1040
-%Zi=0.9504*2=1.9010
+disp(['Rec1=' num2str(Re_c1_FINAL_REc1)]);
+%save_data_final_Rec1={[ffdataharmonicdir{1}  formulation 'DATA.mat']};
+%save(save_data_final_Rec1{1},'Rec1_convergence_tab','Omegamin_tab','Zimin_tab','Zrmin_tab','Re_c1_FINAL_REc1','Zimin_FINAL_REc1','Omegamin_FINAL_REc1')
+
 
 %% Iterative method to find Rec2 To redo
 

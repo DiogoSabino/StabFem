@@ -242,7 +242,7 @@ Aaf = afbfluid(0,XXMh);
 
 ////////////////////////////////////////////////////////////////////////////////////
 //Matrix A for VIV cylinder   	 	 ///////////////////////////////////////////
-cout << "TOTO2" << endl;
+
 matrix<complex> OP;// mat OP = A - shift B
 //OP = A+ (-SHIFT)*B; // Dont use it, because A and B are stored differently=>doesnt work
 
@@ -313,7 +313,7 @@ if(nev>1)
 	///////////// CALL TO ARPACK++ ////////////////////////////////// //////////
 	cout << "Executing Arpack" <<endl; //ça sert à quoi retourner un k? et le ncv ?//Arpack call:
 	int k=EigenValue(OP,B,sigma=shiftOP,value=EVCalculated,rawvector=EMCalculated,tol=1e-6,maxit=0,ncv=ncv);
-	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
+	if(iadjoint=="A"||iadjoint=="S") { EVCalculated = conj(EVCalculated); shiftOP=conj(shiftOP); } ;
 	cout << "Arpack Finished" << endl;
 	//////////////////////////////////////////////////////////////////////
 	WriteOutputFiles(EVCalculated,shiftOP,mode,EMCalculated,typeDA,nev,1); //Last number is the iter
@@ -455,7 +455,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 	//modeA = 1/NormU[].max*modeA;
 
 	EMCalculated(:,0)=[modex[],modeY,modeV,modeA];	
-	if(iadjoint=="A") { EVCalculated = conj(EVCalculated); } ;
+	if(iadjoint=="A"||iadjoint=="S") { EVCalculated = conj(EVCalculated);  shiftOP=conj(shiftOP); } ;
 
 	if(i<itmax) // post-processing if iteration was successful
 	{	
@@ -482,7 +482,7 @@ for(int directadjoint=directadjointA;directadjoint<directadjointB+1;directadjoin
 
 }; //end of loop for direct/adjoint/selection
 
-cout << "DIOGOOOOOOOOOOOOOOOOOOOOO TOTOTTOTOTTOTOTOTTO" << endl;
+
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////

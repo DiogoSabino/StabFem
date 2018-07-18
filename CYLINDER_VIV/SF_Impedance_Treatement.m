@@ -1,11 +1,12 @@
-function [Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot,formulation)
+function [Ustar_impedance,lambda_r_impedance,U_free,lambda_r_Free,U_freeFLUID,lambda_r_FreeFLUID]=SF_Impedance_Treatement(Re,mstar,folder_plot,filename)
 
 global ffdataharmonicdir
 
 %Load Data Forced-Case:
-all_data_stored_file=[ffdataharmonicdir formulation 'Forced_Harmonic2D_Re' num2str(Re) 'TOTAL.ff2m'];
-dataRe_total=importFFdata(all_data_stored_file);
-diffZ=load([ffdataharmonicdir formulation 'Forced_Re' num2str(Re) '_diff_Lift_Coeff.mat']);
+all_data_stored_file={[ffdataharmonicdir{1} filename  num2str(Re) 'TOTAL.ff2m']};
+dataRe_total=importFFdata(all_data_stored_file{1});
+data_diff_path={[ffdataharmonicdir{1} filename num2str(Re) '_diff_DATA.mat']};
+diffZ=load(data_diff_path{1});
 %Data Forced case:
 Zr=2*real(dataRe_total.Lift);
 Zi=2*imag(dataRe_total.Lift);

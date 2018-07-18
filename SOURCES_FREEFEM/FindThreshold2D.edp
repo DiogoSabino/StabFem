@@ -68,10 +68,10 @@ macro Ugrad(u1,u2,v1,v2) [ugrad(u1,u2,v1),ugrad(u1,u2,v2)] //
 macro Conv(ua1,ua2,ub1,ub2,v1,v2) (Ugrad(ua1,ua2,ub1,ub2)'*[v1,v2]+Ugrad(ub1,ub2,ua1,ua2)'*[v1,v2]) // convection operator
 macro Diffusion(nu,u1,u2,v1,v2)  (-(nu)*( dx(u1)*dx(v1)+dy(u1)*dy(v1)+dx(u2)*dx(v2)+dy(u2)*dy(v2))) // integration by parts of nu (v.Delta u) 
 
-macro Boundaryconditions(u1,u2,v1,v2,symmetry)
-	           on(bcinlet,u1=0.0,u2=0.0) 
-             + on(bcwall,u1=0.0,u2=0.0)
-             + int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
+//macro Boundaryconditions(u1,u2,v1,v2,symmetry)
+//	           on(bcinlet,u1=0.0,u2=0.0) 
+ //            + on(bcwall,u1=0.0,u2=0.0)
+ ///            + int1d(th,bcaxis)(u1*v1*1e30*(symmetry=="A")+u2*v2*1e30*(symmetry=="S"))
 // 
 
 macro Lift(nu,u1,u2,p)   

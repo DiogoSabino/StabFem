@@ -393,7 +393,7 @@ else if(iadjoint=="cS")
     		uxdirect[]=ux[];
 		fespace p1(th,P1); ;
 		p1<complex> realux = ux;
-		plot(realux,fill=1,value=1,wait=1);
+		//plot(realux,fill=1,value=1,wait=1);
     	};
     	
     	if(directadjoint==2||directadjoint==0)

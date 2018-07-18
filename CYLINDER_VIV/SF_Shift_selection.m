@@ -15,6 +15,9 @@ function [RealShift, ImagShift]=SF_Shift_selection(modename,Re,m_star)
 %shift=-0.07+0.62i:                                                                 %%%%(21;[10])
 %close all
 
+%Initialise:
+RealShift=0; ImagShift=0;
+
 switch modename{1}
     case('02modeSTRUCTURE')
         if (Re>15&&Re<100)
@@ -23,24 +26,30 @@ switch modename{1}
                    RealShift=-0.07; ImagShift=0.85; %u=1
                    
             elseif(m_star>=0.1&&m_star<0.2)
-                RealShift=-0.01; ImagShift=0.68; %u=2
-
+                RealShift=-0.05; ImagShift=0.68; %u=2
+                
             elseif(m_star>=0.2&&m_star<0.3)
-                RealShift=-0.05; ImagShift=0.8; %u=2
+                RealShift=-0.05; ImagShift=0.81; %u=2
                 
-            elseif(m_star>=0.3&&m_star<0.5)
-                RealShift=-0.03; ImagShift=0.76;
+            elseif(m_star>=0.3&&m_star<0.4)%u=2
+                RealShift=-0.13; ImagShift=0.96;
                 
-            elseif(m_star>=0.5&&m_star<1)
-                RealShift=-0.05; ImagShift=0.8;
+            elseif(m_star>=0.4&&m_star<0.6)%u=3
+                RealShift=-0.05; ImagShift=0.81;
                 
-            elseif(m_star>=1&&m_star<2&&Re<45)
+            elseif(m_star>=0.6&&m_star<0.8)%u=3
+                RealShift=-0.10; ImagShift=0.92;
+                
+            elseif(m_star>=0.8&&m_star<1)%u=3
+                RealShift=-0.03; ImagShift=0.78;
+                
+            elseif(m_star>=1&&m_star<2&&Re<45)%u=3
                 RealShift=-0.13; ImagShift=1.1;
             
-            elseif(m_star>=1&&m_star<2&&Re>45)
+            elseif(m_star>=1&&m_star<2&&Re>45)%u=3
                 RealShift=-0.04; ImagShift=1.15;                
                 
-            elseif(m_star>=2&&m_star<3)
+            elseif(m_star>=2&&m_star<3)%u=3
                 RealShift=-0.1; ImagShift=1.45;
                 
             elseif(m_star>=3&&m_star<4.73)

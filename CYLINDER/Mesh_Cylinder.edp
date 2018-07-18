@@ -19,13 +19,8 @@ include "Macros_StabFem.edp";
 // load "BinaryIO"                 ////load libary to write the solution in binary form
 // load "BinaryIO_64"
 
-
-
-
 real RADIUS=0.5;         /////// Cylinder Radius
  
-
-
 real n=.5;                 
 int ns=50; 
 
